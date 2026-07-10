@@ -66,6 +66,8 @@ export function DashboardLayout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [managementOpen, setManagementOpen] = useState(true);
+  const [resultsOpen, setResultsOpen] = useState(true);
+  const [systemOpen, setSystemOpen] = useState(true);
 
   const displayName = user?.name || 'Kent Russel Casino';
   const displayRole = user?.role?.name || 'Administrator';
@@ -97,11 +99,6 @@ export function DashboardLayout() {
           </NavLink>
 
           <div className="sidebar-section">
-            <div className="sidebar-section__header">
-              <span>Management</span>
-              <ChevronDown className="sidebar-section__chevron" />
-            </div>
-
             <button
               type="button"
               className="sidebar-parent"
@@ -139,42 +136,78 @@ export function DashboardLayout() {
           </div>
 
           <div className="sidebar-section">
-            <div className="sidebar-section__header">
-              <span>Results &amp; Reports</span>
-              <ChevronDown className="sidebar-section__chevron" />
-            </div>
-            {RESULTS_ITEMS.map(({ label, icon: Icon, path }) =>
-              path ? (
-                <NavLink key={label} to={path} className={navItemClass} onClick={closeSidebar}>
-                  <Icon className="sidebar-nav__icon" />
-                  {label}
-                </NavLink>
-              ) : (
-                <button key={label} type="button" className="sidebar-nav__item">
-                  <Icon className="sidebar-nav__icon" />
-                  {label}
-                </button>
-              ),
+            <button
+              type="button"
+              className="sidebar-parent"
+              onClick={() => setResultsOpen((open) => !open)}
+              aria-expanded={resultsOpen}
+            >
+              <LineChart size={18} />
+              Results &amp; Reports
+              <ChevronDown
+                className={`sidebar-parent__chevron${resultsOpen ? ' sidebar-parent__chevron--open' : ''}`}
+              />
+            </button>
+
+            {resultsOpen && (
+              <ul className="sidebar-submenu">
+                {RESULTS_ITEMS.map(({ label, icon: Icon, path }) => (
+                  <li key={label}>
+                    {path ? (
+                      <NavLink
+                        to={path}
+                        className={({ isActive }) => submenuClass(isActive)}
+                        onClick={closeSidebar}
+                      >
+                        <Icon className="sidebar-nav__icon" />
+                        {label}
+                      </NavLink>
+                    ) : (
+                      <button type="button" className="sidebar-submenu__item">
+                        <Icon className="sidebar-nav__icon" />
+                        {label}
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
 
           <div className="sidebar-section">
-            <div className="sidebar-section__header">
-              <span>System</span>
-              <ChevronDown className="sidebar-section__chevron" />
-            </div>
-            {SYSTEM_ITEMS.map(({ label, icon: Icon, path }) =>
-              path ? (
-                <NavLink key={label} to={path} className={navItemClass} onClick={closeSidebar}>
-                  <Icon className="sidebar-nav__icon" />
-                  {label}
-                </NavLink>
-              ) : (
-                <button key={label} type="button" className="sidebar-nav__item">
-                  <Icon className="sidebar-nav__icon" />
-                  {label}
-                </button>
-              ),
+            <button
+              type="button"
+              className="sidebar-parent"
+              onClick={() => setSystemOpen((open) => !open)}
+              aria-expanded={systemOpen}
+            >
+              <Settings size={18} />
+              System
+              <ChevronDown className={`sidebar-parent__chevron${systemOpen ? ' sidebar-parent__chevron--open' : ''}`} />
+            </button>
+
+            {systemOpen && (
+              <ul className="sidebar-submenu">
+                {SYSTEM_ITEMS.map(({ label, icon: Icon, path }) => (
+                  <li key={label}>
+                    {path ? (
+                      <NavLink
+                        to={path}
+                        className={({ isActive }) => submenuClass(isActive)}
+                        onClick={closeSidebar}
+                      >
+                        <Icon className="sidebar-nav__icon" />
+                        {label}
+                      </NavLink>
+                    ) : (
+                      <button type="button" className="sidebar-submenu__item">
+                        <Icon className="sidebar-nav__icon" />
+                        {label}
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         </nav>
