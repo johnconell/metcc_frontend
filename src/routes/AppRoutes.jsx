@@ -9,6 +9,12 @@ import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
 import GoogleCallbackPage from '../pages/auth/GoogleCallbackPage';
 import DashboardPage from '../pages/dashboard/DashboardPage';
+import SchedulesPage from '../pages/management/SchedulesPage';
+import QuestionBankPage from '../pages/management/QuestionBankPage';
+import StudentsPage from '../pages/management/StudentsPage';
+import ProctorsPage from '../pages/management/ProctorsPage';
+import UsersPage from '../pages/management/UsersPage';
+import LobbyPage from '../pages/management/LobbyPage';
 import ProfileSettingsPage from '../pages/profile/ProfileSettingsPage';
 import ChangePasswordPage from '../pages/profile/ChangePasswordPage';
 import UserListPage from '../pages/admin/UserListPage';
@@ -38,6 +44,13 @@ export default function AppRoutes() {
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/management" element={<Navigate to="/management/schedules" replace />} />
+              <Route path="/management/schedules" element={<SchedulesPage />} />
+              <Route path="/management/question-bank" element={<QuestionBankPage />} />
+              <Route path="/management/students" element={<StudentsPage />} />
+              <Route path="/management/proctors" element={<ProctorsPage />} />
+              <Route path="/management/users" element={<UsersPage />} />
+              <Route path="/management/lobby" element={<LobbyPage />} />
               <Route path="/profile" element={<ProfileSettingsPage />} />
               <Route path="/profile/change-password" element={<ChangePasswordPage />} />
               <Route path="/test-items" element={<TestItemListPage />} />

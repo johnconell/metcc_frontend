@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -21,12 +21,12 @@ import tccLogo from '../assets/tcc_logo.jpg';
 import './DashboardLayout.css';
 
 const MANAGEMENT_SUBMENU = [
-  { label: 'Examination / Schedules', path: null },
-  { label: 'Question Bank', path: '/test-items' },
-  { label: 'Student List', path: null },
-  { label: 'Proctor', path: null },
-  { label: 'User Management', path: '/admin/users', adminOnly: true },
-  { label: 'Lobby', path: null },
+  { label: 'Examination / Schedules', path: '/management/schedules' },
+  { label: 'Question Bank', path: '/management/question-bank' },
+  { label: 'Student List', path: '/management/students' },
+  { label: 'Proctor', path: '/management/proctors' },
+  { label: 'User Management', path: '/management/users', adminOnly: true },
+  { label: 'Lobby', path: '/management/lobby' },
 ];
 
 const RESULTS_ITEMS = [
@@ -73,9 +73,13 @@ export function DashboardLayout() {
   const displayRole = user?.role?.name || 'Administrator';
   const initials = getInitials(displayName);
 
-  const managementActive = MANAGEMENT_SUBMENU.some(
-    (item) => item.path && location.pathname.startsWith(item.path),
-  );
+  const managementActive = location.pathname.startsWith('/management');
+
+  useEffect(() => {
+    if (managementActive) {
+      setManagementOpen(true);
+    }
+  }, [managementActive]);
 
   const closeSidebar = () => setSidebarOpen(false);
 
@@ -101,34 +105,29 @@ export function DashboardLayout() {
           <div className="sidebar-section">
             <button
               type="button"
-              className="sidebar-parent"
+              className={`sidebar-parent${managementActive ? ' sidebar-parent--active' : ''}`}
               onClick={() => setManagementOpen((open) => !open)}
               aria-expanded={managementOpen}
+              aria-controls="management-submenu"
             >
               <FolderKanban size={18} />
               Management
               <ChevronDown
-                className={`sidebar-parent__chevron${managementOpen || managementActive ? ' sidebar-parent__chevron--open' : ''}`}
+                className={`sidebar-parent__chevron${managementOpen ? ' sidebar-parent__chevron--open' : ''}`}
               />
             </button>
 
-            {(managementOpen || managementActive) && (
-              <ul className="sidebar-submenu">
+            {managementOpen && (
+              <ul id="management-submenu" className="sidebar-submenu">
                 {MANAGEMENT_SUBMENU.filter((item) => !item.adminOnly || isAdmin).map((item) => (
                   <li key={item.label}>
-                    {item.path ? (
-                      <NavLink
-                        to={item.path}
-                        className={({ isActive }) => submenuClass(isActive)}
-                        onClick={closeSidebar}
-                      >
-                        {item.label}
-                      </NavLink>
-                    ) : (
-                      <button type="button" className="sidebar-submenu__item">
-                        {item.label}
-                      </button>
-                    )}
+                    <NavLink
+                      to={item.path}
+                      className={({ isActive }) => submenuClass(isActive)}
+                      onClick={closeSidebar}
+                    >
+                      {item.label}
+                    </NavLink>
                   </li>
                 ))}
               </ul>

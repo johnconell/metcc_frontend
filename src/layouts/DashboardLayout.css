@@ -236,6 +236,11 @@
   background: rgba(123, 16, 32, 0.05);
 }
 
+.sidebar-parent--active {
+  color: var(--maroon);
+  background: rgba(123, 16, 32, 0.06);
+}
+
 .sidebar-parent__chevron {
   margin-left: auto;
   width: 16px;
