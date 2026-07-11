@@ -15,18 +15,24 @@ import {
   FileText,
   HardDrive,
   Upload,
+  CalendarDays,
+  BookOpen,
+  Users,
+  Shield,
+  UserCog,
+  Building2,
 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import tccLogo from '../assets/tcc_logo.jpg';
 import './DashboardLayout.css';
 
 const MANAGEMENT_SUBMENU = [
-  { label: 'Examination / Schedules', path: '/management/schedules' },
-  { label: 'Question Bank', path: '/management/question-bank' },
-  { label: 'Student List', path: '/management/students' },
-  { label: 'Proctor', path: '/management/proctors' },
-  { label: 'User Management', path: '/management/users', adminOnly: true },
-  { label: 'Lobby', path: '/management/lobby' },
+  { label: 'Examination / Schedules', icon: CalendarDays, path: '/management/schedules' },
+  { label: 'Question Bank', icon: BookOpen, path: '/management/question-bank' },
+  { label: 'Student List', icon: Users, path: '/management/students' },
+  { label: 'Proctor', icon: Shield, path: '/management/proctors' },
+  { label: 'User Management', icon: UserCog, path: '/management/users', adminOnly: true },
+  { label: 'Lobby', icon: Building2, path: '/management/lobby' },
 ];
 
 const RESULTS_ITEMS = [
@@ -65,6 +71,7 @@ export function DashboardLayout() {
   const { user, isAdmin } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [managementOpen, setManagementOpen] = useState(true);
   const [resultsOpen, setResultsOpen] = useState(true);
   const [systemOpen, setSystemOpen] = useState(true);
@@ -79,28 +86,41 @@ export function DashboardLayout() {
 
   useEffect(() => {
     if (managementActive) {
-      setManagementOpen(true);
+      queueMicrotask(() => setManagementOpen(true));
     }
   }, [managementActive]);
 
   useEffect(() => {
     if (resultsActive) {
-      setResultsOpen(true);
+      queueMicrotask(() => setResultsOpen(true));
     }
   }, [resultsActive]);
 
   useEffect(() => {
     if (systemActive) {
-      setSystemOpen(true);
+      queueMicrotask(() => setSystemOpen(true));
     }
   }, [systemActive]);
 
   const closeSidebar = () => setSidebarOpen(false);
+  const toggleSidebar = () => {
+    if (window.innerWidth <= 768) {
+      setSidebarCollapsed(false);
+      setSidebarOpen((open) => !open);
+      return;
+    }
+
+    setSidebarOpen(false);
+    setSidebarCollapsed((collapsed) => !collapsed);
+  };
 
   return (
     <div className="dashboard-app">
-      <aside className={`dashboard-sidebar${sidebarOpen ? ' dashboard-sidebar--open' : ''}`}>
-        <Link to="/dashboard" className="sidebar-brand" onClick={closeSidebar}>
+      <aside
+        id="dashboard-sidebar"
+        className={`dashboard-sidebar${sidebarOpen ? ' dashboard-sidebar--open' : ''}${sidebarCollapsed ? ' dashboard-sidebar--collapsed' : ''}`}
+      >
+        <Link to="/dashboard" className="sidebar-brand" onClick={closeSidebar} title="Dashboard" data-tooltip="Dashboard">
           <img src={tccLogo} alt="Tagoloan Community College" className="sidebar-brand__logo" />
           <div className="sidebar-brand__text">
             <span className="sidebar-brand__name">TAGOLOAN</span>
@@ -111,10 +131,25 @@ export function DashboardLayout() {
         <div className="sidebar-brand__divider" />
 
         <nav className="sidebar-nav" aria-label="Main navigation">
-          <NavLink to="/dashboard" end className={navItemClass} onClick={closeSidebar}>
+          <div className="sidebar-section__header sidebar-section__header--spaced">
+            <span>Main Menu</span>
+          </div>
+
+          <NavLink
+            to="/dashboard"
+            end
+            className={navItemClass}
+            onClick={closeSidebar}
+            title="Dashboard"
+            data-tooltip="Dashboard"
+          >
             <LayoutDashboard className="sidebar-nav__icon" />
-            Dashboard
+            <span className="sidebar-nav__label">Dashboard</span>
           </NavLink>
+
+          <div className="sidebar-section__header">
+            <span>General</span>
+          </div>
 
           <div className="sidebar-section">
             <button
@@ -123,9 +158,11 @@ export function DashboardLayout() {
               onClick={() => setManagementOpen((open) => !open)}
               aria-expanded={managementOpen}
               aria-controls="management-submenu"
+              title="Management"
+              data-tooltip="Management"
             >
               <FolderKanban size={18} />
-              Management
+              <span className="sidebar-parent__label">Management</span>
               <ChevronDown
                 className={`sidebar-parent__chevron${managementOpen ? ' sidebar-parent__chevron--open' : ''}`}
               />
@@ -139,8 +176,11 @@ export function DashboardLayout() {
                       to={item.path}
                       className={({ isActive }) => submenuClass(isActive)}
                       onClick={closeSidebar}
+                      title={item.label}
+                      data-tooltip={item.label}
                     >
-                      {item.label}
+                      <item.icon className="sidebar-submenu__icon sidebar-nav__icon" />
+                      <span className="sidebar-submenu__label">{item.label}</span>
                     </NavLink>
                   </li>
                 ))}
@@ -154,9 +194,11 @@ export function DashboardLayout() {
               className={`sidebar-parent${resultsActive ? ' sidebar-parent--active' : ''}`}
               onClick={() => setResultsOpen((open) => !open)}
               aria-expanded={resultsOpen}
+              title="Results & Reports"
+              data-tooltip="Results & Reports"
             >
               <LineChart size={18} />
-              Results &amp; Reports
+              <span className="sidebar-parent__label">Results &amp; Reports</span>
               <ChevronDown
                 className={`sidebar-parent__chevron${resultsOpen ? ' sidebar-parent__chevron--open' : ''}`}
               />
@@ -171,14 +213,16 @@ export function DashboardLayout() {
                         to={path}
                         className={({ isActive }) => submenuClass(isActive)}
                         onClick={closeSidebar}
+                        title={label}
+                        data-tooltip={label}
                       >
                         <Icon className="sidebar-nav__icon" />
-                        {label}
+                        <span className="sidebar-submenu__label">{label}</span>
                       </NavLink>
                     ) : (
-                      <button type="button" className="sidebar-submenu__item">
+                      <button type="button" className="sidebar-submenu__item" title={label} data-tooltip={label}>
                         <Icon className="sidebar-nav__icon" />
-                        {label}
+                        <span className="sidebar-submenu__label">{label}</span>
                       </button>
                     )}
                   </li>
@@ -187,15 +231,21 @@ export function DashboardLayout() {
             )}
           </div>
 
+          <div className="sidebar-section__header">
+            <span>Account</span>
+          </div>
+
           <div className="sidebar-section">
             <button
               type="button"
               className={`sidebar-parent${systemActive ? ' sidebar-parent--active' : ''}`}
               onClick={() => setSystemOpen((open) => !open)}
               aria-expanded={systemOpen}
+              title="System"
+              data-tooltip="System"
             >
               <Settings size={18} />
-              System
+              <span className="sidebar-parent__label">System</span>
               <ChevronDown className={`sidebar-parent__chevron${systemOpen ? ' sidebar-parent__chevron--open' : ''}`} />
             </button>
 
@@ -208,14 +258,16 @@ export function DashboardLayout() {
                         to={path}
                         className={({ isActive }) => submenuClass(isActive)}
                         onClick={closeSidebar}
+                        title={label}
+                        data-tooltip={label}
                       >
                         <Icon className="sidebar-nav__icon" />
-                        {label}
+                        <span className="sidebar-submenu__label">{label}</span>
                       </NavLink>
                     ) : (
-                      <button type="button" className="sidebar-submenu__item">
+                      <button type="button" className="sidebar-submenu__item" title={label} data-tooltip={label}>
                         <Icon className="sidebar-nav__icon" />
-                        {label}
+                        <span className="sidebar-submenu__label">{label}</span>
                       </button>
                     )}
                   </li>
@@ -225,7 +277,7 @@ export function DashboardLayout() {
           </div>
         </nav>
 
-        <Link to="/profile" className="sidebar-profile" onClick={closeSidebar}>
+        <Link to="/profile" className="sidebar-profile" onClick={closeSidebar} title={displayName} data-tooltip={displayName}>
           <div className="sidebar-profile__avatar" aria-hidden="true">
             {user?.profile_photo_url ? (
               <img src={user.profile_photo_url} alt="" />
@@ -254,10 +306,12 @@ export function DashboardLayout() {
           <button
             type="button"
             className="dashboard-header__menu"
-            aria-label="Toggle navigation menu"
-            onClick={() => setSidebarOpen((open) => !open)}
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-pressed={sidebarCollapsed}
+            aria-controls="dashboard-sidebar"
+            onClick={toggleSidebar}
           >
-            <Menu size={20} />
+            <Menu size={20} className={`dashboard-header__menu-icon${sidebarCollapsed ? ' dashboard-header__menu-icon--collapsed' : ''}`} />
           </button>
 
           <div className="dashboard-header__search">
