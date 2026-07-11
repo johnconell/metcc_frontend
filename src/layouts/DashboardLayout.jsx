@@ -23,7 +23,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
-import tccLogo from '../assets/tcc_logo.jpg';
+import tccLogo from '../assets/tcc_logo.png';
 import './DashboardLayout.css';
 
 const MANAGEMENT_SUBMENU = [

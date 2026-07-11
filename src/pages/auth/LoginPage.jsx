@@ -6,7 +6,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
 import { Spinner } from '../../components/ui/Spinner';
-import tccLogo from '../../assets/tcc_logo.jpg';
+import tccLogo from '../../assets/tcc_logo.png';
 
 const FEATURES = [
   'Secure student access',
