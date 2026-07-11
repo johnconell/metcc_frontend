@@ -30,16 +30,16 @@ const MANAGEMENT_SUBMENU = [
 ];
 
 const RESULTS_ITEMS = [
-  { label: 'Exam Results', icon: ClipboardCheck, path: null },
-  { label: 'Reports & Analytics', icon: LineChart, path: null },
-  { label: 'Email Notification', icon: Mail, path: null },
+  { label: 'Exam Results', icon: ClipboardCheck, path: '/results/exam-results' },
+  { label: 'Reports & Analytics', icon: LineChart, path: '/results/reports-analytics' },
+  { label: 'Email Notification', icon: Mail, path: '/results/email-notification' },
 ];
 
 const SYSTEM_ITEMS = [
-  { label: 'Settings', icon: Settings, path: '/profile' },
-  { label: 'Logs', icon: FileText, path: null },
-  { label: 'Backup', icon: HardDrive, path: null },
-  { label: 'Import', icon: Upload, path: null },
+  { label: 'Settings', icon: Settings, path: '/system/settings' },
+  { label: 'Logs', icon: FileText, path: '/system/logs' },
+  { label: 'Backup', icon: HardDrive, path: '/system/backup' },
+  { label: 'Import', icon: Upload, path: '/system/import' },
 ];
 
 function getInitials(name) {
@@ -74,12 +74,26 @@ export function DashboardLayout() {
   const initials = getInitials(displayName);
 
   const managementActive = location.pathname.startsWith('/management');
+  const resultsActive = location.pathname.startsWith('/results');
+  const systemActive = location.pathname.startsWith('/system');
 
   useEffect(() => {
     if (managementActive) {
       setManagementOpen(true);
     }
   }, [managementActive]);
+
+  useEffect(() => {
+    if (resultsActive) {
+      setResultsOpen(true);
+    }
+  }, [resultsActive]);
+
+  useEffect(() => {
+    if (systemActive) {
+      setSystemOpen(true);
+    }
+  }, [systemActive]);
 
   const closeSidebar = () => setSidebarOpen(false);
 
@@ -137,7 +151,7 @@ export function DashboardLayout() {
           <div className="sidebar-section">
             <button
               type="button"
-              className="sidebar-parent"
+              className={`sidebar-parent${resultsActive ? ' sidebar-parent--active' : ''}`}
               onClick={() => setResultsOpen((open) => !open)}
               aria-expanded={resultsOpen}
             >
@@ -176,7 +190,7 @@ export function DashboardLayout() {
           <div className="sidebar-section">
             <button
               type="button"
-              className="sidebar-parent"
+              className={`sidebar-parent${systemActive ? ' sidebar-parent--active' : ''}`}
               onClick={() => setSystemOpen((open) => !open)}
               aria-expanded={systemOpen}
             >

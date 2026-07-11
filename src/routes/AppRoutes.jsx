@@ -15,6 +15,13 @@ import StudentsPage from '../pages/management/StudentsPage';
 import ProctorsPage from '../pages/management/ProctorsPage';
 import UsersPage from '../pages/management/UsersPage';
 import LobbyPage from '../pages/management/LobbyPage';
+import ExamResultsPage from '../pages/results/ExamResultsPage';
+import ReportsAnalyticsPage from '../pages/results/ReportsAnalyticsPage';
+import EmailNotificationPage from '../pages/results/EmailNotificationPage';
+import SettingsPage from '../pages/system/SettingsPage';
+import LogsPage from '../pages/system/LogsPage';
+import BackupPage from '../pages/system/BackupPage';
+import ImportPage from '../pages/system/ImportPage';
 import ProfileSettingsPage from '../pages/profile/ProfileSettingsPage';
 import ChangePasswordPage from '../pages/profile/ChangePasswordPage';
 import UserListPage from '../pages/admin/UserListPage';
@@ -51,6 +58,15 @@ export default function AppRoutes() {
               <Route path="/management/proctors" element={<ProctorsPage />} />
               <Route path="/management/users" element={<UsersPage />} />
               <Route path="/management/lobby" element={<LobbyPage />} />
+              <Route path="/results" element={<Navigate to="/results/exam-results" replace />} />
+              <Route path="/results/exam-results" element={<ExamResultsPage />} />
+              <Route path="/results/reports-analytics" element={<ReportsAnalyticsPage />} />
+              <Route path="/results/email-notification" element={<EmailNotificationPage />} />
+              <Route path="/system" element={<Navigate to="/system/settings" replace />} />
+              <Route path="/system/settings" element={<SettingsPage />} />
+              <Route path="/system/logs" element={<LogsPage />} />
+              <Route path="/system/backup" element={<BackupPage />} />
+              <Route path="/system/import" element={<ImportPage />} />
               <Route path="/profile" element={<ProfileSettingsPage />} />
               <Route path="/profile/change-password" element={<ChangePasswordPage />} />
               <Route path="/test-items" element={<TestItemListPage />} />

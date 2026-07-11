@@ -167,7 +167,7 @@ const QUICK_ACTIONS = [
     subtitle: 'View analytics & reports',
     icon: BarChart3,
     color: 'gold',
-    path: null,
+    path: '/results/reports-analytics',
   },
 ];
 
