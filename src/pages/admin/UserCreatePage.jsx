@@ -38,7 +38,9 @@ export default function UserCreatePage() {
         <Input label="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
         <Select label="Role" value={form.role_id} onChange={(e) => setForm({ ...form, role_id: e.target.value })} required>
           <option value="">Select role</option>
-          {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+          {roles.map((r) => (
+            <option key={r.id} value={r.id}>{r.name}</option>
+          ))}
         </Select>
         <Select label="Status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
           {USER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}

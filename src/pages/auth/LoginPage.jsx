@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import { authApi } from '../../api/authApi';
 import { Input } from '../../components/ui/Input';
@@ -69,8 +69,10 @@ function GoogleIcon() {
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(location.state?.message || '');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -175,6 +177,7 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {success && <Alert type="success" message={success} onClose={() => setSuccess('')} />}
           {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
@@ -268,15 +271,6 @@ export default function LoginPage() {
             Continue with Google
           </a>
 
-          <p className="mt-6 text-center text-sm text-gray-600">
-            New applicant?{' '}
-            <Link
-              to="/register"
-              className="font-semibold text-[#0B2D5C] transition hover:text-[#D8901F] focus:outline-none focus-visible:underline"
-            >
-              Create an account
-            </Link>
-          </p>
         </div>
 
         <p className="mt-8 text-center text-xs text-gray-400">

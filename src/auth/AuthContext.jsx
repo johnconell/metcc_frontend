@@ -32,6 +32,11 @@ export function AuthProvider({ children }) {
 
   const login = async (credentials) => {
     const { data } = await authApi.login(credentials);
+
+    if (!ADMIN_ROLES.includes(data.data.user.role?.slug)) {
+      throw new Error('Admin access only. Proctor accounts use the mobile examination application.');
+    }
+
     tokenStorage.set(data.data.token);
     setUser(data.data.user);
     return data;
@@ -39,6 +44,11 @@ export function AuthProvider({ children }) {
 
   const register = async (payload) => {
     const { data } = await authApi.register(payload);
+
+    if (!ADMIN_ROLES.includes(data.data.user.role?.slug)) {
+      throw new Error('Admin access only. Proctor accounts use the mobile examination application.');
+    }
+
     tokenStorage.set(data.data.token);
     setUser(data.data.user);
     return data;

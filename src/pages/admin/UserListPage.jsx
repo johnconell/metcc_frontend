@@ -32,9 +32,16 @@ export default function UserListPage() {
     load();
   }, [filters]);
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this user?')) return;
-    await userApi.delete(id);
+  const handleDisable = async (user) => {
+    const action = user.status === 'active' ? 'disable' : 'enable';
+    if (!confirm(`Are you sure you want to ${action} this account?`)) return;
+
+    if (user.status === 'active') {
+      await userApi.disable(user.id);
+    } else {
+      await userApi.enable(user.id);
+    }
+
     load();
   };
 
@@ -79,7 +86,9 @@ export default function UserListPage() {
                 <td className="p-3 space-x-2">
                   <Link to={`/admin/users/${u.id}`} className="text-indigo-600 hover:underline">View</Link>
                   <Link to={`/admin/users/${u.id}/edit`} className="text-indigo-600 hover:underline">Edit</Link>
-                  <button onClick={() => handleDelete(u.id)} className="text-red-600 hover:underline">Delete</button>
+                  <button onClick={() => handleDisable(u)} className="text-red-600 hover:underline">
+                    {u.status === 'active' ? 'Disable' : 'Enable'}
+                  </button>
                 </td>
               </tr>
             ))}

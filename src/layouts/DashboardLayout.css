@@ -702,6 +702,33 @@
   color: var(--text-muted);
 }
 
+.dashboard-header__logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--maroon);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  white-space: nowrap;
+}
+
+.dashboard-header__logout:hover:not(:disabled) {
+  background: rgba(123, 16, 32, 0.06);
+  border-color: rgba(123, 16, 32, 0.25);
+}
+
+.dashboard-header__logout:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .dashboard-content {
   flex: 1;
   overflow-y: auto;
@@ -806,5 +833,15 @@
 
   .dashboard-header__profile span:not(.dashboard-header__profile-avatar) {
     display: none;
+  }
+
+  .dashboard-header__logout span {
+    display: none;
+  }
+
+  .dashboard-header__logout {
+    width: 42px;
+    padding: 0;
+    justify-content: center;
   }
 }

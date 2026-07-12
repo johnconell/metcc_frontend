@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   ChevronDown,
@@ -7,6 +7,7 @@ import {
   Search,
   Bell,
   User,
+  LogOut,
   FolderKanban,
   ClipboardCheck,
   LineChart,
@@ -68,13 +69,15 @@ function submenuClass(isActive) {
 }
 
 export function DashboardLayout() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [managementOpen, setManagementOpen] = useState(true);
   const [resultsOpen, setResultsOpen] = useState(true);
   const [systemOpen, setSystemOpen] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const displayName = user?.name || 'Kent Russel Casino';
   const displayRole = user?.role?.name || 'Administrator';
@@ -112,6 +115,21 @@ export function DashboardLayout() {
 
     setSidebarOpen(false);
     setSidebarCollapsed((collapsed) => !collapsed);
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await logout();
+      navigate('/login', {
+        replace: true,
+        state: { message: 'You have been logged out successfully.' },
+      });
+    } catch {
+      navigate('/login', { replace: true });
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -341,6 +359,16 @@ export function DashboardLayout() {
               <span>Profile Settings</span>
               <ChevronDown className="dashboard-header__profile-chevron" />
             </Link>
+
+            <button
+              type="button"
+              className="dashboard-header__logout"
+              onClick={handleLogout}
+              disabled={loggingOut}
+            >
+              <LogOut size={16} aria-hidden="true" />
+              <span>{loggingOut ? 'Logging out...' : 'Logout'}</span>
+            </button>
           </div>
         </header>
 

@@ -43,7 +43,9 @@ export default function UserEditPage() {
         <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <Select label="Role" value={form.role_id} onChange={(e) => setForm({ ...form, role_id: e.target.value })}>
-          {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+          {roles.map((r) => (
+            <option key={r.id} value={r.id}>{r.name}</option>
+          ))}
         </Select>
         <Select label="Status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
           {USER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}

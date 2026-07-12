@@ -4,7 +4,6 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRoute } from './RoleRoute';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import LoginPage from '../pages/auth/LoginPage';
-import RegisterPage from '../pages/auth/RegisterPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
 import GoogleCallbackPage from '../pages/auth/GoogleCallbackPage';
@@ -42,7 +41,6 @@ export default function AppRoutes() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
@@ -56,7 +54,9 @@ export default function AppRoutes() {
               <Route path="/management/question-bank" element={<QuestionBankPage />} />
               <Route path="/management/students" element={<StudentsPage />} />
               <Route path="/management/proctors" element={<ProctorsPage />} />
-              <Route path="/management/users" element={<UsersPage />} />
+              <Route element={<RoleRoute roles={[ROLES.ADMIN]} />}>
+                <Route path="/management/users" element={<UsersPage />} />
+              </Route>
               <Route path="/management/lobby" element={<LobbyPage />} />
               <Route path="/results" element={<Navigate to="/results/exam-results" replace />} />
               <Route path="/results/exam-results" element={<ExamResultsPage />} />
@@ -74,7 +74,7 @@ export default function AppRoutes() {
               <Route path="/test-items/:id" element={<TestItemDetailPage />} />
               <Route path="/test-items/:id/edit" element={<TestItemEditPage />} />
 
-              <Route element={<RoleRoute roles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]} />}>
+              <Route element={<RoleRoute roles={[ROLES.ADMIN]} />}>
                 <Route path="/admin/users" element={<UserListPage />} />
                 <Route path="/admin/users/create" element={<UserCreatePage />} />
                 <Route path="/admin/users/:id" element={<UserDetailPage />} />

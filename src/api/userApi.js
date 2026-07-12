@@ -5,5 +5,7 @@ export const userApi = {
   get: (id) => api.get(`/users/${id}`),
   create: (data) => api.post('/users', data),
   update: (id, data) => api.put(`/users/${id}`, data),
-  delete: (id) => api.delete(`/users/${id}`),
+  updateStatus: (id, status) => api.patch(`/users/${id}/status`, { status }),
+  disable: (id) => api.delete(`/users/${id}`),
+  enable: (id) => api.patch(`/users/${id}/status`, { status: 'active' }),
 };
