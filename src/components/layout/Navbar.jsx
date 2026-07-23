@@ -1,15 +1,18 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/Button';
 
 export function Navbar() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+    try {
+      await logout();
+    } catch {
+      // ignore
+    }
+    window.location.replace('/');
   };
 
   return (

@@ -1,0 +1,370 @@
+/* Loaded last from main.jsx so dark text overrides always win. */
+
+html[data-theme='dark'] {
+  --color-ink: #ffffff;
+  --color-body: #f3efe9;
+  --color-body-strong: #ffffff;
+  --color-muted: #e4ddd4;
+  --color-muted-soft: #cfc7bd;
+  --color-link: #ff8a9a;
+  --color-hairline: #3a3532;
+  --color-hairline-soft: #2f2b28;
+  --color-hairline-strong: #524c47;
+  --color-canvas: #121110;
+  --color-canvas-soft: #1a1715;
+  --color-surface-card: #1c1a19;
+  --color-surface-strong: #2a2624;
+  --color-surface: #1c1a19;
+  --color-semantic-success: #5ddea8;
+  --color-semantic-error: #ff8aa5;
+}
+
+html[data-theme='dark'] body,
+html[data-theme='dark'] #root,
+html[data-theme='dark'] .dashboard-app,
+html[data-theme='dark'] .dashboard-main,
+html[data-theme='dark'] .dashboard-content,
+html[data-theme='dark'] .mp-page,
+html[data-theme='dark'] .profile-page {
+  color: #ffffff;
+  background-color: var(--color-canvas);
+}
+
+html[data-theme='dark'] .dashboard-app {
+  --cream: #1c1a19;
+  --bg: #121110;
+  --border: #3a3532;
+  --text: #ffffff;
+  --text-muted: #e4ddd4;
+  --maroon: #ff8a9a;
+  --maroon-dark: #ffb0bc;
+  --gold: #f0c674;
+  color: #ffffff;
+  background: #121110;
+}
+
+/* Sidebar + header */
+html[data-theme='dark'] .dashboard-sidebar,
+html[data-theme='dark'] .dashboard-header,
+html[data-theme='dark'] .sidebar-profile,
+html[data-theme='dark'] .dashboard-header__logout,
+html[data-theme='dark'] .dashboard-header__profile,
+html[data-theme='dark'] .dashboard-header__notify,
+html[data-theme='dark'] .dashboard-header__search,
+html[data-theme='dark'] .dashboard-header__search-input {
+  background: #1c1a19 !important;
+  color: #ffffff !important;
+  border-color: #3a3532 !important;
+}
+
+html[data-theme='dark'] .sidebar-brand__name,
+html[data-theme='dark'] .sidebar-brand:hover .sidebar-brand__name,
+html[data-theme='dark'] .sidebar-section__header,
+html[data-theme='dark'] .sidebar-nav__item,
+html[data-theme='dark'] .sidebar-nav__label,
+html[data-theme='dark'] .sidebar-parent,
+html[data-theme='dark'] .sidebar-parent__label,
+html[data-theme='dark'] .sidebar-parent--active,
+html[data-theme='dark'] .sidebar-submenu__item,
+html[data-theme='dark'] .sidebar-submenu__label,
+html[data-theme='dark'] .sidebar-profile__name,
+html[data-theme='dark'] .sidebar-profile__role,
+html[data-theme='dark'] .dashboard-header__profile,
+html[data-theme='dark'] .dashboard-header__profile span,
+html[data-theme='dark'] .dashboard-header__logout,
+html[data-theme='dark'] .dashboard-header__logout span,
+html[data-theme='dark'] .dashboard-header__menu {
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .sidebar-nav__item:hover,
+html[data-theme='dark'] .sidebar-parent:hover,
+html[data-theme='dark'] .sidebar-submenu__item:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .sidebar-parent__chevron,
+html[data-theme='dark'] .sidebar-profile__chevron,
+html[data-theme='dark'] .dashboard-header__search-icon {
+  color: #e4ddd4 !important;
+}
+
+/* Dashboard page hardcoded colors */
+html[data-theme='dark'] .dashboard-page-header h1,
+html[data-theme='dark'] .dashboard-page-header p,
+html[data-theme='dark'] .dashboard-breadcrumbs,
+html[data-theme='dark'] .dashboard-breadcrumbs *,
+html[data-theme='dark'] .dashboard-stat-card__value,
+html[data-theme='dark'] .dashboard-stat-card__label,
+html[data-theme='dark'] .dashboard-stat-card__trend,
+html[data-theme='dark'] .dashboard-card__title,
+html[data-theme='dark'] .dashboard-card__subtitle,
+html[data-theme='dark'] .dashboard-card__btn,
+html[data-theme='dark'] .dashboard-table,
+html[data-theme='dark'] .dashboard-table th,
+html[data-theme='dark'] .dashboard-table td,
+html[data-theme='dark'] .dashboard-table a,
+html[data-theme='dark'] .dashboard-activity__title,
+html[data-theme='dark'] .dashboard-activity__meta,
+html[data-theme='dark'] .dashboard-quick-action__title,
+html[data-theme='dark'] .dashboard-quick-action__desc,
+html[data-theme='dark'] .dashboard-pagination,
+html[data-theme='dark'] .dashboard-pagination__btn,
+html[data-theme='dark'] .dashboard-empty,
+html[data-theme='dark'] .dashboard-empty * {
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .dashboard-page-header p,
+html[data-theme='dark'] .dashboard-stat-card__label,
+html[data-theme='dark'] .dashboard-card__subtitle,
+html[data-theme='dark'] .dashboard-activity__meta,
+html[data-theme='dark'] .dashboard-quick-action__desc,
+html[data-theme='dark'] .dashboard-table th,
+html[data-theme='dark'] .dashboard-breadcrumbs {
+  color: #e4ddd4 !important;
+}
+
+html[data-theme='dark'] .dashboard-stat-card,
+html[data-theme='dark'] .dashboard-card,
+html[data-theme='dark'] .dashboard-quick-action,
+html[data-theme='dark'] .dashboard-pagination__btn,
+html[data-theme='dark'] .dashboard-card__btn {
+  background: #1c1a19 !important;
+  border-color: #3a3532 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .dashboard-table th {
+  background: #151312 !important;
+}
+
+html[data-theme='dark'] .dashboard-table td a,
+html[data-theme='dark'] .dashboard-card a {
+  color: #ffd27a !important;
+}
+
+/* Management / results / tables — names and labels */
+html[data-theme='dark'] .mp-header__title,
+html[data-theme='dark'] .mp-header__eyebrow,
+html[data-theme='dark'] .mp-header__lede,
+html[data-theme='dark'] .mp-panel__title,
+html[data-theme='dark'] .mp-panel__hint,
+html[data-theme='dark'] .mp-stats__value,
+html[data-theme='dark'] .mp-stats__label,
+html[data-theme='dark'] .mp-field__label,
+html[data-theme='dark'] .mp-result-name,
+html[data-theme='dark'] .mp-table,
+html[data-theme='dark'] .mp-table th,
+html[data-theme='dark'] .mp-table td,
+html[data-theme='dark'] .mp-table__sub,
+html[data-theme='dark'] .mp-batch-link,
+html[data-theme='dark'] .mp-batch-link strong,
+html[data-theme='dark'] .mp-batch-link span,
+html[data-theme='dark'] .mp-score,
+html[data-theme='dark'] .mp-note,
+html[data-theme='dark'] .mp-dl,
+html[data-theme='dark'] .mp-dl dt,
+html[data-theme='dark'] .mp-dl dd,
+html[data-theme='dark'] .mp-simple-list,
+html[data-theme='dark'] .mp-simple-list strong,
+html[data-theme='dark'] .mp-simple-list span,
+html[data-theme='dark'] .mp-loading,
+html[data-theme='dark'] .mp-result-crumb,
+html[data-theme='dark'] .mp-result-crumb__link,
+html[data-theme='dark'] .mp-result-crumb__current,
+html[data-theme='dark'] .mp-date-card,
+html[data-theme='dark'] .mp-date-card__label,
+html[data-theme='dark'] .mp-date-card__meta,
+html[data-theme='dark'] .mp-date-card__cta,
+html[data-theme='dark'] .mp-batch-pill,
+html[data-theme='dark'] .mp-view-toggle__btn,
+html[data-theme='dark'] .mp-moved-away__title,
+html[data-theme='dark'] .mgmt-page,
+html[data-theme='dark'] .mgmt-page__title,
+html[data-theme='dark'] .mgmt-page__subtitle,
+html[data-theme='dark'] .mgmt-table,
+html[data-theme='dark'] .mgmt-table th,
+html[data-theme='dark'] .mgmt-table td,
+html[data-theme='dark'] .mgmt-empty__title,
+html[data-theme='dark'] .mgmt-empty__description,
+html[data-theme='dark'] .mgmt-search__input,
+html[data-theme='dark'] .mgmt-btn,
+html[data-theme='dark'] .mgmt-badge,
+html[data-theme='dark'] .mgmt-pagination,
+html[data-theme='dark'] .mgmt-pagination button {
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .mp-header__lede,
+html[data-theme='dark'] .mp-panel__hint,
+html[data-theme='dark'] .mp-stats__label,
+html[data-theme='dark'] .mp-table__sub,
+html[data-theme='dark'] .mp-table th,
+html[data-theme='dark'] .mp-batch-link span,
+html[data-theme='dark'] .mp-simple-list span,
+html[data-theme='dark'] .mp-date-card__meta,
+html[data-theme='dark'] .mgmt-page__subtitle,
+html[data-theme='dark'] .mgmt-empty__description,
+html[data-theme='dark'] .mgmt-table th {
+  color: #e4ddd4 !important;
+}
+
+html[data-theme='dark'] .mp-batch-link strong,
+html[data-theme='dark'] .mp-date-card__cta {
+  color: #ffd27a !important;
+}
+
+html[data-theme='dark'] .mp-panel,
+html[data-theme='dark'] .mp-stats--cards .mp-stats__item,
+html[data-theme='dark'] .mp-date-card,
+html[data-theme='dark'] .mp-view-toggle,
+html[data-theme='dark'] .mgmt-card {
+  background: #1c1a19 !important;
+  border-color: #3a3532 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .mp-field__input,
+html[data-theme='dark'] .mp-field__textarea,
+html[data-theme='dark'] select.mp-field__input,
+html[data-theme='dark'] input.mp-field__input,
+html[data-theme='dark'] textarea.mp-field__input,
+html[data-theme='dark'] .profile-field__input,
+html[data-theme='dark'] .mgmt-search__input,
+html[data-theme='dark'] .mgmt-filter__select {
+  background: #151312 !important;
+  border-color: #3a3532 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff;
+}
+
+html[data-theme='dark'] .mp-field__input option,
+html[data-theme='dark'] select.mp-field__input option {
+  background: #1c1a19;
+  color: #ffffff;
+}
+
+html[data-theme='dark'] .mp-view-toggle__btn.is-active,
+html[data-theme='dark'] .mp-batch-pill.is-active,
+html[data-theme='dark'] .profile-choice--active {
+  background: #2a2624 !important;
+  color: #ffffff !important;
+  border-color: #524c47 !important;
+}
+
+html[data-theme='dark'] .mp-table th,
+html[data-theme='dark'] .mgmt-table th {
+  background: #151312 !important;
+}
+
+html[data-theme='dark'] .mgmt-badge--default {
+  background: #2a2624 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .mgmt-badge--success {
+  background: rgba(93, 222, 168, 0.14) !important;
+  color: #5ddea8 !important;
+  border-color: rgba(93, 222, 168, 0.35) !important;
+}
+
+html[data-theme='dark'] .mgmt-badge--error {
+  background: rgba(255, 138, 165, 0.14) !important;
+  color: #ff8aa5 !important;
+  border-color: rgba(255, 138, 165, 0.35) !important;
+}
+
+html[data-theme='dark'] .mgmt-badge--muted {
+  background: rgba(228, 221, 212, 0.1) !important;
+  color: #e4ddd4 !important;
+  border-color: #3a3532 !important;
+}
+
+/* Profile */
+html[data-theme='dark'] .profile-page__header h1,
+html[data-theme='dark'] .profile-page__header p,
+html[data-theme='dark'] .profile-section__title,
+html[data-theme='dark'] .profile-section__hint,
+html[data-theme='dark'] .profile-field__label,
+html[data-theme='dark'] .profile-choice,
+html[data-theme='dark'] .profile-note,
+html[data-theme='dark'] .profile-section {
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .profile-page__header p,
+html[data-theme='dark'] .profile-section__hint,
+html[data-theme='dark'] .profile-note {
+  color: #e4ddd4 !important;
+}
+
+html[data-theme='dark'] .profile-section,
+html[data-theme='dark'] .profile-choice {
+  background: #1c1a19 !important;
+  border-color: #3a3532 !important;
+}
+
+html[data-theme='dark'] .mp-bank-card,
+html[data-theme='dark'] .mp-cat-card,
+html[data-theme='dark'] .mp-bank-card__title,
+html[data-theme='dark'] .mp-bank-card__desc,
+html[data-theme='dark'] .mp-cat-card__desc,
+html[data-theme='dark'] .mp-cat-card__subject {
+  color: #ffffff !important;
+  background: #1c1a19 !important;
+  border-color: #3a3532 !important;
+}
+
+html[data-theme='dark'] .mp-bank-card__desc,
+html[data-theme='dark'] .mp-cat-card__desc,
+html[data-theme='dark'] .mp-bank-card__meta,
+html[data-theme='dark'] .mp-cat-card__meta,
+html[data-theme='dark'] .mp-cat-card__code {
+  color: #e4ddd4 !important;
+}
+
+html[data-theme='dark'] .sidebar-brand__name,
+html[data-theme='dark'] .sidebar-brand:hover .sidebar-brand__name,
+html[data-theme='dark'] .sidebar-nav__item:hover,
+html[data-theme='dark'] .sidebar-parent:hover,
+html[data-theme='dark'] .sidebar-parent--active,
+html[data-theme='dark'] .sidebar-submenu__item:hover,
+html[data-theme='dark'] .sidebar-submenu__item--active,
+html[data-theme='dark'] .mp-batch-link strong,
+html[data-theme='dark'] .mp-cat-card__top,
+html[data-theme='dark'] .mp-bank-card__icon {
+  color: #ff8a9a !important;
+}
+
+html[data-theme='dark'] .sidebar-nav__item--active,
+html[data-theme='dark'] .sidebar-nav__item--active:hover {
+  background: linear-gradient(90deg, #ff6b81 0%, #ff8a9a 100%) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .dashboard-header__logout:hover,
+html[data-theme='dark'] .mgmt-btn--primary {
+  background: #ff8a9a !important;
+  border-color: #ff8a9a !important;
+  color: #1c1a19 !important;
+}
+
+html[data-theme='dark'] .mp-stats__item--success .mp-stats__icon {
+  color: #5ddea8 !important;
+}
+
+html[data-theme='dark'] .mp-stats__item--danger .mp-stats__icon {
+  color: #ff8aa5 !important;
+}
+
+html[data-theme='dark'] .mp-stats__item--warn .mp-stats__icon {
+  color: #ffb84d !important;
+}
+
+html[data-theme='dark'] .mp-stats__item--muted .mp-stats__icon,
+html[data-theme='dark'] .mp-stats__item--neutral .mp-stats__icon,
+html[data-theme='dark'] .mp-stats__item--accent .mp-stats__icon {
+  color: #ffd27a !important;
+}

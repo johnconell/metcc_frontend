@@ -6,20 +6,19 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
-import { USER_STATUSES } from '../../utils/constants';
 
 export default function UserEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [roles, setRoles] = useState([]);
-  const [form, setForm] = useState({ name: '', email: '', role_id: '', status: 'active', phone: '', address: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', role_id: '', password: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
     roleApi.list().then(({ data }) => setRoles(data.data));
     userApi.get(id).then(({ data }) => {
       const u = data.data;
-      setForm({ name: u.name, email: u.email, role_id: u.role?.id || '', status: u.status, phone: u.phone || '', address: u.address || '', password: '' });
+      setForm({ name: u.name, email: u.email, role_id: u.role?.id || '', password: '' });
     });
   }, [id]);
 
@@ -47,12 +46,8 @@ export default function UserEditPage() {
             <option key={r.id} value={r.id}>{r.name}</option>
           ))}
         </Select>
-        <Select label="Status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-          {USER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-        </Select>
-        <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-        <Input label="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
         <Input label="New Password (optional)" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        <p className="text-sm text-gray-500">Account status is managed from the user list (Enable / Disable).</p>
         <div className="flex gap-2">
           <Button type="submit">Save</Button>
           <Link to="/admin/users"><Button variant="outline" type="button">Cancel</Button></Link>

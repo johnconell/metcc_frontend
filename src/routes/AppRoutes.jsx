@@ -1,15 +1,20 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../auth/AuthContext';
+import { PreferencesProvider } from '../preferences/PreferencesContext';
 import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRoute } from './RoleRoute';
 import { DashboardLayout } from '../layouts/DashboardLayout';
+import LandingPage from '../pages/public/LandingPage';
 import LoginPage from '../pages/auth/LoginPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
 import GoogleCallbackPage from '../pages/auth/GoogleCallbackPage';
 import DashboardPage from '../pages/dashboard/DashboardPage';
 import SchedulesPage from '../pages/management/SchedulesPage';
+import ScheduleDetailPage from '../pages/management/ScheduleDetailPage';
 import QuestionBankPage from '../pages/management/QuestionBankPage';
+import QuestionBankSubjectPage from '../pages/management/QuestionBankSubjectPage';
+import QuestionBankDetailPage from '../pages/management/QuestionBankDetailPage';
 import StudentsPage from '../pages/management/StudentsPage';
 import ProctorsPage from '../pages/management/ProctorsPage';
 import UsersPage from '../pages/management/UsersPage';
@@ -38,55 +43,62 @@ import { ROLES } from '../utils/constants';
 export default function AppRoutes() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
-          <Route path="/403" element={<NotAuthorizedPage />} />
+      <PreferencesProvider>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
+            <Route path="/403" element={<NotAuthorizedPage />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route element={<DashboardLayout />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/management" element={<Navigate to="/management/schedules" replace />} />
-              <Route path="/management/schedules" element={<SchedulesPage />} />
-              <Route path="/management/question-bank" element={<QuestionBankPage />} />
-              <Route path="/management/students" element={<StudentsPage />} />
-              <Route path="/management/proctors" element={<ProctorsPage />} />
-              <Route element={<RoleRoute roles={[ROLES.ADMIN]} />}>
-                <Route path="/management/users" element={<UsersPage />} />
-              </Route>
-              <Route path="/management/lobby" element={<LobbyPage />} />
-              <Route path="/results" element={<Navigate to="/results/exam-results" replace />} />
-              <Route path="/results/exam-results" element={<ExamResultsPage />} />
-              <Route path="/results/reports-analytics" element={<ReportsAnalyticsPage />} />
-              <Route path="/results/email-notification" element={<EmailNotificationPage />} />
-              <Route path="/system" element={<Navigate to="/system/settings" replace />} />
-              <Route path="/system/settings" element={<SettingsPage />} />
-              <Route path="/system/logs" element={<LogsPage />} />
-              <Route path="/system/backup" element={<BackupPage />} />
-              <Route path="/system/import" element={<ImportPage />} />
-              <Route path="/profile" element={<ProfileSettingsPage />} />
-              <Route path="/profile/change-password" element={<ChangePasswordPage />} />
-              <Route path="/test-items" element={<TestItemListPage />} />
-              <Route path="/test-items/create" element={<TestItemCreatePage />} />
-              <Route path="/test-items/:id" element={<TestItemDetailPage />} />
-              <Route path="/test-items/:id/edit" element={<TestItemEditPage />} />
+            <Route element={<ProtectedRoute />}>
+              <Route element={<DashboardLayout />}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/management" element={<Navigate to="/management/schedules" replace />} />
+                <Route path="/management/schedules" element={<SchedulesPage />} />
+                <Route path="/management/schedules/:id" element={<ScheduleDetailPage />} />
+                <Route path="/management/question-bank" element={<QuestionBankPage />} />
+                <Route path="/management/question-bank/subjects/:subjectId" element={<QuestionBankSubjectPage />} />
+                <Route path="/management/question-bank/subjects/:subjectId/banks/:bankId" element={<QuestionBankDetailPage />} />
+                <Route path="/management/subjects" element={<Navigate to="/management/question-bank" replace />} />
+                <Route path="/management/subjects/:subjectId" element={<Navigate to="/management/question-bank" replace />} />
+                <Route path="/management/students" element={<StudentsPage />} />
+                <Route path="/management/proctors" element={<ProctorsPage />} />
+                <Route element={<RoleRoute roles={[ROLES.ADMIN]} />}>
+                  <Route path="/management/users" element={<UsersPage />} />
+                </Route>
+                <Route path="/management/lobby" element={<LobbyPage />} />
+                <Route path="/results" element={<Navigate to="/results/exam-results" replace />} />
+                <Route path="/results/exam-results" element={<ExamResultsPage />} />
+                <Route path="/results/reports-analytics" element={<ReportsAnalyticsPage />} />
+                <Route path="/results/email-notification" element={<EmailNotificationPage />} />
+                <Route path="/system" element={<Navigate to="/system/settings" replace />} />
+                <Route path="/system/settings" element={<SettingsPage />} />
+                <Route path="/system/logs" element={<LogsPage />} />
+                <Route path="/system/backup" element={<BackupPage />} />
+                <Route path="/system/import" element={<ImportPage />} />
+                <Route path="/profile" element={<ProfileSettingsPage />} />
+                <Route path="/profile/change-password" element={<ChangePasswordPage />} />
+                <Route path="/test-items" element={<TestItemListPage />} />
+                <Route path="/test-items/create" element={<TestItemCreatePage />} />
+                <Route path="/test-items/:id" element={<TestItemDetailPage />} />
+                <Route path="/test-items/:id/edit" element={<TestItemEditPage />} />
 
-              <Route element={<RoleRoute roles={[ROLES.ADMIN]} />}>
-                <Route path="/admin/users" element={<UserListPage />} />
-                <Route path="/admin/users/create" element={<UserCreatePage />} />
-                <Route path="/admin/users/:id" element={<UserDetailPage />} />
-                <Route path="/admin/users/:id/edit" element={<UserEditPage />} />
+                <Route element={<RoleRoute roles={[ROLES.ADMIN]} />}>
+                  <Route path="/admin/users" element={<UserListPage />} />
+                  <Route path="/admin/users/create" element={<UserCreatePage />} />
+                  <Route path="/admin/users/:id" element={<UserDetailPage />} />
+                  <Route path="/admin/users/:id/edit" element={<UserEditPage />} />
+                </Route>
               </Route>
             </Route>
-          </Route>
 
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </AuthProvider>
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </AuthProvider>
+      </PreferencesProvider>
     </BrowserRouter>
   );
 }

@@ -1,216 +1,624 @@
-import { useState } from 'react';
-import { Download, Eye, FileSpreadsheet, FileText, Printer, ScrollText } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  ArrowLeft,
+  CalendarDays,
+  CheckCircle2,
+  CircleDashed,
+  Eye,
+  Loader2,
+  ScrollText,
+  Search,
+  UserX,
+  Users,
+  XCircle,
+  BarChart3,
+} from 'lucide-react';
+import { examResultApi } from '../../api/examResultApi';
+import { usePreferences } from '../../preferences/PreferencesContext';
 import { ManagementToolbar, ManagementButton } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
 import { StatusBadge } from '../../components/management/StatusBadge';
-import { FilterDropdown } from '../../components/management/FilterDropdown';
 import { Pagination } from '../../components/management/Pagination';
 import { useTableState, statusVariant } from '../management/useTableState';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
 
-const EXAM_RESULTS = [
-  { id: 1, studentName: 'Juan Dela Cruz', studentId: '2025-001', exam: 'College Admission Test', examDate: 'May 28, 2025', score: 87, maxScore: 100, status: 'Pass', course: 'BSIT' },
-  { id: 2, studentName: 'Maria Clara Reyes', studentId: '2025-002', exam: 'Scholarship Examination', examDate: 'May 29, 2025', score: 72, maxScore: 100, status: 'Pass', course: 'BSED' },
-  { id: 3, studentName: 'Jose Rizal Santos', studentId: '2025-003', exam: 'Course Placement Test', examDate: 'May 30, 2025', score: 54, maxScore: 100, status: 'Fail', course: 'BSBA' },
-  { id: 4, studentName: 'Ana Patricia Lim', studentId: '2025-004', exam: 'College Admission Test', examDate: 'May 31, 2025', score: 91, maxScore: 100, status: 'Pass', course: 'BSCrim' },
-  { id: 5, studentName: 'Mark Anthony Go', studentId: '2025-005', exam: 'NSTP Qualifying Exam', examDate: 'Jun 1, 2025', score: 68, maxScore: 100, status: 'Pass', course: 'BSN' },
-  { id: 6, studentName: 'Sofia Mendoza', studentId: '2025-006', exam: 'College Admission Test', examDate: 'May 28, 2025', score: 45, maxScore: 100, status: 'Fail', course: 'BSHM' },
-  { id: 7, studentName: 'Rafael Bautista', studentId: '2025-007', exam: 'Scholarship Examination', examDate: 'May 29, 2025', score: 78, maxScore: 100, status: 'Pass', course: 'BSIT' },
-  { id: 8, studentName: 'Camille Torres', studentId: '2025-008', exam: 'Course Placement Test', examDate: 'May 30, 2025', score: 83, maxScore: 100, status: 'Pass', course: 'BSED' },
-];
-
-const EXAMS = [...new Set(EXAM_RESULTS.map((r) => r.exam))];
-const DATES = [...new Set(EXAM_RESULTS.map((r) => r.examDate))];
-
-function resultStatusVariant(status) {
-  const value = String(status).toLowerCase();
-  if (value === 'pass') return 'success';
-  if (value === 'fail') return 'error';
-  return statusVariant(status);
+function outcomeVariant(outcome) {
+  const value = String(outcome || '').toLowerCase();
+  if (value === 'passed' || value === 'pass') return 'success';
+  if (value === 'failed' || value === 'fail' || value === 'absent') return 'error';
+  if (value === 'pending') return 'muted';
+  return statusVariant(outcome);
 }
 
-export default function ExamResultsPage() {
-  const [examFilter, setExamFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString();
+}
 
-  const table = useTableState(EXAM_RESULTS, {
-    searchKeys: ['studentName', 'studentId', 'exam', 'examDate', 'status', 'course'],
-    pageSize: 6,
-    filterFn: (row) => {
-      if (examFilter !== 'all' && row.exam !== examFilter) return false;
-      if (dateFilter !== 'all' && row.examDate !== dateFilter) return false;
-      if (statusFilter !== 'all' && row.status.toLowerCase() !== statusFilter) return false;
-      return true;
-    },
+function formatDateLabel(date) {
+  if (!date) return '—';
+  return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
+}
 
-  const passCount = EXAM_RESULTS.filter((r) => r.status === 'Pass').length;
-  const failCount = EXAM_RESULTS.filter((r) => r.status === 'Fail').length;
-  const avgScore = Math.round(
-    EXAM_RESULTS.reduce((sum, r) => sum + r.score, 0) / EXAM_RESULTS.length,
+const EMPTY_SUMMARY = {
+  total: 0,
+  passed: 0,
+  failed: 0,
+  absent: 0,
+  pending: 0,
+  average_score: 0,
+};
+
+export default function ExamResultsPage() {
+  const { t } = usePreferences();
+  const [viewMode, setViewMode] = useState('students');
+  const [rows, setRows] = useState([]);
+  const [filtersMeta, setFiltersMeta] = useState({ dates: [], batches: [] });
+  const [summary, setSummary] = useState(EMPTY_SUMMARY);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const [dateFilter, setDateFilter] = useState('all');
+  const [batchFilter, setBatchFilter] = useState('all');
+  const [outcomeFilter, setOutcomeFilter] = useState('all');
+  const [attendanceBucket, setAttendanceBucket] = useState('all'); // all | took | didnt
+  const [lookup, setLookup] = useState('');
+
+  const loadResults = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const params = {};
+      if (dateFilter !== 'all') params.date = dateFilter;
+      if (batchFilter !== 'all') params.schedule_id = batchFilter;
+      if (outcomeFilter !== 'all') params.outcome = outcomeFilter;
+      if (lookup.trim()) params.search = lookup.trim();
+
+      const { data } = await examResultApi.list(params);
+      const mapped = (data.data || []).map((item) => ({
+        id: item.id,
+        studentName: item.student_name,
+        applicantCode: item.applicant_code,
+        email: item.email,
+        batchLabel: item.batch_label,
+        batchCode: item.batch_code,
+        timeSlot: item.time_slot,
+        examDate: item.date_label,
+        examDateRaw: item.exam_date,
+        scheduleId: item.schedule_id,
+        score: item.display_score,
+        scoreValue: item.score,
+        outcome: item.outcome,
+        outcomeLabel: item.outcome_label,
+        attendance: item.attendance_status,
+        coursePreference: item.course_preference || '—',
+      }));
+
+      setRows(mapped);
+      setSummary(data.meta?.summary || EMPTY_SUMMARY);
+      setFiltersMeta(data.meta?.filters || { dates: [], batches: [] });
+    } catch (err) {
+      setError(err.response?.data?.message || t('unableLoadResults'));
+    } finally {
+      setLoading(false);
+    }
+  }, [dateFilter, batchFilter, outcomeFilter, lookup, t]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      loadResults();
+    }, lookup ? 250 : 0);
+    return () => window.clearTimeout(timer);
+  }, [loadResults, lookup]);
+
+  const batchOptions = useMemo(() => {
+    const batches = filtersMeta.batches || [];
+    return dateFilter === 'all'
+      ? batches
+      : batches.filter((batch) => batch.exam_date === dateFilter);
+  }, [filtersMeta.batches, dateFilter]);
+
+  useEffect(() => {
+    if (batchFilter === 'all') return;
+    const stillValid = batchOptions.some((batch) => String(batch.id) === String(batchFilter));
+    if (!stillValid) setBatchFilter('all');
+  }, [batchOptions, batchFilter]);
+
+  const dateCards = useMemo(() => {
+    const batches = filtersMeta.batches || [];
+    const dates = filtersMeta.dates || [];
+    return dates.map((date) => {
+      const dayBatches = batches.filter((batch) => batch.exam_date === date);
+      return {
+        date,
+        label: formatDateLabel(date),
+        batchCount: dayBatches.length,
+        batches: dayBatches,
+      };
+    });
+  }, [filtersMeta]);
+
+  const dayAttendance = useMemo(() => {
+    const took = rows.filter((row) =>
+      ['passed', 'failed'].includes(row.outcome) || row.attendance === 'present',
+    ).length;
+    const didnt = rows.filter((row) =>
+      row.outcome === 'absent'
+      || row.attendance === 'absent'
+      || (row.outcome === 'pending' && row.attendance !== 'present'),
+    ).length;
+    return { took, didnt };
+  }, [rows]);
+
+  const selectedBatch = useMemo(
+    () => batchOptions.find((batch) => String(batch.id) === String(batchFilter)) || null,
+    [batchOptions, batchFilter],
   );
 
+  const table = useTableState(rows, {
+    searchKeys: ['studentName', 'applicantCode', 'email', 'batchLabel', 'timeSlot', 'outcomeLabel'],
+    pageSize: 10,
+    filterFn: attendanceBucket === 'all'
+      ? undefined
+      : (row) => {
+          const took = ['passed', 'failed'].includes(row.outcome)
+            || row.attendance === 'present';
+          const didnt = row.outcome === 'absent' || row.attendance === 'absent'
+            || (row.outcome === 'pending' && row.attendance !== 'present');
+          return attendanceBucket === 'took' ? took : didnt;
+        },
+  });
+
+  const switchView = (mode) => {
+    setViewMode(mode);
+    table.setPage(1);
+    if (mode === 'by-date') {
+      setLookup('');
+      setDateFilter('all');
+      setBatchFilter('all');
+      setAttendanceBucket('all');
+    }
+  };
+
+  const openDate = (date) => {
+    setDateFilter(date);
+    setBatchFilter('all');
+    table.setPage(1);
+  };
+
+  const openBatch = (batchId) => {
+    setBatchFilter(String(batchId));
+    table.setPage(1);
+  };
+
+  const backToDates = () => {
+    setDateFilter('all');
+    setBatchFilter('all');
+    table.setPage(1);
+  };
+
+  const backToBatches = () => {
+    setBatchFilter('all');
+    table.setPage(1);
+  };
+
+  const outcomeLabel = (outcome) => {
+    if (outcome === 'passed') return t('outcomePass');
+    if (outcome === 'failed') return t('outcomeFail');
+    if (outcome === 'absent') return t('outcomeAbsent');
+    if (outcome === 'pending') return t('outcomePending');
+    return outcome;
+  };
+
   const columns = [
-    { key: 'studentName', label: 'Student Information', sortable: true },
-    { key: 'studentId', label: 'Student ID', sortable: true },
-    { key: 'exam', label: 'Examination', sortable: true },
-    { key: 'examDate', label: 'Date', sortable: true },
     {
-      key: 'score',
-      label: 'Examination Score',
+      key: 'studentName',
+      label: t('colExaminee'),
       sortable: true,
       render: (row) => (
-        <span>
-          {row.score}/{row.maxScore}
+        <div>
+          <div className="mp-result-name">{row.studentName}</div>
+          <div className="mp-table__sub">{row.applicantCode} · {row.email}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'batchLabel',
+      label: t('colDayBatch'),
+      sortable: true,
+      render: (row) => (
+        <Link to={`/management/schedules/${row.scheduleId}`} className="mp-batch-link">
+          <strong>{row.batchLabel}</strong>
+          <span>{row.timeSlot}</span>
+        </Link>
+      ),
+    },
+    {
+      key: 'scoreValue',
+      label: t('colScore'),
+      sortable: true,
+      render: (row) => (
+        <span className={`mp-score${row.outcome === 'absent' ? ' mp-score--muted' : ''}`}>
+          {row.score}
         </span>
       ),
     },
     {
-      key: 'status',
-      label: 'Result Status',
+      key: 'outcomeLabel',
+      label: t('colResult'),
       sortable: true,
       render: (row) => (
-        <StatusBadge variant={resultStatusVariant(row.status)}>{row.status}</StatusBadge>
+        <StatusBadge variant={outcomeVariant(row.outcome)}>{outcomeLabel(row.outcome)}</StatusBadge>
       ),
+    },
+    {
+      key: 'attendance',
+      label: t('colAttendance'),
+      sortable: true,
+      render: (row) => (
+        <StatusBadge variant={statusVariant(row.attendance)}>{row.attendance}</StatusBadge>
+      ),
+    },
+    {
+      key: 'coursePreference',
+      label: t('colCoursePref'),
+      sortable: true,
     },
     {
       key: 'actions',
       label: '',
-      render: () => (
+      render: (row) => (
         <div className="mgmt-table__actions">
-          <ManagementButton variant="tertiary" size="sm" aria-label="View result details">
-            <Eye size={14} aria-hidden="true" /> View Details
-          </ManagementButton>
-          <ManagementButton variant="tertiary" size="sm" aria-label="Print individual result">
-            <Printer size={14} aria-hidden="true" /> Print
-          </ManagementButton>
+          <Link to={`/management/schedules/${row.scheduleId}`}>
+            <ManagementButton variant="tertiary" size="sm" aria-label={`${t('openBatch')} ${row.studentName}`}>
+              <Eye size={14} aria-hidden="true" /> {t('openBatch')}
+            </ManagementButton>
+          </Link>
         </div>
       ),
     },
+  ];
+
+  const showingBrowseDates = viewMode === 'by-date' && dateFilter === 'all';
+  const showingDayStudents = viewMode === 'by-date' && dateFilter !== 'all';
+  const showingStudentList = viewMode === 'students' || showingDayStudents;
+
+  const dayHeading = selectedBatch
+    ? `${formatDateLabel(dateFilter)}, ${selectedBatch.batch_code}`
+    : formatDateLabel(dateFilter);
+
+  const stats = [
+    { key: 'total', label: t('statInView'), value: formatNumber(summary.total), icon: Users, tone: 'neutral' },
+    { key: 'passed', label: t('statPassed'), value: formatNumber(summary.passed), icon: CheckCircle2, tone: 'success' },
+    { key: 'failed', label: t('statFailed'), value: formatNumber(summary.failed), icon: XCircle, tone: 'danger' },
+    { key: 'absent', label: t('statAbsent'), value: formatNumber(summary.absent), icon: UserX, tone: 'warn' },
+    { key: 'pending', label: t('statPending'), value: formatNumber(summary.pending), icon: CircleDashed, tone: 'muted' },
+    { key: 'average', label: t('statAverageScore'), value: summary.average_score || 0, icon: BarChart3, tone: 'accent' },
   ];
 
   return (
     <div className="mp-page">
       <header className="mp-header">
         <div>
-          <p className="mp-header__eyebrow">Results &amp; Reports</p>
-          <h1 className="mp-header__title">Exam Results</h1>
-          <p className="mp-header__lede">
-            {EXAM_RESULTS.length} recorded results — {passCount} passed, {failCount} failed, average score {avgScore}%.
-          </p>
-        </div>
-        <div className="mp-header__actions">
-          <ManagementButton variant="secondary">
-            <FileText size={16} aria-hidden="true" /> Export PDF
-          </ManagementButton>
-          <ManagementButton variant="secondary">
-            <FileSpreadsheet size={16} aria-hidden="true" /> Export Excel
-          </ManagementButton>
-          <ManagementButton variant="secondary">
-            <Download size={16} aria-hidden="true" /> Export All
-          </ManagementButton>
+          <p className="mp-header__eyebrow">{t('resultsEyebrow')}</p>
+          <h1 className="mp-header__title">{t('examResultsTitle')}</h1>
+          <p className="mp-header__lede">{t('examResultsLede')}</p>
         </div>
       </header>
 
-      <div className="mp-stats" aria-label="Result summary">
-        <div className="mp-stats__item">
-          <div className="mp-stats__value">{EXAM_RESULTS.length}</div>
-          <div className="mp-stats__label">Total results</div>
-        </div>
-        <div className="mp-stats__item">
-          <div className="mp-stats__value">{passCount}</div>
-          <div className="mp-stats__label">Passed</div>
-        </div>
-        <div className="mp-stats__item">
-          <div className="mp-stats__value">{failCount}</div>
-          <div className="mp-stats__label">Failed</div>
-        </div>
-        <div className="mp-stats__item">
-          <div className="mp-stats__value">{avgScore}%</div>
-          <div className="mp-stats__label">Average score</div>
-        </div>
+      <div className="mp-stats mp-stats--cards" aria-label="Result summary">
+        {stats.map(({ key, label, value, icon: Icon, tone }) => (
+          <div key={key} className={`mp-stats__item mp-stats__item--${tone}`}>
+            <div className="mp-stats__icon" aria-hidden="true">
+              <Icon size={18} />
+            </div>
+            <div className="mp-stats__copy">
+              <div className="mp-stats__value">{value}</div>
+              <div className="mp-stats__label">{label}</div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <section className="mp-panel" aria-label="Result list">
-        <h2 className="mp-panel__title">Result List</h2>
-        <ManagementToolbar
-          searchId="result-search"
-          searchValue={table.search}
-          onSearchChange={table.setSearch}
-          searchPlaceholder="Search by name, ID, or exam"
-          filters={[
-            <FilterDropdown
-              key="exam"
-              id="result-exam-filter"
-              value={examFilter}
-              onChange={(value) => {
-                setExamFilter(value);
-                table.setPage(1);
-              }}
-              options={[
-                { value: 'all', label: 'All exams' },
-                ...EXAMS.map((exam) => ({ value: exam, label: exam })),
-              ]}
-            />,
-            <FilterDropdown
-              key="date"
-              id="result-date-filter"
-              value={dateFilter}
-              onChange={(value) => {
-                setDateFilter(value);
-                table.setPage(1);
-              }}
-              options={[
-                { value: 'all', label: 'All dates' },
-                ...DATES.map((date) => ({ value: date, label: date })),
-              ]}
-            />,
-            <FilterDropdown
-              key="status"
-              id="result-status-filter"
-              value={statusFilter}
-              onChange={(value) => {
-                setStatusFilter(value);
-                table.setPage(1);
-              }}
-              options={[
-                { value: 'all', label: 'All statuses' },
-                { value: 'pass', label: 'Pass' },
-                { value: 'fail', label: 'Fail' },
-              ]}
-            />,
-          ]}
-          selectedCount={table.selectedKeys.length}
-          bulkActions={
+      <div className="mp-view-toggle mp-view-toggle--prominent" role="tablist" aria-label="Result view">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={viewMode === 'students'}
+          className={`mp-view-toggle__btn${viewMode === 'students' ? ' is-active' : ''}`}
+          onClick={() => switchView('students')}
+        >
+          <Users size={16} aria-hidden="true" />
+          {t('viewStudents')}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={viewMode === 'by-date'}
+          className={`mp-view-toggle__btn${viewMode === 'by-date' ? ' is-active' : ''}`}
+          onClick={() => switchView('by-date')}
+        >
+          <CalendarDays size={16} aria-hidden="true" />
+          {t('viewDateBatch')}
+        </button>
+      </div>
+
+      {viewMode === 'students' && (
+        <section className="mp-panel" aria-label="Result filters">
+          <div className="mp-panel__head">
+            <div>
+              <h2 className="mp-panel__title"><Search size={16} /> {t('findTitle')}</h2>
+              <p className="mp-panel__hint">{t('findHint')}</p>
+            </div>
+          </div>
+
+          <div className="mp-result-filters">
+            <label className="mp-field">
+              <span className="mp-field__label">{t('examDay')}</span>
+              <select
+                className="mp-field__input"
+                value={dateFilter}
+                onChange={(e) => {
+                  setDateFilter(e.target.value);
+                  setBatchFilter('all');
+                  table.setPage(1);
+                }}
+              >
+                <option value="all">{t('allDays')}</option>
+                {(filtersMeta.dates || []).map((date) => (
+                  <option key={date} value={date}>{formatDateLabel(date)}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="mp-field">
+              <span className="mp-field__label">{t('batchTimeSlot')}</span>
+              <select
+                className="mp-field__input"
+                value={batchFilter}
+                onChange={(e) => {
+                  setBatchFilter(e.target.value);
+                  table.setPage(1);
+                }}
+              >
+                <option value="all">{t('allBatches')}</option>
+                {batchOptions.map((batch) => (
+                  <option key={batch.id} value={batch.id}>{batch.label}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="mp-field">
+              <span className="mp-field__label">{t('resultLabel')}</span>
+              <select
+                className="mp-field__input"
+                value={outcomeFilter}
+                onChange={(e) => {
+                  setOutcomeFilter(e.target.value);
+                  table.setPage(1);
+                }}
+              >
+                <option value="all">{t('allOutcomes')}</option>
+                <option value="passed">{t('outcomePass')}</option>
+                <option value="failed">{t('outcomeFail')}</option>
+                <option value="absent">{t('outcomeAbsent')}</option>
+                <option value="pending">{t('outcomePending')}</option>
+              </select>
+            </label>
+
+            <label className="mp-field mp-field--grow">
+              <span className="mp-field__label">{t('searchExaminee')}</span>
+              <input
+                className="mp-field__input"
+                type="search"
+                value={lookup}
+                onChange={(e) => {
+                  setLookup(e.target.value);
+                  table.setPage(1);
+                }}
+                placeholder={t('searchExamineePlaceholder')}
+              />
+            </label>
+          </div>
+        </section>
+      )}
+
+      {viewMode === 'by-date' && (
+        <section className="mp-panel" aria-label="Browse by date and batch">
+          <div className="mp-panel__head">
+            <div>
+              <h2 className="mp-panel__title"><CalendarDays size={16} /> {t('browseTitle')}</h2>
+              <p className="mp-panel__hint">{t('browseHint')}</p>
+            </div>
+            <label className="mp-field mp-field--inline">
+              <span className="mp-field__label">{t('resultLabel')}</span>
+              <select
+                className="mp-field__input mp-field__input--sm"
+                value={outcomeFilter}
+                onChange={(e) => {
+                  setOutcomeFilter(e.target.value);
+                  table.setPage(1);
+                }}
+              >
+                <option value="all">{t('allOutcomes')}</option>
+                <option value="passed">{t('outcomePass')}</option>
+                <option value="failed">{t('outcomeFail')}</option>
+                <option value="absent">{t('outcomeAbsent')}</option>
+                <option value="pending">{t('outcomePending')}</option>
+              </select>
+            </label>
+          </div>
+
+          {dateFilter !== 'all' && (
+            <nav className="mp-result-crumb" aria-label="Date batch breadcrumb">
+              <button type="button" className="mp-result-crumb__link" onClick={backToDates}>
+                {t('allDates')}
+              </button>
+              <span aria-hidden="true">/</span>
+              <button
+                type="button"
+                className={`mp-result-crumb__link${batchFilter === 'all' ? ' is-current' : ''}`}
+                onClick={backToBatches}
+              >
+                {formatDateLabel(dateFilter)}
+              </button>
+              {selectedBatch && (
+                <>
+                  <span aria-hidden="true">/</span>
+                  <span className="mp-result-crumb__current">
+                    {selectedBatch.batch_code} · {selectedBatch.time_slot}
+                  </span>
+                </>
+              )}
+            </nav>
+          )}
+
+          {showingBrowseDates && (
+            <div className="mp-date-grid">
+              {dateCards.length === 0 ? (
+                <p className="mp-panel__hint">{t('noExamDates')}</p>
+              ) : dateCards.map((card) => (
+                <button
+                  key={card.date}
+                  type="button"
+                  className="mp-date-card"
+                  onClick={() => openDate(card.date)}
+                >
+                  <span className="mp-date-card__label">{card.label}</span>
+                  <span className="mp-date-card__meta">
+                    {card.batchCount === 1
+                      ? t('batchCountOne')
+                      : t('batchCountMany', { count: card.batchCount })}
+                  </span>
+                  <span className="mp-date-card__cta">{t('viewStudentsCta')}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {showingDayStudents && (
             <>
-              <ManagementButton variant="secondary" size="sm">
-                <Printer size={14} aria-hidden="true" /> Print Selected
-              </ManagementButton>
-              <ManagementButton variant="secondary" size="sm">
-                <Download size={14} aria-hidden="true" /> Export Selected
-              </ManagementButton>
+              <div className="mp-batch-pills" role="group" aria-label="Attendance for selected day">
+                <button
+                  type="button"
+                  className={`mp-batch-pill${attendanceBucket === 'all' ? ' is-active' : ''}`}
+                  onClick={() => { setAttendanceBucket('all'); table.setPage(1); }}
+                >
+                  All ({formatNumber(rows.length)})
+                </button>
+                <button
+                  type="button"
+                  className={`mp-batch-pill${attendanceBucket === 'took' ? ' is-active' : ''}`}
+                  onClick={() => { setAttendanceBucket('took'); table.setPage(1); }}
+                >
+                  Took the exam ({formatNumber(dayAttendance.took)})
+                </button>
+                <button
+                  type="button"
+                  className={`mp-batch-pill${attendanceBucket === 'didnt' ? ' is-active' : ''}`}
+                  onClick={() => { setAttendanceBucket('didnt'); table.setPage(1); }}
+                >
+                  Did not take ({formatNumber(dayAttendance.didnt)})
+                </button>
+              </div>
+              <div className="mp-batch-pills" role="group" aria-label="Batches for selected day">
+              <button
+                type="button"
+                className={`mp-batch-pill${batchFilter === 'all' ? ' is-active' : ''}`}
+                onClick={backToBatches}
+              >
+                {t('allBatchesThisDay')}
+              </button>
+              {batchOptions.map((batch) => (
+                <button
+                  key={batch.id}
+                  type="button"
+                  className={`mp-batch-pill${String(batchFilter) === String(batch.id) ? ' is-active' : ''}`}
+                  onClick={() => openBatch(batch.id)}
+                >
+                  {batch.batch_code} · {batch.time_slot}
+                </button>
+              ))}
+              </div>
             </>
-          }
-        />
-        <div style={{ height: 'var(--space-base)' }} aria-hidden="true" />
-        <DataTable
-          columns={columns}
-          rows={table.rows}
-          rowKey="id"
-          sortKey={table.sortKey}
-          sortDir={table.sortDir}
-          onSort={table.onSort}
-          selectable
-          selectedKeys={table.selectedKeys}
-          onSelectionChange={table.setSelectedKeys}
-          emptyTitle="No results match"
-          emptyDescription="Try a different name, exam, date, or result status."
-          emptyIcon={ScrollText}
-        />
-        <Pagination page={table.page} pageSize={table.pageSize} total={table.total} onPageChange={table.setPage} />
-      </section>
+          )}
+        </section>
+      )}
+
+      {error && <div className="mp-alert mp-alert--error" role="alert">{error}</div>}
+
+      {showingBrowseDates ? null : (
+        <section className="mp-panel" aria-label="Result list">
+          <div className="mp-panel__head">
+            <div>
+              <h2 className="mp-panel__title">
+                {viewMode === 'by-date'
+                  ? t('studentsForDay', { day: dayHeading })
+                  : t('studentsHeading')}
+              </h2>
+              <p className="mp-panel__hint">
+                {viewMode === 'by-date' ? t('studentsHintDay') : t('studentsHintAll')}
+              </p>
+            </div>
+            {viewMode === 'by-date' && (
+              <ManagementButton type="button" variant="secondary" size="sm" onClick={backToDates}>
+                <ArrowLeft size={14} aria-hidden="true" /> {t('allDates')}
+              </ManagementButton>
+            )}
+          </div>
+
+          {showingStudentList && (
+            <>
+              <ManagementToolbar
+                searchId="result-local-search"
+                searchValue={table.search}
+                onSearchChange={table.setSearch}
+                searchPlaceholder={t('filterVisibleRows')}
+              />
+
+              {loading ? (
+                <div className="mp-loading mp-loading--compact">
+                  <Loader2 size={18} className="mp-loading__icon" />
+                  {t('loadingResults')}
+                </div>
+              ) : (
+                <>
+                  <DataTable
+                    columns={columns}
+                    rows={table.rows}
+                    rowKey="id"
+                    sortKey={table.sortKey}
+                    sortDir={table.sortDir}
+                    onSort={table.onSort}
+                    emptyTitle={t('noStudentsFound')}
+                    emptyDescription={t('noStudentsHint')}
+                    emptyIcon={ScrollText}
+                  />
+                  <Pagination
+                    page={table.page}
+                    pageSize={table.pageSize}
+                    total={table.total}
+                    onPageChange={table.setPage}
+                  />
+                </>
+              )}
+            </>
+          )}
+        </section>
+      )}
+
+      {showingBrowseDates && loading && (
+        <div className="mp-loading mp-loading--compact">
+          <Loader2 size={18} className="mp-loading__icon" />
+          {t('loadingExamDays')}
+        </div>
+      )}
     </div>
   );
 }

@@ -79,13 +79,13 @@ export function useTableState(rows, { searchKeys = [], pageSize = 5, filterFn } 
 
 export function statusVariant(status) {
   const value = String(status).toLowerCase();
-  if (['active', 'scheduled', 'published', 'available', 'ongoing', 'completed'].includes(value)) {
+  if (['active', 'scheduled', 'published', 'available', 'ongoing', 'completed', 'passed', 'present', 'confirmed'].includes(value)) {
     return 'success';
   }
-  if (['inactive', 'archived', 'deactivated', 'unavailable'].includes(value)) {
+  if (['inactive', 'archived', 'deactivated', 'unavailable', 'failed', 'absent', 'cancelled'].includes(value)) {
     return 'error';
   }
-  if (['pending', 'draft'].includes(value)) {
+  if (['pending', 'draft', 'registered'].includes(value)) {
     return 'muted';
   }
   return 'default';

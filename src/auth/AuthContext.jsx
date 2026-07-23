@@ -2,29 +2,34 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 import { authApi } from '../api/authApi';
 import { tokenStorage } from './tokenStorage';
 import { ADMIN_ROLES } from '../utils/constants';
+import { usePreferences } from '../preferences/PreferencesContext';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { syncFromUser } = usePreferences();
 
   const fetchUser = useCallback(async () => {
     if (!tokenStorage.get()) {
       setUser(null);
       setLoading(false);
-      return;
+      return null;
     }
     try {
       const { data } = await authApi.me();
       setUser(data.data);
+      syncFromUser(data.data);
+      return data.data;
     } catch {
       tokenStorage.remove();
       setUser(null);
+      return null;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [syncFromUser]);
 
   useEffect(() => {
     fetchUser();
@@ -39,6 +44,7 @@ export function AuthProvider({ children }) {
 
     tokenStorage.set(data.data.token);
     setUser(data.data.user);
+    syncFromUser(data.data.user);
     return data;
   };
 
@@ -51,6 +57,7 @@ export function AuthProvider({ children }) {
 
     tokenStorage.set(data.data.token);
     setUser(data.data.user);
+    syncFromUser(data.data.user);
     return data;
   };
 
@@ -63,7 +70,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const setToken = (token) => {
+  const setToken = async (token) => {
     tokenStorage.set(token);
     return fetchUser();
   };

@@ -1,6 +1,6 @@
 :root {
-  --color-primary: #f54e00;
-  --color-primary-active: #d04200;
+  --color-primary: #7b1020;
+  --color-primary-active: #5e0b17;
   --color-ink: #26251e;
   --color-body: #5a5852;
   --color-body-strong: #26251e;
@@ -13,9 +13,11 @@
   --color-canvas-soft: #fafaf7;
   --color-surface-card: #ffffff;
   --color-surface-strong: #e6e5e0;
+  --color-link: #7b1020;
   --color-on-primary: #ffffff;
   --color-semantic-error: #cf2d56;
   --color-semantic-success: #1f8a65;
+  --color-brand-gold: #c98a18;
 
   --font-sans: 'CursorGothic', system-ui, 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;

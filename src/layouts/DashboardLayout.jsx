@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   ChevronDown,
@@ -24,29 +24,31 @@ import {
   Building2,
 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
+import { usePreferences } from '../preferences/PreferencesContext';
+import { preferenceStorage } from '../preferences/preferenceStorage';
 import tccLogo from '../assets/tcc_logo.png';
 import './DashboardLayout.css';
 
 const MANAGEMENT_SUBMENU = [
-  { label: 'Examination / Schedules', icon: CalendarDays, path: '/management/schedules' },
-  { label: 'Question Bank', icon: BookOpen, path: '/management/question-bank' },
-  { label: 'Student List', icon: Users, path: '/management/students' },
-  { label: 'Proctor', icon: Shield, path: '/management/proctors' },
-  { label: 'User Management', icon: UserCog, path: '/management/users', adminOnly: true },
-  { label: 'Lobby', icon: Building2, path: '/management/lobby' },
+  { labelKey: 'navSchedules', icon: CalendarDays, path: '/management/schedules' },
+  { labelKey: 'navQuestionBank', icon: BookOpen, path: '/management/question-bank' },
+  { labelKey: 'navStudents', icon: Users, path: '/management/students' },
+  { labelKey: 'navProctors', icon: Shield, path: '/management/proctors' },
+  { labelKey: 'navUsers', icon: UserCog, path: '/management/users', adminOnly: true },
+  { labelKey: 'navLobby', icon: Building2, path: '/management/lobby' },
 ];
 
 const RESULTS_ITEMS = [
-  { label: 'Exam Results', icon: ClipboardCheck, path: '/results/exam-results' },
-  { label: 'Reports & Analytics', icon: LineChart, path: '/results/reports-analytics' },
-  { label: 'Email Notification', icon: Mail, path: '/results/email-notification' },
+  { labelKey: 'navExamResults', icon: ClipboardCheck, path: '/results/exam-results' },
+  { labelKey: 'navReports', icon: LineChart, path: '/results/reports-analytics' },
+  { labelKey: 'navEmail', icon: Mail, path: '/results/email-notification' },
 ];
 
 const SYSTEM_ITEMS = [
-  { label: 'Settings', icon: Settings, path: '/system/settings' },
-  { label: 'Logs', icon: FileText, path: '/system/logs' },
-  { label: 'Backup', icon: HardDrive, path: '/system/backup' },
-  { label: 'Import', icon: Upload, path: '/system/import' },
+  { labelKey: 'navSettings', icon: Settings, path: '/system/settings' },
+  { labelKey: 'navLogs', icon: FileText, path: '/system/logs' },
+  { labelKey: 'navBackup', icon: HardDrive, path: '/system/backup' },
+  { labelKey: 'navImport', icon: Upload, path: '/system/import' },
 ];
 
 function getInitials(name) {
@@ -70,22 +72,26 @@ function submenuClass(isActive) {
 
 export function DashboardLayout() {
   const { user, isAdmin, logout } = useAuth();
+  const { t } = usePreferences();
   const location = useLocation();
-  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => preferenceStorage.getSidebarCollapsed());
   const [managementOpen, setManagementOpen] = useState(true);
   const [resultsOpen, setResultsOpen] = useState(true);
   const [systemOpen, setSystemOpen] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const displayName = user?.name || 'Kent Russel Casino';
+  const displayName = user?.name || 'Administrator';
   const displayRole = user?.role?.name || 'Administrator';
   const initials = getInitials(displayName);
 
   const managementActive = location.pathname.startsWith('/management');
   const resultsActive = location.pathname.startsWith('/results');
   const systemActive = location.pathname.startsWith('/system');
+
+  useEffect(() => {
+    preferenceStorage.setSidebarCollapsed(sidebarCollapsed);
+  }, [sidebarCollapsed]);
 
   useEffect(() => {
     if (managementActive) {
@@ -121,19 +127,15 @@ export function DashboardLayout() {
     setLoggingOut(true);
     try {
       await logout();
-      navigate('/login', {
-        replace: true,
-        state: { message: 'You have been logged out successfully.' },
-      });
     } catch {
-      navigate('/login', { replace: true });
-    } finally {
-      setLoggingOut(false);
+      // Session is cleared locally even if the API call fails.
     }
+    // Hard redirect avoids ProtectedRoute racing to /login after user becomes null.
+    window.location.replace('/');
   };
 
   return (
-    <div className="dashboard-app">
+    <div className={`dashboard-app${sidebarCollapsed ? ' dashboard-app--sidebar-collapsed' : ''}`}>
       <aside
         id="dashboard-sidebar"
         className={`dashboard-sidebar${sidebarOpen ? ' dashboard-sidebar--open' : ''}${sidebarCollapsed ? ' dashboard-sidebar--collapsed' : ''}`}
@@ -150,7 +152,7 @@ export function DashboardLayout() {
 
         <nav className="sidebar-nav" aria-label="Main navigation">
           <div className="sidebar-section__header sidebar-section__header--spaced">
-            <span>Main Menu</span>
+            <span>{t('mainMenu')}</span>
           </div>
 
           <NavLink
@@ -158,15 +160,15 @@ export function DashboardLayout() {
             end
             className={navItemClass}
             onClick={closeSidebar}
-            title="Dashboard"
-            data-tooltip="Dashboard"
+            title={t('dashboard')}
+            data-tooltip={t('dashboard')}
           >
             <LayoutDashboard className="sidebar-nav__icon" />
-            <span className="sidebar-nav__label">Dashboard</span>
+            <span className="sidebar-nav__label">{t('dashboard')}</span>
           </NavLink>
 
           <div className="sidebar-section__header">
-            <span>General</span>
+            <span>{t('general')}</span>
           </div>
 
           <div className="sidebar-section">
@@ -176,11 +178,11 @@ export function DashboardLayout() {
               onClick={() => setManagementOpen((open) => !open)}
               aria-expanded={managementOpen}
               aria-controls="management-submenu"
-              title="Management"
-              data-tooltip="Management"
+              title={t('management')}
+              data-tooltip={t('management')}
             >
               <FolderKanban size={18} />
-              <span className="sidebar-parent__label">Management</span>
+              <span className="sidebar-parent__label">{t('management')}</span>
               <ChevronDown
                 className={`sidebar-parent__chevron${managementOpen ? ' sidebar-parent__chevron--open' : ''}`}
               />
@@ -188,20 +190,23 @@ export function DashboardLayout() {
 
             {managementOpen && (
               <ul id="management-submenu" className="sidebar-submenu">
-                {MANAGEMENT_SUBMENU.filter((item) => !item.adminOnly || isAdmin).map((item) => (
-                  <li key={item.label}>
-                    <NavLink
-                      to={item.path}
-                      className={({ isActive }) => submenuClass(isActive)}
-                      onClick={closeSidebar}
-                      title={item.label}
-                      data-tooltip={item.label}
-                    >
-                      <item.icon className="sidebar-submenu__icon sidebar-nav__icon" />
-                      <span className="sidebar-submenu__label">{item.label}</span>
-                    </NavLink>
-                  </li>
-                ))}
+                {MANAGEMENT_SUBMENU.filter((item) => !item.adminOnly || isAdmin).map((item) => {
+                  const label = t(item.labelKey);
+                  return (
+                    <li key={item.path}>
+                      <NavLink
+                        to={item.path}
+                        className={({ isActive }) => submenuClass(isActive)}
+                        onClick={closeSidebar}
+                        title={label}
+                        data-tooltip={label}
+                      >
+                        <item.icon className="sidebar-submenu__icon sidebar-nav__icon" />
+                        <span className="sidebar-submenu__label">{label}</span>
+                      </NavLink>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
@@ -212,11 +217,11 @@ export function DashboardLayout() {
               className={`sidebar-parent${resultsActive ? ' sidebar-parent--active' : ''}`}
               onClick={() => setResultsOpen((open) => !open)}
               aria-expanded={resultsOpen}
-              title="Results & Reports"
-              data-tooltip="Results & Reports"
+              title={t('resultsReports')}
+              data-tooltip={t('resultsReports')}
             >
               <LineChart size={18} />
-              <span className="sidebar-parent__label">Results &amp; Reports</span>
+              <span className="sidebar-parent__label">{t('resultsReports')}</span>
               <ChevronDown
                 className={`sidebar-parent__chevron${resultsOpen ? ' sidebar-parent__chevron--open' : ''}`}
               />
@@ -224,9 +229,10 @@ export function DashboardLayout() {
 
             {resultsOpen && (
               <ul className="sidebar-submenu">
-                {RESULTS_ITEMS.map(({ label, icon: Icon, path }) => (
-                  <li key={label}>
-                    {path ? (
+                {RESULTS_ITEMS.map(({ labelKey, icon: Icon, path }) => {
+                  const label = t(labelKey);
+                  return (
+                    <li key={path}>
                       <NavLink
                         to={path}
                         className={({ isActive }) => submenuClass(isActive)}
@@ -237,20 +243,15 @@ export function DashboardLayout() {
                         <Icon className="sidebar-nav__icon" />
                         <span className="sidebar-submenu__label">{label}</span>
                       </NavLink>
-                    ) : (
-                      <button type="button" className="sidebar-submenu__item" title={label} data-tooltip={label}>
-                        <Icon className="sidebar-nav__icon" />
-                        <span className="sidebar-submenu__label">{label}</span>
-                      </button>
-                    )}
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
 
           <div className="sidebar-section__header">
-            <span>Account</span>
+            <span>{t('account')}</span>
           </div>
 
           <div className="sidebar-section">
@@ -259,19 +260,20 @@ export function DashboardLayout() {
               className={`sidebar-parent${systemActive ? ' sidebar-parent--active' : ''}`}
               onClick={() => setSystemOpen((open) => !open)}
               aria-expanded={systemOpen}
-              title="System"
-              data-tooltip="System"
+              title={t('system')}
+              data-tooltip={t('system')}
             >
               <Settings size={18} />
-              <span className="sidebar-parent__label">System</span>
+              <span className="sidebar-parent__label">{t('system')}</span>
               <ChevronDown className={`sidebar-parent__chevron${systemOpen ? ' sidebar-parent__chevron--open' : ''}`} />
             </button>
 
             {systemOpen && (
               <ul className="sidebar-submenu">
-                {SYSTEM_ITEMS.map(({ label, icon: Icon, path }) => (
-                  <li key={label}>
-                    {path ? (
+                {SYSTEM_ITEMS.map(({ labelKey, icon: Icon, path }) => {
+                  const label = t(labelKey);
+                  return (
+                    <li key={path}>
                       <NavLink
                         to={path}
                         className={({ isActive }) => submenuClass(isActive)}
@@ -282,14 +284,9 @@ export function DashboardLayout() {
                         <Icon className="sidebar-nav__icon" />
                         <span className="sidebar-submenu__label">{label}</span>
                       </NavLink>
-                    ) : (
-                      <button type="button" className="sidebar-submenu__item" title={label} data-tooltip={label}>
-                        <Icon className="sidebar-nav__icon" />
-                        <span className="sidebar-submenu__label">{label}</span>
-                      </button>
-                    )}
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
@@ -314,7 +311,7 @@ export function DashboardLayout() {
       <button
         type="button"
         className={`sidebar-overlay${sidebarOpen ? ' sidebar-overlay--visible' : ''}`}
-        aria-label="Close sidebar"
+        aria-label={t('closeSidebar')}
         onClick={closeSidebar}
         tabIndex={sidebarOpen ? 0 : -1}
       />
@@ -324,7 +321,7 @@ export function DashboardLayout() {
           <button
             type="button"
             className="dashboard-header__menu"
-            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={sidebarCollapsed ? t('expandSidebar') : t('collapseSidebar')}
             aria-pressed={sidebarCollapsed}
             aria-controls="dashboard-sidebar"
             onClick={toggleSidebar}
@@ -337,8 +334,8 @@ export function DashboardLayout() {
             <input
               type="search"
               className="dashboard-header__search-input"
-              placeholder="Search anything..."
-              aria-label="Search"
+              placeholder={t('searchPlaceholder')}
+              aria-label={t('searchPlaceholder')}
             />
           </div>
 
@@ -356,7 +353,7 @@ export function DashboardLayout() {
                   <User size={16} />
                 )}
               </span>
-              <span>Profile Settings</span>
+              <span>{t('profileSettings')}</span>
               <ChevronDown className="dashboard-header__profile-chevron" />
             </Link>
 
@@ -367,7 +364,7 @@ export function DashboardLayout() {
               disabled={loggingOut}
             >
               <LogOut size={16} aria-hidden="true" />
-              <span>{loggingOut ? 'Logging out...' : 'Logout'}</span>
+              <span>{loggingOut ? t('loggingOut') : t('logout')}</span>
             </button>
           </div>
         </header>

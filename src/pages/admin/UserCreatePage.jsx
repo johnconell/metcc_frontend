@@ -6,12 +6,11 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
-import { USER_STATUSES } from '../../utils/constants';
 
 export default function UserCreatePage() {
   const navigate = useNavigate();
   const [roles, setRoles] = useState([]);
-  const [form, setForm] = useState({ name: '', email: '', password: '', role_id: '', status: 'active', phone: '', address: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role_id: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -42,11 +41,7 @@ export default function UserCreatePage() {
             <option key={r.id} value={r.id}>{r.name}</option>
           ))}
         </Select>
-        <Select label="Status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-          {USER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-        </Select>
-        <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-        <Input label="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+        <p className="text-sm text-gray-500">New accounts are activated automatically.</p>
         <Button type="submit">Create User</Button>
       </form>
     </div>

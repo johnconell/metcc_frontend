@@ -19,7 +19,10 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     try {
       const { data } = await authApi.forgotPassword({ email });
-      setMessage(data.message);
+      setMessage(
+        data.message ||
+          'If that email is registered, a password reset link has been sent to your Gmail inbox.',
+      );
     } catch (err) {
       setError(err.response?.data?.message || 'Request failed.');
     } finally {
@@ -29,14 +32,28 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout>
-      <h1 className="mb-6 text-2xl font-bold">Forgot Password</h1>
+      <h1 className="mb-2 text-2xl font-bold">Forgot Password</h1>
+      <p className="mb-6 text-sm text-gray-600">
+        Enter the Gmail address linked to your admin account. We will email a secure reset link via Gmail SMTP.
+      </p>
       <Alert type="error" message={error} />
       <Alert type="success" message={message} />
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <Button type="submit" className="w-full" disabled={loading}>Send Reset Link</Button>
+        <Input
+          label="Admin Gmail"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+        />
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Sending...' : 'Send Reset Link'}
+        </Button>
       </form>
-      <p className="mt-4 text-center text-sm"><Link to="/login" className="text-indigo-600 hover:underline">Back to login</Link></p>
+      <p className="mt-4 text-center text-sm">
+        <Link to="/login" className="text-indigo-600 hover:underline">Back to login</Link>
+      </p>
     </AuthLayout>
   );
 }

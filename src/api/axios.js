@@ -22,8 +22,18 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const requestUrl = String(error.config?.url || '');
+      const isLogoutRequest = /logout/i.test(requestUrl);
+
       tokenStorage.remove();
-      if (!window.location.pathname.startsWith('/login')) {
+
+      // Never force /login during logout — the app navigates to the landing page.
+      if (isLogoutRequest) {
+        return Promise.reject(error);
+      }
+
+      const path = window.location.pathname;
+      if (path !== '/login' && path !== '/') {
         window.location.href = '/login';
       }
     }

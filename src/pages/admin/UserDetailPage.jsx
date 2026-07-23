@@ -29,8 +29,6 @@ export default function UserDetailPage() {
         <dl className="space-y-2 text-sm">
           <div><dt className="font-medium">Role</dt><dd>{user.role?.name}</dd></div>
           <div><dt className="font-medium">Status</dt><dd>{user.status}</dd></div>
-          <div><dt className="font-medium">Phone</dt><dd>{user.phone || '-'}</dd></div>
-          <div><dt className="font-medium">Address</dt><dd>{user.address || '-'}</dd></div>
           <div><dt className="font-medium">Created</dt><dd>{formatDate(user.created_at)}</dd></div>
           <div><dt className="font-medium">Updated</dt><dd>{formatDate(user.updated_at)}</dd></div>
         </dl>

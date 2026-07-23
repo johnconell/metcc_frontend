@@ -1,5 +1,249 @@
 @import "tailwindcss";
+@import "./styles/design-tokens.css";
 
 body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-theme='dark'] {
+  --color-ink: #ffffff;
+  --color-body: #f0ebe4;
+  --color-body-strong: #ffffff;
+  --color-muted: #d6d0c8;
+  --color-muted-soft: #bdb6ad;
+  --color-hairline: #3a3532;
+  --color-hairline-soft: #2f2b28;
+  --color-hairline-strong: #524c47;
+  --color-canvas: #121110;
+  --color-canvas-soft: #1a1715;
+  --color-surface-card: #1c1a19;
+  --color-surface-strong: #2a2624;
+  --color-surface: #1c1a19;
+}
+
+[data-theme='dark'] body {
+  background: var(--color-canvas);
+  color: #ffffff;
+}
+
+[data-theme='dark'] .dashboard-app {
+  --cream: #1c1a19;
+  --bg: #121110;
+  --border: #3a3532;
+  --text: #ffffff;
+  --text-muted: #d6d0c8;
+  --maroon: #ff8a9a;
+  --maroon-dark: #ffb0bc;
+}
+
+[data-theme='dark'] .dashboard-sidebar,
+[data-theme='dark'] .dashboard-header,
+[data-theme='dark'] .sidebar-profile,
+[data-theme='dark'] .dashboard-header__logout,
+[data-theme='dark'] .dashboard-header__search-input,
+[data-theme='dark'] .dashboard-header__profile,
+[data-theme='dark'] .dashboard-header__notify {
+  background: #1c1a19;
+  color: #ffffff;
+  border-color: #3a3532;
+}
+
+[data-theme='dark'] .dashboard-header__search {
+  background: #151312;
+  border-color: #3a3532;
+}
+
+[data-theme='dark'] .dashboard-content,
+[data-theme='dark'] .dashboard-main {
+  background: #121110;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .sidebar-section__header,
+[data-theme='dark'] .sidebar-nav__label,
+[data-theme='dark'] .sidebar-parent__label,
+[data-theme='dark'] .sidebar-submenu__label,
+[data-theme='dark'] .sidebar-brand__name,
+[data-theme='dark'] .sidebar-profile__name,
+[data-theme='dark'] .sidebar-profile__role,
+[data-theme='dark'] .dashboard-header__profile span,
+[data-theme='dark'] .dashboard-header__logout span {
+  color: #ffffff;
+}
+
+[data-theme='dark'] .sidebar-nav__item,
+[data-theme='dark'] .sidebar-parent,
+[data-theme='dark'] .sidebar-submenu__item {
+  color: #ffffff;
+}
+
+[data-theme='dark'] .mp-page,
+[data-theme='dark'] .mp-header__title,
+[data-theme='dark'] .mp-header__lede,
+[data-theme='dark'] .mp-header__eyebrow,
+[data-theme='dark'] .mp-panel__title,
+[data-theme='dark'] .mp-panel__hint,
+[data-theme='dark'] .mp-stats__value,
+[data-theme='dark'] .mp-stats__label,
+[data-theme='dark'] .mp-field__label,
+[data-theme='dark'] .mp-result-name,
+[data-theme='dark'] .mp-table,
+[data-theme='dark'] .mp-table th,
+[data-theme='dark'] .mp-table td,
+[data-theme='dark'] .mp-note,
+[data-theme='dark'] .mp-dl,
+[data-theme='dark'] .mp-dl dt,
+[data-theme='dark'] .mp-dl dd,
+[data-theme='dark'] .mp-simple-list,
+[data-theme='dark'] .mp-loading,
+[data-theme='dark'] .mp-result-crumb,
+[data-theme='dark'] .mp-result-crumb__current,
+[data-theme='dark'] .mp-date-card__label,
+[data-theme='dark'] .mp-date-card__meta,
+[data-theme='dark'] .mp-date-card__cta,
+[data-theme='dark'] .profile-page,
+[data-theme='dark'] .profile-page__header h1,
+[data-theme='dark'] .profile-page__header p,
+[data-theme='dark'] .profile-section__title,
+[data-theme='dark'] .profile-section__hint,
+[data-theme='dark'] .profile-field__label,
+[data-theme='dark'] .profile-choice,
+[data-theme='dark'] .profile-note {
+  color: #ffffff;
+}
+
+[data-theme='dark'] .mp-header__lede,
+[data-theme='dark'] .mp-panel__hint,
+[data-theme='dark'] .mp-stats__label,
+[data-theme='dark'] .mp-table__sub,
+[data-theme='dark'] .mp-table th,
+[data-theme='dark'] .profile-section__hint,
+[data-theme='dark'] .profile-page__header p,
+[data-theme='dark'] .sidebar-profile__role {
+  color: #d6d0c8;
+}
+
+[data-theme='dark'] .mp-panel,
+[data-theme='dark'] .mp-stats--cards .mp-stats__item,
+[data-theme='dark'] .mp-date-card,
+[data-theme='dark'] .mp-view-toggle,
+[data-theme='dark'] .profile-section,
+[data-theme='dark'] .profile-choice {
+  background: #1c1a19;
+  border-color: #3a3532;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .mp-field__input,
+[data-theme='dark'] .mp-field__textarea,
+[data-theme='dark'] select.mp-field__input,
+[data-theme='dark'] input.mp-field__input,
+[data-theme='dark'] textarea.mp-field__input,
+[data-theme='dark'] .profile-field__input,
+[data-theme='dark'] .mgmt-search__input,
+[data-theme='dark'] .dashboard-header__search-input {
+  background: #151312;
+  border-color: #3a3532;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .mp-field__input::placeholder,
+[data-theme='dark'] .mgmt-search__input::placeholder,
+[data-theme='dark'] .dashboard-header__search-input::placeholder {
+  color: #bdb6ad;
+}
+
+[data-theme='dark'] .mp-view-toggle__btn {
+  color: #d6d0c8;
+}
+
+[data-theme='dark'] .mp-view-toggle__btn.is-active,
+[data-theme='dark'] .mp-batch-pill.is-active,
+[data-theme='dark'] .profile-choice--active {
+  background: #2a2624;
+  color: #ffffff;
+  border-color: #524c47;
+}
+
+[data-theme='dark'] .mp-batch-pill,
+[data-theme='dark'] .mp-result-crumb__link {
+  background: #151312;
+  color: #ffffff;
+  border-color: #3a3532;
+}
+
+[data-theme='dark'] .mp-table th {
+  background: #151312;
+}
+
+[data-theme='dark'] .mgmt-btn,
+[data-theme='dark'] .mgmt-btn--secondary,
+[data-theme='dark'] .mgmt-btn--tertiary {
+  color: #ffffff;
+  border-color: #3a3532;
+}
+
+[data-theme='dark'] .dashboard-page-header h1,
+[data-theme='dark'] .dashboard-page-header p,
+[data-theme='dark'] .dashboard-card__title,
+[data-theme='dark'] .dashboard-card__subtitle,
+[data-theme='dark'] .dashboard-stat-card__value,
+[data-theme='dark'] .dashboard-stat-card__label,
+[data-theme='dark'] .dashboard-activity__title,
+[data-theme='dark'] .dashboard-activity__meta,
+[data-theme='dark'] .dashboard-quick-action__title,
+[data-theme='dark'] .dashboard-quick-action__desc,
+[data-theme='dark'] .dashboard-table,
+[data-theme='dark'] .dashboard-table td,
+[data-theme='dark'] .dashboard-table th,
+[data-theme='dark'] .dashboard-breadcrumbs,
+[data-theme='dark'] .dashboard-pagination,
+[data-theme='dark'] .dashboard-empty {
+  color: #ffffff;
+}
+
+[data-theme='dark'] .dashboard-stat-card__label,
+[data-theme='dark'] .dashboard-card__subtitle,
+[data-theme='dark'] .dashboard-activity__meta,
+[data-theme='dark'] .dashboard-quick-action__desc,
+[data-theme='dark'] .dashboard-page-header p,
+[data-theme='dark'] .dashboard-breadcrumbs,
+[data-theme='dark'] .dashboard-table th {
+  color: #d6d0c8;
+}
+
+[data-theme='dark'] .dashboard-stat-card,
+[data-theme='dark'] .dashboard-card,
+[data-theme='dark'] .dashboard-quick-action,
+[data-theme='dark'] .dashboard-pagination__btn,
+[data-theme='dark'] .dashboard-card__btn {
+  background: #1c1a19;
+  border-color: #3a3532;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .dashboard-table th {
+  background: #151312;
+}
+
+[data-theme='dark'] .dashboard-quick-action {
+  background: #151312;
+}
+
+[data-theme='dark'] .profile-alert--success {
+  color: #8dffc5;
+}
+
+[data-theme='dark'] .profile-alert--error {
+  color: #ffb3c4;
+}
+
+[data-theme='dark'] .profile-page {
+  --profile-maroon: #ff8a9a;
+  --profile-maroon-dark: #ffb0bc;
 }

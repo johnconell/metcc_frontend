@@ -84,7 +84,11 @@ export default function LoginPage() {
       await login(form);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed.');
+      setError(
+        err.response?.data?.message
+          || err.message
+          || 'Login failed.',
+      );
     } finally {
       setLoading(false);
     }
@@ -149,6 +153,15 @@ export default function LoginPage() {
 
       {/* Right login panel */}
       <main className="flex w-full flex-col items-center justify-center px-4 py-10 sm:px-6 lg:w-1/2 lg:px-10">
+        <div className="mb-4 w-full max-w-md">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-transparent bg-[#0B2D5C] px-4 py-2.5 text-[13px] font-semibold text-white no-underline transition hover:bg-[#092447] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B2D5C] focus-visible:ring-offset-2"
+          >
+            Back to Landing Page
+          </Link>
+        </div>
+
         {/* Mobile branding header */}
         <div className="mb-6 flex flex-col items-center text-center lg:hidden">
           <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-[#0B2D5C]/10 bg-white p-1 shadow-md">
@@ -171,9 +184,9 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold text-[#0B2D5C]">Welcome Back</h2>
+            <h2 className="text-2xl font-bold text-[#0B2D5C]">Admin Sign In</h2>
             <p className="mt-1.5 text-sm text-gray-500">
-              Sign in to access your entrance examination dashboard.
+              Administrator access only. Proctors use the mobile examination app.
             </p>
           </div>
 
@@ -272,6 +285,13 @@ export default function LoginPage() {
           </a>
 
         </div>
+
+        <p className="mt-6 text-center text-sm text-gray-500">
+          Looking for your exam schedule?{' '}
+          <Link to="/" className="font-semibold text-[#0B2D5C] hover:underline">
+            Search on the public portal
+          </Link>
+        </p>
 
         <p className="mt-8 text-center text-xs text-gray-400">
           &copy; 2026 Tagoloan Community College. All rights reserved.

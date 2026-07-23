@@ -26,7 +26,6 @@ const EMPTY_FORM = {
   password: '',
   confirmPassword: '',
   role_id: '',
-  status: 'active',
 };
 
 function formatStatusLabel(status) {
@@ -244,7 +243,6 @@ export default function UsersPage() {
       password: '',
       confirmPassword: '',
       role_id: user.role?.id?.toString() || '',
-      status: user.status,
     });
     setFormError('');
     resetPasswordFields();
@@ -300,7 +298,6 @@ export default function UsersPage() {
       name: form.name.trim(),
       email: form.email.trim(),
       role_id: Number(form.role_id),
-      status: form.status,
     };
 
     if (form.password.trim()) {
@@ -312,6 +309,7 @@ export default function UsersPage() {
         await userApi.update(editingUser.id, payload);
         showSuccess(`${payload.name} was updated successfully.`);
       } else {
+        // Status defaults to active on the server — not set from the form.
         await userApi.create({ ...payload, password: form.password });
         showSuccess(`${payload.name} was created successfully.`);
       }
@@ -419,7 +417,7 @@ export default function UsersPage() {
         <div>
           <h1 className="mp-users-topbar__title">User Management</h1>
           <p className="mp-users-topbar__subtitle">
-            Manage admin and proctor accounts
+            Manage admin accounts and create proctor accounts for the mobile app.
           </p>
         </div>
         <div className="mp-users-topbar__actions">
@@ -530,7 +528,7 @@ export default function UsersPage() {
                   {editingUser ? 'Edit User' : 'Add User'}
                 </h2>
                 <p className="mp-modal__subtitle">
-                  {editingUser ? 'Update account details.' : 'Create an admin or proctor account.'}
+                  {editingUser ? 'Update account details.' : 'Create an admin account or a proctor account for mobile.'}
                 </p>
               </div>
               <button type="button" className="mp-modal__close" onClick={closeForm} aria-label="Close">
@@ -587,7 +585,7 @@ export default function UsersPage() {
                 errorMessage={passwordsDoNotMatch ? 'Passwords do not match.' : undefined}
               />
 
-              <label className="mp-field">
+              <label className="mp-field mp-field--full">
                 <span className="mp-field__label">Role</span>
                 <select
                   className="mp-field__input"
@@ -602,17 +600,11 @@ export default function UsersPage() {
                 </select>
               </label>
 
-              <label className="mp-field">
-                <span className="mp-field__label">Status</span>
-                <select
-                  className="mp-field__input"
-                  value={form.status}
-                  onChange={(event) => setForm({ ...form, status: event.target.value })}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Disabled</option>
-                </select>
-              </label>
+              {!editingUser && (
+                <p className="mp-form__hint mp-field--full">
+                  New accounts are activated automatically. Use Enable/Disable in the table to change status later.
+                </p>
+              )}
 
               <div className="mp-modal__actions mp-form__actions">
                 <ManagementButton type="button" variant="secondary" onClick={closeForm} disabled={saving}>
