@@ -1,12 +1,19 @@
 import api from './axios';
 
 export const questionBankApi = {
-  listSubjects: () => api.get('/subjects'),
-  createSubject: (payload) => api.post('/subjects', payload),
+  listBanks: () => api.get('/question-banks'),
+  createBank: (payload) => api.post('/question-banks', payload),
+  getBank: (id) => api.get(`/question-banks/${id}`),
+  updateBank: (id, payload) => api.patch(`/question-banks/${id}`, payload),
+  activateBank: (id) => api.post(`/question-banks/${id}/activate`),
+  deleteBank: (id) => api.delete(`/question-banks/${id}`),
+
+  createSubject: (bankId, payload) => api.post(`/question-banks/${bankId}/subjects`, payload),
   getSubject: (id) => api.get(`/subjects/${id}`),
-  createBank: (subjectId, payload) => api.post(`/subjects/${subjectId}/banks`, payload),
-  getBank: (bankId) => api.get(`/question-banks/${bankId}`),
-  createQuestion: (bankId, payload) => api.post(`/question-banks/${bankId}/questions`, payload),
+  updateSubject: (id, payload) => api.patch(`/subjects/${id}`, payload),
+  deleteSubject: (id) => api.delete(`/subjects/${id}`),
+
+  createQuestion: (subjectId, payload) => api.post(`/subjects/${subjectId}/questions`, payload),
   updateQuestion: (questionId, payload) => api.patch(`/exam-questions/${questionId}`, payload),
   toggleSelection: (questionId) => api.post(`/exam-questions/${questionId}/toggle-selection`),
   deleteQuestion: (questionId) => api.delete(`/exam-questions/${questionId}`),

@@ -253,19 +253,90 @@
   box-shadow: 0 2px 10px rgba(123, 16, 32, 0.08);
 }
 
+.mp-cat-card--active {
+  border-color: #16a34a;
+  background: linear-gradient(180deg, rgba(22, 163, 74, 0.08), transparent 48%);
+  box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.25);
+}
+
+.mp-cat-card--active:hover {
+  border-color: #15803d;
+  box-shadow: 0 2px 12px rgba(22, 163, 74, 0.18);
+}
+
 .mp-cat-card__top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 8px;
   color: var(--color-link);
 }
 
 .mp-cat-card__code {
+  margin-left: auto;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--color-muted);
+}
+
+.mp-active-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mp-stats__value--active {
+  color: #16a34a;
+}
+
+.mp-option-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.mp-option-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-hairline);
+  background: var(--color-surface-card);
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1.35;
+}
+
+.mp-option-chip--correct {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+  font-weight: 600;
+}
+
+.mp-correct-answer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
 }
 
 .mp-cat-card__desc {
@@ -390,6 +461,19 @@
   margin-top: var(--space-xs);
   padding-top: var(--space-xs);
   border-top: 1px solid var(--color-hairline-soft);
+}
+
+.mp-cat-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xxs);
+  margin-top: var(--space-sm);
+}
+
+.mp-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xxs);
 }
 
 /* Panel = simple card with title */
@@ -710,6 +794,12 @@
   font-family: var(--font-sans);
   font-size: var(--text-caption-size);
   color: var(--color-muted);
+}
+
+.mp-field__hint {
+  font-size: var(--text-caption-size);
+  color: var(--color-muted);
+  line-height: 1.4;
 }
 
 .mp-field__input {
