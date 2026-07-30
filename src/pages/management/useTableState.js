@@ -78,8 +78,14 @@ export function useTableState(rows, { searchKeys = [], pageSize = 5, filterFn } 
 }
 
 export function statusVariant(status) {
-  const value = String(status).toLowerCase();
-  if (['active', 'scheduled', 'published', 'available', 'ongoing', 'completed', 'passed', 'present', 'confirmed'].includes(value)) {
+  const value = String(status || '').toLowerCase();
+
+  // Examination schedule lifecycle — distinct colors
+  if (value === 'scheduled') return 'info'; // blue
+  if (value === 'ongoing' || value === 'in_progress' || value === 'lobby_open') return 'warning'; // orange
+  if (value === 'completed') return 'success'; // green
+
+  if (['active', 'published', 'available', 'passed', 'present', 'confirmed'].includes(value)) {
     return 'success';
   }
   if (['inactive', 'archived', 'deactivated', 'unavailable', 'failed', 'absent', 'cancelled'].includes(value)) {

@@ -1,5 +1,39 @@
 @import '../../styles/design-tokens.css';
 
+.sp-settings-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(220px, 0.75fr);
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.sp-settings-layout > .mp-panel[aria-label='Settings form'],
+.sp-settings-layout > .sp-settings-content {
+  order: 1;
+}
+
+.sp-settings-layout > .sp-settings-nav {
+  order: 2;
+  position: sticky;
+  top: var(--space-lg);
+}
+
+@media (max-width: 992px) {
+  .sp-settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sp-settings-layout > .mp-panel[aria-label='Settings form'],
+  .sp-settings-layout > .sp-settings-content,
+  .sp-settings-layout > .sp-settings-nav {
+    order: initial;
+  }
+
+  .sp-settings-layout > .sp-settings-nav {
+    position: static;
+  }
+}
+
 .sp-settings-nav {
   display: flex;
   flex-direction: column;

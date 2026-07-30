@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { Building2, ClipboardList, Mail, Save, Shield, Users } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Building2, ClipboardList, Loader2, Mail, Plus, Save, Shield, Trash2, Users } from 'lucide-react';
+import { examinationSettingsApi } from '../../api/examinationSettingsApi';
+import { gradingApi } from '../../api/gradingApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
@@ -13,8 +15,163 @@ const SETTINGS_SECTIONS = [
   { key: 'security', label: 'Security Settings', icon: Shield },
 ];
 
+function toLocalInput(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function fromLocalInput(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
+
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState('school');
+  const [courses, setCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [courseError, setCourseError] = useState('');
+  const [courseNotice, setCourseNotice] = useState('');
+  const [savingId, setSavingId] = useState(null);
+  const [newCourse, setNewCourse] = useState({
+    course_name: '',
+    course_code: '',
+    passing_percentage: 75,
+  });
+  const [examSettings, setExamSettings] = useState({
+    duration_minutes: 90,
+    allow_late_entry: false,
+    default_start_at: '',
+    default_end_at: '',
+  });
+  const [examSaving, setExamSaving] = useState(false);
+  const [examError, setExamError] = useState('');
+  const [examNotice, setExamNotice] = useState('');
+
+  const loadCourses = useCallback(async () => {
+    setLoadingCourses(true);
+    setCourseError('');
+    try {
+      const { data } = await gradingApi.list({ sync: 1 });
+      setCourses(data.data || []);
+    } catch (err) {
+      setCourseError(err.response?.data?.message || 'Unable to load course grading settings.');
+    } finally {
+      setLoadingCourses(false);
+    }
+  }, []);
+
+  const loadExamSettings = useCallback(async () => {
+    setExamError('');
+    try {
+      const { data } = await examinationSettingsApi.get();
+      const row = data.data || {};
+      setExamSettings({
+        duration_minutes: row.duration_minutes ?? 90,
+        allow_late_entry: Boolean(row.allow_late_entry),
+        default_start_at: toLocalInput(row.default_start_at),
+        default_end_at: toLocalInput(row.default_end_at),
+      });
+    } catch (err) {
+      setExamError(err.response?.data?.message || 'Unable to load examination settings.');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeSection === 'examination') {
+      loadCourses();
+      loadExamSettings();
+    }
+  }, [activeSection, loadCourses, loadExamSettings]);
+
+  const saveExamSettings = async (event) => {
+    event.preventDefault();
+    setExamSaving(true);
+    setExamError('');
+    setExamNotice('');
+    try {
+      const { data } = await examinationSettingsApi.update({
+        duration_minutes: Number(examSettings.duration_minutes) || 90,
+        allow_late_entry: Boolean(examSettings.allow_late_entry),
+        default_start_at: fromLocalInput(examSettings.default_start_at),
+        default_end_at: fromLocalInput(examSettings.default_end_at),
+      });
+      const row = data.data || {};
+      setExamSettings({
+        duration_minutes: row.duration_minutes ?? 90,
+        allow_late_entry: Boolean(row.allow_late_entry),
+        default_start_at: toLocalInput(row.default_start_at),
+        default_end_at: toLocalInput(row.default_end_at),
+      });
+      setExamNotice('Examination settings saved. Duration applies to web and mobile.');
+    } catch (err) {
+      setExamError(err.response?.data?.message || 'Unable to save examination settings.');
+    } finally {
+      setExamSaving(false);
+    }
+  };
+
+  const updateLocal = (id, patch) => {
+    setCourses((rows) => rows.map((row) => (row.id === id ? { ...row, ...patch } : row)));
+  };
+
+  const saveCourse = async (row) => {
+    setSavingId(row.id);
+    setCourseNotice('');
+    setCourseError('');
+    try {
+      const { data } = await gradingApi.update(row.id, {
+        course_name: row.course_name,
+        passing_percentage: Number(row.passing_percentage),
+        failing_grade_point: 5,
+        is_active: row.is_active !== false,
+      });
+      updateLocal(row.id, data.data || row);
+      setCourseNotice(`Saved passing grade for ${row.course_name}.`);
+    } catch (err) {
+      setCourseError(err.response?.data?.message || 'Unable to save grading setting.');
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const createCourse = async (event) => {
+    event.preventDefault();
+    if (!newCourse.course_name.trim()) return;
+    setSavingId('new');
+    setCourseError('');
+    try {
+      await gradingApi.create({
+        course_name: newCourse.course_name.trim(),
+        course_code: newCourse.course_code.trim() || undefined,
+        passing_percentage: Number(newCourse.passing_percentage) || 75,
+        failing_grade_point: 5,
+      });
+      setNewCourse({ course_name: '', course_code: '', passing_percentage: 75 });
+      setCourseNotice('Course grading setting added.');
+      await loadCourses();
+    } catch (err) {
+      setCourseError(err.response?.data?.message || 'Unable to add course.');
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const removeCourse = async (row) => {
+    if (row.course_code === 'GENERAL') return;
+    if (!window.confirm(`Remove grading settings for ${row.course_name}?`)) return;
+    try {
+      await gradingApi.remove(row.id);
+      setCourseNotice(`Removed ${row.course_name}.`);
+      await loadCourses();
+    } catch (err) {
+      setCourseError(err.response?.data?.message || 'Unable to delete setting.');
+    }
+  };
 
   return (
     <div className="mp-page">
@@ -26,29 +183,10 @@ export default function SettingsPage() {
             Configure school information, examination rules, user preferences, email, and security.
           </p>
         </div>
-        <div className="mp-header__actions">
-          <ManagementButton variant="primary">
-            <Save size={16} aria-hidden="true" /> Save Changes
-          </ManagementButton>
-        </div>
       </header>
 
-      <div className="mp-split">
-        <nav className="mp-panel sp-settings-nav" aria-label="Settings sections">
-          {SETTINGS_SECTIONS.map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              type="button"
-              className={`sp-settings-nav__item${activeSection === key ? ' sp-settings-nav__item--active' : ''}`}
-              onClick={() => setActiveSection(key)}
-            >
-              <Icon size={16} aria-hidden="true" />
-              {label}
-            </button>
-          ))}
-        </nav>
-
-        <section className="mp-panel" aria-label="Settings form">
+      <div className="sp-settings-layout">
+        <section className="mp-panel sp-settings-content" aria-label="Settings form">
           {activeSection === 'school' && (
             <>
               <h2 className="mp-panel__title">School Information</h2>
@@ -68,22 +206,166 @@ export default function SettingsPage() {
           {activeSection === 'examination' && (
             <>
               <h2 className="mp-panel__title">Examination Settings</h2>
-              <div className="sp-form">
-                <label className="sp-form__label" htmlFor="exam-duration">Default Exam Duration (minutes)</label>
-                <input id="exam-duration" type="number" className="sp-form__input" defaultValue="120" />
-                <label className="sp-form__label" htmlFor="passing-score">Passing Score (%)</label>
-                <input id="passing-score" type="number" className="sp-form__input" defaultValue="60" />
-                <label className="sp-form__label" htmlFor="late-entry">Late Entry Grace Period (minutes)</label>
-                <input id="late-entry" type="number" className="sp-form__input" defaultValue="15" />
-                <label className="sp-form__toggle">
-                  <input type="checkbox" defaultChecked />
-                  <span>Enable anti-cheat (fullscreen, tab switch lock)</span>
+              <p className="mp-panel__hint">
+                Duration and late-entry rules are used by both the admin web app and the mobile examination app.
+              </p>
+
+              {examError ? <div className="mp-alert mp-alert--error" role="alert">{examError}</div> : null}
+              {examNotice ? <div className="mp-alert mp-alert--success" role="status">{examNotice}</div> : null}
+
+              <form className="sp-form" onSubmit={saveExamSettings} style={{ marginBottom: 28 }}>
+                <label className="sp-form__label" htmlFor="exam-duration">Examination duration (minutes)</label>
+                <input
+                  id="exam-duration"
+                  type="number"
+                  min={1}
+                  max={600}
+                  className="sp-form__input"
+                  value={examSettings.duration_minutes}
+                  onChange={(e) => setExamSettings((s) => ({ ...s, duration_minutes: e.target.value }))}
+                  required
+                />
+                <label className="sp-form__label" htmlFor="exam-start">Default start date and time</label>
+                <input
+                  id="exam-start"
+                  type="datetime-local"
+                  className="sp-form__input"
+                  value={examSettings.default_start_at}
+                  onChange={(e) => setExamSettings((s) => ({ ...s, default_start_at: e.target.value }))}
+                />
+                <label className="sp-form__label" htmlFor="exam-end">Default end date (optional)</label>
+                <input
+                  id="exam-end"
+                  type="datetime-local"
+                  className="sp-form__input"
+                  value={examSettings.default_end_at}
+                  onChange={(e) => setExamSettings((s) => ({ ...s, default_end_at: e.target.value }))}
+                />
+                <label className="sp-form__label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={examSettings.allow_late_entry}
+                    onChange={(e) => setExamSettings((s) => ({ ...s, allow_late_entry: e.target.checked }))}
+                  />
+                  Allow late entry after examination starts (default: disabled)
                 </label>
-                <label className="sp-form__toggle">
-                  <input type="checkbox" defaultChecked />
-                  <span>Randomize question order per examinee</span>
-                </label>
-              </div>
+                <ManagementButton type="submit" variant="primary" disabled={examSaving}>
+                  {examSaving ? <Loader2 size={16} className="mp-loading__icon" /> : <Save size={16} />}
+                  Save examination settings
+                </ManagementButton>
+              </form>
+
+              <h2 className="mp-panel__title">Course passing grades</h2>
+              <p className="mp-panel__hint">
+                Scores are stored and shown as percentage out of 100 (example: <strong>67/100</strong>).
+                Pass/fail uses each course&apos;s passing percentage. A 5-point grade (1.00 best → 5.00 fail)
+                is also computed and stored.
+              </p>
+
+              {courseError ? <div className="mp-alert mp-alert--error" role="alert">{courseError}</div> : null}
+              {courseNotice ? <div className="mp-alert mp-alert--success" role="status">{courseNotice}</div> : null}
+
+              {loadingCourses ? (
+                <p className="mp-panel__hint"><Loader2 size={14} className="mp-loading__icon" /> Loading courses…</p>
+              ) : (
+                <div className="mp-table-wrap" style={{ marginBottom: 20 }}>
+                  <table className="mp-table">
+                    <thead>
+                      <tr>
+                        <th>Course / Program</th>
+                        <th>Code</th>
+                        <th>Passing %</th>
+                        <th>Fail grade point</th>
+                        <th />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {courses.map((row) => (
+                        <tr key={row.id}>
+                          <td>
+                            <input
+                              className="mp-field__input"
+                              value={row.course_name}
+                              onChange={(e) => updateLocal(row.id, { course_name: e.target.value })}
+                            />
+                          </td>
+                          <td>{row.course_code}</td>
+                          <td style={{ maxWidth: 110 }}>
+                            <input
+                              className="mp-field__input"
+                              type="number"
+                              min={0}
+                              max={100}
+                              step={0.01}
+                              value={row.passing_percentage}
+                              onChange={(e) => updateLocal(row.id, { passing_percentage: e.target.value })}
+                            />
+                          </td>
+                          <td>5.00</td>
+                          <td>
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              <ManagementButton
+                                type="button"
+                                variant="primary"
+                                size="sm"
+                                disabled={savingId === row.id}
+                                onClick={() => saveCourse(row)}
+                              >
+                                {savingId === row.id ? <Loader2 size={14} className="mp-loading__icon" /> : <Save size={14} />}
+                                Save
+                              </ManagementButton>
+                              {row.course_code !== 'GENERAL' ? (
+                                <ManagementButton
+                                  type="button"
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => removeCourse(row)}
+                                >
+                                  <Trash2 size={14} />
+                                </ManagementButton>
+                              ) : null}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <h3 className="mp-panel__title" style={{ fontSize: 15 }}>Add course passing grade</h3>
+              <form className="sp-form" onSubmit={createCourse}>
+                <label className="sp-form__label" htmlFor="new-course-name">Course name</label>
+                <input
+                  id="new-course-name"
+                  className="sp-form__input"
+                  value={newCourse.course_name}
+                  onChange={(e) => setNewCourse((c) => ({ ...c, course_name: e.target.value }))}
+                  placeholder="Bachelor of Science in Information Technology"
+                  required
+                />
+                <label className="sp-form__label" htmlFor="new-course-code">Course code (optional)</label>
+                <input
+                  id="new-course-code"
+                  className="sp-form__input"
+                  value={newCourse.course_code}
+                  onChange={(e) => setNewCourse((c) => ({ ...c, course_code: e.target.value }))}
+                  placeholder="BSIT"
+                />
+                <label className="sp-form__label" htmlFor="new-pass">Passing percentage</label>
+                <input
+                  id="new-pass"
+                  type="number"
+                  min={0}
+                  max={100}
+                  className="sp-form__input"
+                  value={newCourse.passing_percentage}
+                  onChange={(e) => setNewCourse((c) => ({ ...c, passing_percentage: e.target.value }))}
+                />
+                <ManagementButton type="submit" variant="primary" disabled={savingId === 'new'}>
+                  <Plus size={16} /> Add course
+                </ManagementButton>
+              </form>
             </>
           )}
 
@@ -94,19 +376,8 @@ export default function SettingsPage() {
                 <label className="sp-form__label" htmlFor="default-role">Default Role for New Users</label>
                 <select id="default-role" className="sp-form__input">
                   <option>Proctor</option>
-                  <option>Administrator</option>
-                  <option>Staff</option>
+                  <option>Admin</option>
                 </select>
-                <label className="sp-form__toggle">
-                  <input type="checkbox" defaultChecked />
-                  <span>Require email verification on registration</span>
-                </label>
-                <label className="sp-form__toggle">
-                  <input type="checkbox" />
-                  <span>Allow self-registration for students</span>
-                </label>
-                <label className="sp-form__label" htmlFor="session-timeout">Session Timeout (minutes)</label>
-                <input id="session-timeout" type="number" className="sp-form__input" defaultValue="30" />
               </div>
             </>
           )}
@@ -116,13 +387,7 @@ export default function SettingsPage() {
               <h2 className="mp-panel__title">Email Settings</h2>
               <div className="sp-form">
                 <label className="sp-form__label" htmlFor="smtp-host">SMTP Host</label>
-                <input id="smtp-host" type="text" className="sp-form__input" defaultValue="smtp.gmail.com" />
-                <label className="sp-form__label" htmlFor="smtp-port">SMTP Port</label>
-                <input id="smtp-port" type="number" className="sp-form__input" defaultValue="587" />
-                <label className="sp-form__label" htmlFor="sender-email">Sender Email</label>
-                <input id="sender-email" type="email" className="sp-form__input" defaultValue="noreply@tcc.edu.ph" />
-                <label className="sp-form__label" htmlFor="sender-name">Sender Name</label>
-                <input id="sender-name" type="text" className="sp-form__input" defaultValue="TCC Examination System" />
+                <input id="smtp-host" type="text" className="sp-form__input" placeholder="smtp.example.com" />
               </div>
             </>
           )}
@@ -131,32 +396,29 @@ export default function SettingsPage() {
             <>
               <h2 className="mp-panel__title">Security Settings</h2>
               <div className="sp-form">
-                <label className="sp-form__label" htmlFor="min-password">Minimum Password Length</label>
-                <input id="min-password" type="number" className="sp-form__input" defaultValue="8" />
-                <label className="sp-form__toggle">
-                  <input type="checkbox" defaultChecked />
-                  <span>Require uppercase and numbers in passwords</span>
-                </label>
-                <label className="sp-form__toggle">
-                  <input type="checkbox" defaultChecked />
-                  <span>Enable two-factor authentication for admins</span>
-                </label>
-                <label className="sp-form__toggle">
-                  <input type="checkbox" />
-                  <span>Lock account after 5 failed login attempts</span>
-                </label>
-                <label className="sp-form__label" htmlFor="lockout-duration">Lockout Duration (minutes)</label>
-                <input id="lockout-duration" type="number" className="sp-form__input" defaultValue="15" />
+                <label className="sp-form__label" htmlFor="session-timeout">Session timeout (minutes)</label>
+                <input id="session-timeout" type="number" className="sp-form__input" defaultValue={60} />
               </div>
             </>
           )}
-
-          <div className="sp-form__actions">
-            <ManagementButton variant="primary">
-              <Save size={16} aria-hidden="true" /> Save Changes
-            </ManagementButton>
-          </div>
         </section>
+
+        <nav className="mp-panel sp-settings-nav" aria-label="Settings sections">
+          {SETTINGS_SECTIONS.map((section) => {
+            const Icon = section.icon;
+            return (
+              <button
+                key={section.key}
+                type="button"
+                className={`sp-settings-nav__item${activeSection === section.key ? ' is-active' : ''}`}
+                onClick={() => setActiveSection(section.key)}
+              >
+                <Icon size={16} />
+                {section.label}
+              </button>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );

@@ -263,7 +263,7 @@ export default function StudentsPage() {
       {
         key: 'score',
         label: 'Score',
-        render: (row) => (row.score != null ? `${row.score}%` : '—'),
+        render: (row) => row.display_score || (row.score != null ? `${row.score}/100` : '—'),
       },
       {
         key: 'actions',

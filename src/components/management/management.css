@@ -333,21 +333,33 @@
 }
 
 .mgmt-badge--success {
-  background: var(--color-canvas-soft);
-  color: var(--color-semantic-success);
-  border: 1px solid var(--color-hairline);
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
 }
 
 .mgmt-badge--error {
-  background: var(--color-canvas-soft);
-  color: var(--color-semantic-error);
-  border: 1px solid var(--color-hairline);
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
 }
 
 .mgmt-badge--muted {
-  background: var(--color-canvas-soft);
-  color: var(--color-muted);
-  border: 1px solid var(--color-hairline);
+  background: #f5f5f4;
+  color: #78716c;
+  border: 1px solid #e7e5e4;
+}
+
+.mgmt-badge--info {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+}
+
+.mgmt-badge--warning {
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid #fdba74;
 }
 
 /* Summary metrics */

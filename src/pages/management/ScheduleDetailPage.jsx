@@ -349,15 +349,33 @@ export default function ScheduleDetailPage() {
 
           <section className="mp-panel" aria-labelledby="rooms-title">
             <h2 id="rooms-title" className="mp-panel__title"><CalendarDays size={16} /> Available Classrooms</h2>
-            <p className="mp-panel__hint">Open rooms for this hour — students can use any of them.</p>
+            <p className="mp-panel__hint">
+              Managed in Examination Lobby. Students can use any room in this time slot.
+            </p>
             <ul className="mp-simple-list">
-              {(data.available_rooms || []).map((room) => (
-                <li key={room.id}>
-                  <strong>{room.room_name}</strong>
-                  <span>Capacity {room.capacity}</span>
+              {(data.available_rooms || []).length === 0 ? (
+                <li>
+                  <strong>No rooms configured</strong>
+                  <span>
+                    <Link to="/management/lobby" className="mp-batch-link">Open Examination Lobby</Link>
+                    {' '}to add rooms for mobile proctors.
+                  </span>
                 </li>
-              ))}
+              ) : (
+                (data.available_rooms || []).map((room) => (
+                  <li key={room.id}>
+                    <strong>{room.room_name}</strong>
+                    <span>
+                      Capacity {room.capacity}
+                      {room.proctor?.name ? ` · ${room.proctor.name}` : ''}
+                    </span>
+                  </li>
+                ))
+              )}
             </ul>
+            <div style={{ marginTop: 12 }}>
+              <Link to="/management/lobby" className="mp-batch-link">Manage rooms in Examination Lobby →</Link>
+            </div>
           </section>
 
           <section className="mp-panel" aria-labelledby="proctors-title">

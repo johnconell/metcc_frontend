@@ -4,6 +4,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  Download,
   Loader2,
   Mail,
   ScrollText,
@@ -11,7 +12,7 @@ import {
   Users,
   XCircle,
 } from 'lucide-react';
-import { examResultApi } from '../../api/examResultApi';
+import { downloadExamResultsExport, examResultApi } from '../../api/examResultApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { StatusBadge } from '../../components/management/StatusBadge';
 import { statusVariant } from '../management/useTableState';
@@ -61,6 +62,7 @@ export default function ExamResultsPage() {
   const [selectedScheduleId, setSelectedScheduleId] = useState(null);
   const [studentSearch, setStudentSearch] = useState('');
   const [outcomeFilter, setOutcomeFilter] = useState('all');
+  const [exporting, setExporting] = useState(false);
 
   const loadResults = useCallback(async () => {
     setLoading(true);
@@ -150,6 +152,41 @@ export default function ExamResultsPage() {
     }
   };
 
+  const exportResults = async (scope) => {
+    setExporting(true);
+    setError('');
+    setNotice('');
+    try {
+      const params = { scope };
+      if (scope === 'date') {
+        if (!selectedDate) {
+          setError('Select an examination date before exporting by date.');
+          return;
+        }
+        params.date = selectedDate;
+      }
+      if (scope === 'batch') {
+        if (!selectedScheduleId) {
+          setError('Open a batch before exporting by batch.');
+          return;
+        }
+        params.schedule_id = selectedScheduleId;
+      }
+      await downloadExamResultsExport(params);
+      setNotice(
+        scope === 'all'
+          ? 'Exported all examination results.'
+          : scope === 'date'
+            ? `Exported results for ${selectedDate}.`
+            : 'Exported results for the selected batch.',
+      );
+    } catch (err) {
+      setError(err.response?.data?.message || 'Unable to export examination results.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="mp-page">
       <header className="mp-header">
@@ -157,8 +194,36 @@ export default function ExamResultsPage() {
           <p className="mp-header__eyebrow">Results</p>
           <h1 className="mp-header__title">Examination Results</h1>
           <p className="mp-header__lede">
-            Browse by date, then batch, then the students who completed that exam.
+            Browse by date, then batch, then the students who completed that exam. Scores show as
+            points out of 100 (e.g. 67/100).
           </p>
+        </div>
+        <div className="mp-header__actions">
+          <ManagementButton
+            type="button"
+            variant="secondary"
+            disabled={exporting || loading}
+            onClick={() => exportResults('all')}
+          >
+            {exporting ? <Loader2 size={16} className="mp-loading__icon" /> : <Download size={16} />}
+            Export All
+          </ManagementButton>
+          <ManagementButton
+            type="button"
+            variant="secondary"
+            disabled={exporting || loading || !selectedDate}
+            onClick={() => exportResults('date')}
+          >
+            <Download size={16} /> Export Date
+          </ManagementButton>
+          <ManagementButton
+            type="button"
+            variant="secondary"
+            disabled={exporting || loading || !selectedScheduleId}
+            onClick={() => exportResults('batch')}
+          >
+            <Download size={16} /> Export Batch
+          </ManagementButton>
         </div>
       </header>
 
@@ -377,7 +442,9 @@ export default function ExamResultsPage() {
                 <tr>
                   <th>Applicant Name</th>
                   <th>Program</th>
+                  <th>Room</th>
                   <th>Score</th>
+                  <th>Grade Point</th>
                   <th>Status</th>
                   <th>Email</th>
                 </tr>
@@ -385,7 +452,7 @@ export default function ExamResultsPage() {
               <tbody>
                 {filteredStudents.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="mp-table__empty">No students found in this batch.</td>
+                    <td colSpan={7} className="mp-table__empty">No students found in this batch.</td>
                   </tr>
                 ) : filteredStudents.map((row) => (
                   <tr key={row.id}>
@@ -394,7 +461,9 @@ export default function ExamResultsPage() {
                       <div className="mp-table__sub">{row.applicant_code}</div>
                     </td>
                     <td>{row.program_desire || row.course_preference || '—'}</td>
+                    <td>{row.room_name || '—'}</td>
                     <td><span className="mp-score">{row.display_score}</span></td>
+                    <td>{row.display_grade_point || row.grade_point || '—'}</td>
                     <td>
                       <StatusBadge variant={outcomeVariant(row.outcome)}>
                         {row.outcome_label || row.outcome}
