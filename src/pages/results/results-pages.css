@@ -141,3 +141,95 @@
   outline: none;
   border-color: var(--color-hairline-strong);
 }
+
+/* Batch-grouped examination results */
+.results-batch + .results-batch {
+  margin-top: 0.75rem;
+}
+
+.results-batch__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.results-batch__toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  flex: 1;
+  min-width: 12rem;
+}
+
+.results-batch__toggle .mp-panel__title {
+  margin: 0;
+}
+
+.results-batch__chevron {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+  transform: rotate(-90deg);
+}
+
+.results-batch__chevron.is-open {
+  transform: rotate(0deg);
+}
+
+.results-batch__table {
+  max-height: min(420px, 55vh);
+  overflow: auto;
+}
+
+.results-batch__table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f8fafc;
+}
+
+.results-email-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.results-email-badge--sent {
+  color: #047857;
+}
+
+.results-email-badge--pending {
+  color: #b91c1c;
+}
+
+.mp-empty {
+  display: grid;
+  place-items: center;
+  gap: 0.35rem;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.mp-empty h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.05rem;
+}
+
+.mp-empty p {
+  margin: 0;
+  max-width: 28rem;
+}

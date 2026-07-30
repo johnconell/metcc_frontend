@@ -4,7 +4,6 @@ import {
   Activity,
   BarChart3,
   Calendar,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
@@ -14,7 +13,6 @@ import {
   Mail,
   Settings,
   Shield,
-  TrendingUp,
   UserCheck,
   UserCog,
   Users,
@@ -216,36 +214,44 @@ export default function DashboardPage() {
 
   const statCards = [
     {
-      label: 'Total Examinees',
-      value: formatNumber(stats.total_examinees),
-      hint: `${formatNumber(stats.examinees_today)} expected today`,
+      label: 'Total Applicants',
+      value: formatNumber(stats.total_applicants ?? stats.total_examinees),
+      hint: `${formatNumber(stats.pending_registrations)} pending`,
       icon: Users,
       iconClass: 'rose',
       trendColor: 'green',
     },
     {
-      label: 'Active Sessions',
-      value: formatNumber(stats.active_sessions),
-      hint: `${formatNumber(stats.rooms_today)} classrooms in use today`,
+      label: 'Scheduled Examinees',
+      value: formatNumber(stats.scheduled_examinees ?? stats.active_sessions),
+      hint: `${formatNumber(stats.examinees_today)} expected today`,
       icon: Calendar,
       iconClass: 'orange',
       trendColor: 'green',
     },
     {
-      label: 'Proctors On Duty',
-      value: formatNumber(stats.proctors_on_duty),
-      hint: 'Typically 3–4 per time slot',
-      icon: Shield,
+      label: 'Completed Examinations',
+      value: formatNumber(stats.completed_examinations ?? stats.completed_exams),
+      hint: `${formatNumber(stats.total_present)} present`,
+      icon: FileCheck,
       iconClass: 'amber',
       trendColor: 'amber',
     },
     {
-      label: 'Completed Exams',
-      value: formatNumber(stats.completed_exams),
-      hint: `${formatNumber(stats.pending_registrations)} pending registrations`,
-      icon: FileCheck,
+      label: 'Passed Applicants',
+      value: formatNumber(stats.passed_applicants ?? stats.total_passed),
+      hint: `${formatNumber(stats.results_sent)} results emailed`,
+      icon: UserCheck,
       iconClass: 'green',
       trendColor: 'green',
+    },
+    {
+      label: 'Failed Applicants',
+      value: formatNumber(stats.failed_applicants ?? stats.total_failed),
+      hint: `${formatNumber(stats.failed_emails)} email failures`,
+      icon: Shield,
+      iconClass: 'rose',
+      trendColor: 'amber',
     },
   ];
 
@@ -282,7 +288,7 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <section className="dashboard-stats" aria-label="Statistics overview">
+      <section className="dashboard-stats dashboard-stats--five" aria-label="Statistics overview">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
@@ -290,12 +296,11 @@ export default function DashboardPage() {
               <div className="dashboard-stat-card__top">
                 <span className="dashboard-stat-card__label">{card.label}</span>
                 <div className={`dashboard-stat-card__icon dashboard-stat-card__icon--${card.iconClass}`}>
-                  <Icon size={20} />
+                  <Icon size={18} />
                 </div>
               </div>
               <div className="dashboard-stat-card__value">{card.value}</div>
               <div className={`dashboard-stat-card__trend dashboard-stat-card__trend--${card.trendColor}`}>
-                <TrendingUp size={14} />
                 <span>{card.hint}</span>
               </div>
             </article>
@@ -303,8 +308,7 @@ export default function DashboardPage() {
         })}
       </section>
 
-      <div className="dashboard-row">
-        <section className="dashboard-card" aria-label="Upcoming Examination Schedule">
+      <section className="dashboard-card dashboard-card--full" aria-label="Upcoming Examination Schedule">
           <div className="dashboard-card__header">
             <div className="dashboard-card__title-group">
               <div className="dashboard-card__title-icon"><Calendar size={17} /></div>
@@ -314,14 +318,14 @@ export default function DashboardPage() {
           </div>
 
           <div className="dashboard-table-wrap">
-            <table className="dashboard-table">
+            <table className="dashboard-table dashboard-table--compact">
               <thead>
                 <tr>
-                  <th>Batch</th>
-                  <th>Time Slot</th>
-                  <th>Open Classrooms</th>
-                  <th>Proctors Available</th>
-                  <th>Students</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Room</th>
+                  <th>Program</th>
+                  <th>Examinees</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -334,22 +338,12 @@ export default function DashboardPage() {
                   <tr key={row.id}>
                     <td>
                       <Link to={`/management/schedules/${row.id}`} className="dashboard-batch-link">
-                        <strong>{row.batch_label || `${row.date_label}, ${row.batch_code}`}</strong>
-                        <span>Entrance Examination</span>
+                        <strong>{row.date_label || row.exam_date}</strong>
                       </Link>
                     </td>
-                    <td>{row.time_slot || row.start_time}</td>
-                    <td>
-                      <div>{row.room_count} rooms</div>
-                      <div className="dashboard-table__sub" title={row.rooms_label}>{row.rooms_label}</div>
-                    </td>
-                    <td>
-                      <div>{row.proctor_count || 0} proctors</div>
-                      <div className="dashboard-table__sub">
-                        {(row.proctor_names || []).slice(0, 2).join(', ') || 'Unassigned'}
-                        {(row.proctor_names || []).length > 2 ? '…' : ''}
-                      </div>
-                    </td>
+                    <td>{row.time_slot || row.start_time || '—'}</td>
+                    <td title={row.rooms_label}>{row.rooms_label || `${row.room_count || 0} rooms`}</td>
+                    <td>{row.course || 'General'}</td>
                     <td>{formatNumber(row.registered_count || row.expected_examinees)}</td>
                     <td>
                       <span className={`dashboard-badge dashboard-badge--${String(row.status).toLowerCase()}`}>
@@ -368,40 +362,22 @@ export default function DashboardPage() {
               {' '}to {Math.min(page * pageSize, schedules.length)} of {schedules.length} entries
             </span>
             <div className="dashboard-pagination__controls">
-              <button
-                type="button"
-                className="dashboard-pagination__btn"
-                disabled={page <= 1}
-                aria-label="Previous page"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
+              <button type="button" className="dashboard-pagination__btn" disabled={page <= 1} aria-label="Previous page" onClick={() => setPage((p) => Math.max(1, p - 1))}>
                 <ChevronLeft size={16} />
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  className={`dashboard-pagination__btn${page === n ? ' dashboard-pagination__btn--active' : ''}`}
-                  aria-current={page === n ? 'page' : undefined}
-                  onClick={() => setPage(n)}
-                >
+                <button key={n} type="button" className={`dashboard-pagination__btn${page === n ? ' dashboard-pagination__btn--active' : ''}`} aria-current={page === n ? 'page' : undefined} onClick={() => setPage(n)}>
                   {n}
                 </button>
               ))}
-              <button
-                type="button"
-                className="dashboard-pagination__btn"
-                disabled={page >= totalPages}
-                aria-label="Next page"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              >
+              <button type="button" className="dashboard-pagination__btn" disabled={page >= totalPages} aria-label="Next page" onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
                 <ChevronRight size={16} />
               </button>
             </div>
           </div>
-        </section>
+      </section>
 
-        <section className="dashboard-card" aria-label="Recent Activities">
+      <section className="dashboard-card dashboard-card--full" aria-label="Recent Activities">
           <div className="dashboard-card__header">
             <div className="dashboard-card__title-group">
               <div className="dashboard-card__title-icon"><Activity size={17} /></div>
@@ -409,31 +385,34 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="dashboard-activities">
-            {(data.recent_activities || []).length === 0 ? (
-              <div className="dashboard-empty">No recent activities.</div>
-            ) : data.recent_activities.map((activity) => {
-              const style = ACTIVITY_STYLE[activity.action] || ACTIVITY_STYLE.default;
-              const Icon = style.icon;
-              return (
-                <article key={activity.id} className="dashboard-activity">
-                  <div className="dashboard-activity__marker">
-                    <span className="dashboard-activity__dot" style={{ backgroundColor: style.dotColor }} />
-                    <div className="dashboard-activity__icon" style={{ backgroundColor: style.iconBg, color: style.iconColor }}>
-                      <Icon size={16} />
-                    </div>
-                  </div>
-                  <div className="dashboard-activity__content">
-                    <div className="dashboard-activity__title">{activity.title}</div>
-                    <div className="dashboard-activity__desc">{activity.description}</div>
-                  </div>
-                  <time className="dashboard-activity__time">{activity.time_label}</time>
-                </article>
-              );
-            })}
+          <div className="dashboard-table-wrap">
+            <table className="dashboard-table dashboard-table--compact">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Activity</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data.recent_activities || []).length === 0 ? (
+                  <tr><td colSpan={4} className="dashboard-empty-cell">No recent activities.</td></tr>
+                ) : data.recent_activities.map((activity) => (
+                  <tr key={activity.id}>
+                    <td>{activity.user_name || 'System'}</td>
+                    <td>
+                      <strong>{activity.title}</strong>
+                      <div className="dashboard-table__sub">{activity.description}</div>
+                    </td>
+                    <td>{activity.date_label || '—'}</td>
+                    <td>{activity.time_label || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </section>
-      </div>
+      </section>
 
       <div className="dashboard-row">
         <section className="dashboard-card" aria-label="Examination Performance Overview">
@@ -442,10 +421,6 @@ export default function DashboardPage() {
               <div className="dashboard-card__title-icon"><BarChart3 size={17} /></div>
               <h2 className="dashboard-card__title">Daily Examinee Volume</h2>
             </div>
-            <button type="button" className="dashboard-card__btn dashboard-card__btn--dropdown">
-              Last 7 days
-              <ChevronDown size={14} />
-            </button>
           </div>
 
           <PerformanceChart
@@ -453,17 +428,6 @@ export default function DashboardPage() {
             average={data.performance?.average || 0}
             max={data.performance?.max || 500}
           />
-
-          <div className="dashboard-chart-legend">
-            <div className="dashboard-chart-legend__item">
-              <span className="dashboard-chart-legend__line dashboard-chart-legend__line--maroon" />
-              Expected examinees / day
-            </div>
-            <div className="dashboard-chart-legend__item">
-              <span className="dashboard-chart-legend__line dashboard-chart-legend__line--gold" />
-              Average ({formatNumber(data.performance?.average || 0)})
-            </div>
-          </div>
         </section>
 
         <section className="dashboard-card" aria-label="Quick Actions">

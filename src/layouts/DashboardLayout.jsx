@@ -11,7 +11,6 @@ import {
   FolderKanban,
   ClipboardCheck,
   LineChart,
-  Mail,
   Settings,
   FileText,
   HardDrive,
@@ -41,7 +40,6 @@ const MANAGEMENT_SUBMENU = [
 const RESULTS_ITEMS = [
   { labelKey: 'navExamResults', icon: ClipboardCheck, path: '/results/exam-results' },
   { labelKey: 'navReports', icon: LineChart, path: '/results/reports-analytics' },
-  { labelKey: 'navEmail', icon: Mail, path: '/results/email-notification' },
 ];
 
 const SYSTEM_ITEMS = [

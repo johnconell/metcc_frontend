@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   CalendarDays,
   Clock3,
   Loader2,
-  Search,
-  Users,
 } from 'lucide-react';
 import { scheduleApi } from '../../api/scheduleApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
@@ -29,15 +27,11 @@ function formatDateLabel(date) {
 }
 
 export default function SchedulesPage() {
+  const navigate = useNavigate();
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
   const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedScheduleId, setSelectedScheduleId] = useState(null);
-  const [detail, setDetail] = useState(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [studentSearch, setStudentSearch] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -55,28 +49,6 @@ export default function SchedulesPage() {
   useEffect(() => {
     load();
   }, [load]);
-
-  useEffect(() => {
-    if (!selectedScheduleId) {
-      setDetail(null);
-      return undefined;
-    }
-
-    let cancelled = false;
-    async function loadDetail() {
-      setDetailLoading(true);
-      try {
-        const { data } = await scheduleApi.get(selectedScheduleId);
-        if (!cancelled) setDetail(data.data);
-      } catch (err) {
-        if (!cancelled) setError(err.response?.data?.message || 'Unable to load students for this time slot.');
-      } finally {
-        if (!cancelled) setDetailLoading(false);
-      }
-    }
-    loadDetail();
-    return () => { cancelled = true; };
-  }, [selectedScheduleId]);
 
   const dateGroups = useMemo(() => {
     const map = new Map();
@@ -105,20 +77,7 @@ export default function SchedulesPage() {
       || [];
   }, [dateGroups, selectedDate]);
 
-  const selectedSlot = timeSlots.find((slot) => String(slot.id) === String(selectedScheduleId));
-
-  const filteredStudents = useMemo(() => {
-    const students = detail?.students || [];
-    const q = studentSearch.trim().toLowerCase();
-    if (!q) return students;
-    return students.filter((student) =>
-      [student.name, student.applicant_code, student.email]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(q)),
-    );
-  }, [detail, studentSearch]);
-
-  const level = selectedScheduleId ? 'students' : selectedDate ? 'times' : 'dates';
+  const level = selectedDate ? 'times' : 'dates';
 
   return (
     <div className="mp-page">
@@ -151,34 +110,15 @@ export default function SchedulesPage() {
         <button
           type="button"
           className={`mp-result-crumb__link${level === 'dates' ? ' is-current' : ''}`}
-          onClick={() => {
-            setSelectedDate(null);
-            setSelectedScheduleId(null);
-            setStudentSearch('');
-          }}
+          onClick={() => setSelectedDate(null)}
         >
           All dates
         </button>
         {selectedDate && (
           <>
             <span aria-hidden="true">/</span>
-            <button
-              type="button"
-              className={`mp-result-crumb__link${level === 'times' ? ' is-current' : ''}`}
-              onClick={() => {
-                setSelectedScheduleId(null);
-                setStudentSearch('');
-              }}
-            >
-              {formatDateLabel(selectedDate)}
-            </button>
-          </>
-        )}
-        {selectedSlot && (
-          <>
-            <span aria-hidden="true">/</span>
             <span className="mp-result-crumb__current">
-              {selectedSlot.batch_code} · {selectedSlot.time_slot}
+              {formatDateLabel(selectedDate)}
             </span>
           </>
         )}
@@ -200,7 +140,9 @@ export default function SchedulesPage() {
             </div>
           </div>
           <div className="mp-date-grid">
-            {dateGroups.map((group) => (
+            {dateGroups.length === 0 ? (
+              <p className="mp-panel__hint">No schedules yet. Import students to create date and time slots.</p>
+            ) : dateGroups.map((group) => (
               <button
                 key={group.date}
                 type="button"
@@ -216,12 +158,12 @@ export default function SchedulesPage() {
             ))}
           </div>
         </section>
-      ) : level === 'times' ? (
+      ) : (
         <section className="mp-panel">
           <div className="mp-panel__head">
             <div>
               <h2 className="mp-panel__title"><Clock3 size={16} /> Time slots · {formatDateLabel(selectedDate)}</h2>
-              <p className="mp-panel__hint">Click a time/batch to see the students scheduled for that hour.</p>
+              <p className="mp-panel__hint">Click a time/batch to open the full batch page.</p>
             </div>
             <ManagementButton type="button" variant="secondary" size="sm" onClick={() => setSelectedDate(null)}>
               <ArrowLeft size={14} /> All dates
@@ -233,7 +175,7 @@ export default function SchedulesPage() {
                 key={slot.id}
                 type="button"
                 className="mp-bank-card"
-                onClick={() => setSelectedScheduleId(slot.id)}
+                onClick={() => navigate(`/management/schedules/${slot.id}`)}
               >
                 <div className="mp-bank-card__icon"><Clock3 size={20} /></div>
                 <div className="mp-bank-card__body">
@@ -248,81 +190,6 @@ export default function SchedulesPage() {
               </button>
             ))}
           </div>
-        </section>
-      ) : (
-        <section className="mp-panel">
-          <div className="mp-panel__head">
-            <div>
-              <h2 className="mp-panel__title">
-                <Users size={16} /> Students · {selectedSlot?.batch_code} · {selectedSlot?.time_slot}
-              </h2>
-              <p className="mp-panel__hint">
-                {formatNumber(detail?.registered_count || filteredStudents.length)} examinees in this time slot.
-                Search within the batch for fast lookup in large applicant lists.
-              </p>
-            </div>
-            <div className="mp-header__actions">
-              <ManagementButton type="button" variant="secondary" size="sm" onClick={() => setSelectedScheduleId(null)}>
-                <ArrowLeft size={14} /> Time slots
-              </ManagementButton>
-              <Link to={`/management/schedules/${selectedScheduleId}`}>
-                <ManagementButton type="button" variant="primary" size="sm">
-                  Open full batch
-                </ManagementButton>
-              </Link>
-            </div>
-          </div>
-
-          <div className="mp-result-filters" style={{ marginBottom: 12 }}>
-            <label className="mp-field mp-field--grow">
-              <span className="mp-field__label"><Search size={14} /> Search students in this time</span>
-              <input
-                className="mp-field__input"
-                type="search"
-                value={studentSearch}
-                onChange={(e) => setStudentSearch(e.target.value)}
-                placeholder="Name, applicant code, or email..."
-              />
-            </label>
-          </div>
-
-          {detailLoading ? (
-            <div className="mp-loading mp-loading--compact">
-              <Loader2 size={18} className="mp-loading__icon" />
-              Loading students...
-            </div>
-          ) : (
-            <div className="mp-table-wrap">
-              <table className="mp-table">
-                <thead>
-                  <tr>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Course Pref.</th>
-                    <th>Attendance</th>
-                    <th>Result</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredStudents.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="mp-table__empty">No students found in this time slot.</td>
-                    </tr>
-                  ) : filteredStudents.map((student) => (
-                    <tr key={student.registration_id}>
-                      <td>{student.applicant_code}</td>
-                      <td>{student.name}</td>
-                      <td>{student.email}</td>
-                      <td>{student.course_preference || '—'}</td>
-                      <td><StatusBadge variant={statusVariant(student.attendance_status)}>{student.attendance_status}</StatusBadge></td>
-                      <td><StatusBadge variant={statusVariant(student.result_status)}>{student.result_status}</StatusBadge></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </section>
       )}
     </div>

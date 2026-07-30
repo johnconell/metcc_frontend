@@ -25,7 +25,6 @@ const UsersPage = lazy(() => import('../pages/management/UsersPage'));
 const LobbyPage = lazy(() => import('../pages/management/LobbyPage'));
 const ExamResultsPage = lazy(() => import('../pages/results/ExamResultsPage'));
 const ReportsAnalyticsPage = lazy(() => import('../pages/results/ReportsAnalyticsPage'));
-const EmailNotificationPage = lazy(() => import('../pages/results/EmailNotificationPage'));
 const SettingsPage = lazy(() => import('../pages/system/SettingsPage'));
 const LogsPage = lazy(() => import('../pages/system/LogsPage'));
 const BackupPage = lazy(() => import('../pages/system/BackupPage'));
@@ -87,7 +86,6 @@ export default function AppRoutes() {
                   <Route path="/results" element={<Navigate to="/results/exam-results" replace />} />
                   <Route path="/results/exam-results" element={<ExamResultsPage />} />
                   <Route path="/results/reports-analytics" element={<ReportsAnalyticsPage />} />
-                  <Route path="/results/email-notification" element={<EmailNotificationPage />} />
                   <Route path="/system" element={<Navigate to="/system/settings" replace />} />
                   <Route path="/system/settings" element={<SettingsPage />} />
                   <Route path="/system/logs" element={<LogsPage />} />
