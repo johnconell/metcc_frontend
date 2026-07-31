@@ -21,19 +21,44 @@ function codeFromName(name) {
 
 const DEFAULT_CATEGORIES = [
   {
-    name: 'General Information',
+    name: 'Mathematics',
+    code: 'MATH',
+    description: 'Arithmetic, algebra, geometry, and quantitative reasoning.',
+  },
+  {
+    name: 'English',
+    code: 'ENGLISH',
+    description: 'Vocabulary, grammar, reading comprehension, and language usage.',
+  },
+  {
+    name: 'Science',
+    code: 'SCIENCE',
+    description: 'Basic concepts in biology, chemistry, physics, and earth science.',
+  },
+  {
+    name: 'Computer',
+    code: 'COMPUTER',
+    description: 'Basic ICT, computer literacy, and digital concepts.',
+  },
+  {
+    name: 'General Knowledge',
     code: 'GENERAL',
     description: 'Civics, Philippine history, current events, and general knowledge.',
+  },
+  {
+    name: 'Logic',
+    code: 'LOGIC',
+    description: 'Logical reasoning, patterns, and analytical thinking.',
+  },
+  {
+    name: 'Others',
+    code: 'OTHERS',
+    description: 'Other subject areas not covered above.',
   },
   {
     name: 'Verbal Ability',
     code: 'VERBAL',
     description: 'Vocabulary, grammar, reading comprehension, and language usage.',
-  },
-  {
-    name: 'Scientific Ability',
-    code: 'SCIENCE',
-    description: 'Basic concepts in biology, chemistry, physics, and earth science.',
   },
   {
     name: 'Numerical Ability',
@@ -346,6 +371,9 @@ export default function QuestionBankSubjectPage() {
           </p>
         </div>
         <div className="mp-header__actions">
+          <ManagementButton as={Link} to={`/management/question-bank/${bankId}/exam-preview`} variant="secondary">
+            Review Exam
+          </ManagementButton>
           <ManagementButton variant="secondary" onClick={openImport} disabled={subjects.length === 0}>
             <FileUp size={16} aria-hidden="true" /> Import Questions
           </ManagementButton>

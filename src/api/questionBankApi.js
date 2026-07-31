@@ -11,6 +11,7 @@ export const questionBankApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
   deleteBank: (id) => api.delete(`/question-banks/${id}`),
+  examPreview: (bankId) => api.get(`/question-banks/${bankId}/exam-preview`),
 
   createSubject: (bankId, payload) => api.post(`/question-banks/${bankId}/subjects`, payload),
   getSubject: (id) => api.get(`/subjects/${id}`),
@@ -21,6 +22,9 @@ export const questionBankApi = {
   updateQuestion: (questionId, payload) => api.patch(`/exam-questions/${questionId}`, payload),
   toggleSelection: (questionId) => api.post(`/exam-questions/${questionId}/toggle-selection`),
   deleteQuestion: (questionId) => api.delete(`/exam-questions/${questionId}`),
+
+  reviewQuestions: (params = {}) => api.get('/exam-questions/review', { params }),
+  bulkQuestions: (payload) => api.post('/exam-questions/bulk', payload),
 };
 
 /** @deprecated Use questionBankApi */

@@ -19,6 +19,7 @@ const ScheduleDetailPage = lazy(() => import('../pages/management/ScheduleDetail
 const QuestionBankPage = lazy(() => import('../pages/management/QuestionBankPage'));
 const QuestionBankSubjectPage = lazy(() => import('../pages/management/QuestionBankSubjectPage'));
 const QuestionBankDetailPage = lazy(() => import('../pages/management/QuestionBankDetailPage'));
+const ExamPreviewPage = lazy(() => import('../pages/management/ExamPreviewPage'));
 const StudentsPage = lazy(() => import('../pages/management/StudentsPage'));
 const ProctorsPage = lazy(() => import('../pages/management/ProctorsPage'));
 const UsersPage = lazy(() => import('../pages/management/UsersPage'));
@@ -71,6 +72,8 @@ export default function AppRoutes() {
                   <Route path="/management/schedules" element={<SchedulesPage />} />
                   <Route path="/management/schedules/:id" element={<ScheduleDetailPage />} />
                   <Route path="/management/question-bank" element={<QuestionBankPage />} />
+                  <Route path="/management/question-review" element={<Navigate to="/management/question-bank" replace />} />
+                  <Route path="/management/question-bank/:bankId/exam-preview" element={<ExamPreviewPage />} />
                   <Route path="/management/question-bank/subjects/:subjectId" element={<Navigate to="/management/question-bank" replace />} />
                   <Route path="/management/question-bank/subjects/:subjectId/banks/:bankId" element={<Navigate to="/management/question-bank" replace />} />
                   <Route path="/management/question-bank/:bankId/subjects/:subjectId" element={<QuestionBankDetailPage />} />

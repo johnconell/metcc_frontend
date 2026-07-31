@@ -15,21 +15,6 @@ const SETTINGS_SECTIONS = [
   { key: 'security', label: 'Security Settings', icon: Shield },
 ];
 
-function toLocalInput(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function fromLocalInput(value) {
-  if (!value) return null;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
-
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState('school');
   const [courses, setCourses] = useState([]);
@@ -44,9 +29,9 @@ export default function SettingsPage() {
   });
   const [examSettings, setExamSettings] = useState({
     duration_minutes: 90,
-    allow_late_entry: false,
-    default_start_at: '',
-    default_end_at: '',
+    shuffle_questions: true,
+    shuffle_categories: false,
+    shuffle_both: false,
   });
   const [examSaving, setExamSaving] = useState(false);
   const [examError, setExamError] = useState('');
@@ -72,9 +57,9 @@ export default function SettingsPage() {
       const row = data.data || {};
       setExamSettings({
         duration_minutes: row.duration_minutes ?? 90,
-        allow_late_entry: Boolean(row.allow_late_entry),
-        default_start_at: toLocalInput(row.default_start_at),
-        default_end_at: toLocalInput(row.default_end_at),
+        shuffle_questions: Boolean(row.shuffle_questions),
+        shuffle_categories: Boolean(row.shuffle_categories),
+        shuffle_both: Boolean(row.shuffle_both),
       });
     } catch (err) {
       setExamError(err.response?.data?.message || 'Unable to load examination settings.');
@@ -96,18 +81,21 @@ export default function SettingsPage() {
     try {
       const { data } = await examinationSettingsApi.update({
         duration_minutes: Number(examSettings.duration_minutes) || 90,
-        allow_late_entry: Boolean(examSettings.allow_late_entry),
-        default_start_at: fromLocalInput(examSettings.default_start_at),
-        default_end_at: fromLocalInput(examSettings.default_end_at),
+        allow_late_entry: false,
+        shuffle_questions: Boolean(examSettings.shuffle_questions),
+        shuffle_categories: Boolean(examSettings.shuffle_categories),
+        shuffle_both: Boolean(examSettings.shuffle_both),
+        default_start_at: null,
+        default_end_at: null,
       });
       const row = data.data || {};
       setExamSettings({
         duration_minutes: row.duration_minutes ?? 90,
-        allow_late_entry: Boolean(row.allow_late_entry),
-        default_start_at: toLocalInput(row.default_start_at),
-        default_end_at: toLocalInput(row.default_end_at),
+        shuffle_questions: Boolean(row.shuffle_questions),
+        shuffle_categories: Boolean(row.shuffle_categories),
+        shuffle_both: Boolean(row.shuffle_both),
       });
-      setExamNotice('Examination settings saved. Duration applies to web and mobile.');
+      setExamNotice('Examination settings saved.');
     } catch (err) {
       setExamError(err.response?.data?.message || 'Unable to save examination settings.');
     } finally {
@@ -207,58 +195,89 @@ export default function SettingsPage() {
             <>
               <h2 className="mp-panel__title">Examination Settings</h2>
               <p className="mp-panel__hint">
-                Duration and late-entry rules are used by both the admin web app and the mobile examination app.
+                These settings control exam length and how questions are ordered for students on mobile.
               </p>
 
               {examError ? <div className="mp-alert mp-alert--error" role="alert">{examError}</div> : null}
               {examNotice ? <div className="mp-alert mp-alert--success" role="status">{examNotice}</div> : null}
 
-              <form className="sp-form" onSubmit={saveExamSettings} style={{ marginBottom: 28 }}>
-                <label className="sp-form__label" htmlFor="exam-duration">Examination duration (minutes)</label>
-                <input
-                  id="exam-duration"
-                  type="number"
-                  min={1}
-                  max={600}
-                  className="sp-form__input"
-                  value={examSettings.duration_minutes}
-                  onChange={(e) => setExamSettings((s) => ({ ...s, duration_minutes: e.target.value }))}
-                  required
-                />
-                <label className="sp-form__label" htmlFor="exam-start">Default start date and time</label>
-                <input
-                  id="exam-start"
-                  type="datetime-local"
-                  className="sp-form__input"
-                  value={examSettings.default_start_at}
-                  onChange={(e) => setExamSettings((s) => ({ ...s, default_start_at: e.target.value }))}
-                />
-                <label className="sp-form__label" htmlFor="exam-end">Default end date (optional)</label>
-                <input
-                  id="exam-end"
-                  type="datetime-local"
-                  className="sp-form__input"
-                  value={examSettings.default_end_at}
-                  onChange={(e) => setExamSettings((s) => ({ ...s, default_end_at: e.target.value }))}
-                />
-                <label className="sp-form__label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <form className="sp-form sp-settings-cards" onSubmit={saveExamSettings} style={{ marginBottom: 28 }}>
+                <div className="sp-settings-card">
+                  <h3 className="sp-settings-card__title">Duration</h3>
+                  <p className="sp-settings-card__hint">How long students have once the proctor starts the exam.</p>
+                  <label className="sp-form__label" htmlFor="exam-duration">Minutes</label>
                   <input
-                    type="checkbox"
-                    checked={examSettings.allow_late_entry}
-                    onChange={(e) => setExamSettings((s) => ({ ...s, allow_late_entry: e.target.checked }))}
+                    id="exam-duration"
+                    type="number"
+                    min={1}
+                    max={600}
+                    className="sp-form__input"
+                    value={examSettings.duration_minutes}
+                    onChange={(e) => setExamSettings((s) => ({ ...s, duration_minutes: e.target.value }))}
+                    required
                   />
-                  Allow late entry after examination starts (default: disabled)
-                </label>
-                <ManagementButton type="submit" variant="primary" disabled={examSaving}>
-                  {examSaving ? <Loader2 size={16} className="mp-loading__icon" /> : <Save size={16} />}
-                  Save examination settings
-                </ManagementButton>
+                </div>
+
+                <div className="sp-settings-card">
+                  <h3 className="sp-settings-card__title">Question order</h3>
+                  <p className="sp-settings-card__hint">
+                    Choose how categories and questions are shuffled for each student.
+                  </p>
+
+                  <label className="sp-toggle-row">
+                    <input
+                      type="checkbox"
+                      checked={examSettings.shuffle_questions}
+                      onChange={(e) => setExamSettings((s) => ({ ...s, shuffle_questions: e.target.checked, shuffle_both: false }))}
+                    />
+                    <span>
+                      <strong>Shuffle questions within each category</strong>
+                      <small>Math questions appear in a different order for each student.</small>
+                    </span>
+                  </label>
+
+                  <label className="sp-toggle-row">
+                    <input
+                      type="checkbox"
+                      checked={examSettings.shuffle_categories}
+                      onChange={(e) => setExamSettings((s) => ({ ...s, shuffle_categories: e.target.checked, shuffle_both: false }))}
+                    />
+                    <span>
+                      <strong>Shuffle category order</strong>
+                      <small>One student may see English first; another may see Math first.</small>
+                    </span>
+                  </label>
+
+                  <label className="sp-toggle-row">
+                    <input
+                      type="checkbox"
+                      checked={examSettings.shuffle_both}
+                      onChange={(e) => setExamSettings((s) => ({
+                        ...s,
+                        shuffle_both: e.target.checked,
+                        shuffle_questions: e.target.checked ? true : s.shuffle_questions,
+                        shuffle_categories: e.target.checked ? true : s.shuffle_categories,
+                      }))}
+                    />
+                    <span>
+                      <strong>Full shuffle</strong>
+                      <small>Turns on both category shuffle and question shuffle.</small>
+                    </span>
+                  </label>
+                </div>
+
+                <div className="sp-form__actions">
+                  <ManagementButton type="submit" variant="primary" disabled={examSaving}>
+                    {examSaving ? <Loader2 size={16} className="mp-loading__icon" /> : <Save size={16} />}
+                    Save examination settings
+                  </ManagementButton>
+                </div>
               </form>
 
               <h2 className="mp-panel__title">Course passing grades</h2>
               <p className="mp-panel__hint">
-                Scores are stored and shown as percentage out of 100 (example: <strong>67/100</strong>).
-                Pass/fail uses each course&apos;s passing percentage. A 5-point grade (1.00 best → 5.00 fail)
+                Scores are shown as correct answers over total exam items (example: <strong>45/50</strong>).
+                Pass/fail still uses each course&apos;s passing percentage. A 5-point grade (1.00 best → 5.00 fail)
                 is also computed and stored.
               </p>
 

@@ -62,6 +62,7 @@ const en = {
   system: 'System',
   navSchedules: 'Examination / Schedules',
   navQuestionBank: 'Question Bank',
+  navQuestionReview: 'Question Review',
   navSubjects: 'Subjects',
   navStudents: 'Student List',
   navProctors: 'Proctor',
