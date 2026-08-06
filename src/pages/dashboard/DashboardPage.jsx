@@ -8,7 +8,6 @@ import {
   ChevronRight,
   ClipboardList,
   FileCheck,
-  Home,
   Loader2,
   Mail,
   Settings,
@@ -270,14 +269,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      <nav className="dashboard-breadcrumbs" aria-label="Breadcrumb">
-        <span className="dashboard-breadcrumbs__item"><Home size={14} /></span>
-        <ChevronRight className="dashboard-breadcrumbs__sep" />
-        <span className="dashboard-breadcrumbs__item">Dashboard</span>
-        <ChevronRight className="dashboard-breadcrumbs__sep" />
-        <span className="dashboard-breadcrumbs__item dashboard-breadcrumbs__current">Home</span>
-      </nav>
-
       <header className="dashboard-page-header">
         <h1>Dashboard</h1>
         <p>
