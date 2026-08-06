@@ -11,7 +11,7 @@ import {
   Upload,
   Users,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { applicantApi } from '../../api/applicantApi';
 import { ManagementToolbar, ManagementButton } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
@@ -122,6 +122,7 @@ function RowActionsMenu({ row }) {
 
 export default function StudentsPage() {
   const fileRef = useRef(null);
+  const [searchParams] = useSearchParams();
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -129,12 +130,17 @@ export default function StudentsPage() {
   const [notice, setNotice] = useState('');
   const [duplicateNotice, setDuplicateNotice] = useState('');
   const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => searchParams.get('q') || '');
   const [program, setProgram] = useState('all');
   const [status, setStatus] = useState('all');
   const [examDate, setExamDate] = useState('');
   const [sortKey, setSortKey] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
+
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q != null) setSearch(q);
+  }, [searchParams]);
 
   const load = useCallback(async () => {
     setLoading(true);

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   ChevronDown,
@@ -21,10 +21,18 @@ import {
   Shield,
   UserCog,
   Building2,
+  CheckCheck,
 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { usePreferences } from '../preferences/PreferencesContext';
 import { preferenceStorage } from '../preferences/preferenceStorage';
+import { AppBreadcrumbs } from '../components/layout/AppBreadcrumbs';
+import {
+  formatNotificationTime,
+  getNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from '../utils/notifications';
 import tccLogo from '../assets/tcc_logo.png';
 import './DashboardLayout.css';
 
@@ -72,16 +80,21 @@ export function DashboardLayout() {
   const { user, isAdmin, logout } = useAuth();
   const { t } = usePreferences();
   const location = useLocation();
+  const navigate = useNavigate();
+  const notifyWrapRef = useRef(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => preferenceStorage.getSidebarCollapsed());
   const [managementOpen, setManagementOpen] = useState(true);
   const [resultsOpen, setResultsOpen] = useState(true);
   const [systemOpen, setSystemOpen] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const [notifications, setNotifications] = useState(() => getNotifications());
 
   const displayName = user?.name || 'Administrator';
   const displayRole = user?.role?.name || 'Administrator';
   const initials = getInitials(displayName);
+  const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
 
   const managementActive = location.pathname.startsWith('/management');
   const resultsActive = location.pathname.startsWith('/results');
@@ -109,6 +122,20 @@ export function DashboardLayout() {
     }
   }, [systemActive]);
 
+  useEffect(() => {
+    setNotifyOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const onPointerDown = (event) => {
+      if (notifyWrapRef.current && !notifyWrapRef.current.contains(event.target)) {
+        setNotifyOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    return () => document.removeEventListener('mousedown', onPointerDown);
+  }, []);
+
   const closeSidebar = () => setSidebarOpen(false);
   const toggleSidebar = () => {
     if (window.innerWidth <= 768) {
@@ -119,6 +146,27 @@ export function DashboardLayout() {
 
     setSidebarOpen(false);
     setSidebarCollapsed((collapsed) => !collapsed);
+  };
+
+  const refreshNotifications = () => {
+    setNotifications(getNotifications());
+  };
+
+  const openNotifications = () => {
+    refreshNotifications();
+    setNotifyOpen((open) => !open);
+  };
+
+  const handleNotificationClick = (item) => {
+    markNotificationRead(item.id);
+    refreshNotifications();
+    setNotifyOpen(false);
+    if (item.href) navigate(item.href);
+  };
+
+  const handleMarkAllRead = () => {
+    markAllNotificationsRead();
+    refreshNotifications();
   };
 
   const handleLogout = async () => {
@@ -334,14 +382,62 @@ export function DashboardLayout() {
               className="dashboard-header__search-input"
               placeholder={t('searchPlaceholder')}
               aria-label={t('searchPlaceholder')}
+              readOnly
+              tabIndex={-1}
             />
           </div>
 
           <div className="dashboard-header__actions">
-            <button type="button" className="dashboard-header__notify" aria-label="Notifications, 3 unread">
-              <Bell size={18} />
-              <span className="dashboard-header__badge">3</span>
-            </button>
+            <div className="dashboard-header__notify-wrap" ref={notifyWrapRef}>
+              <button
+                type="button"
+                className={`dashboard-header__notify${notifyOpen ? ' dashboard-header__notify--open' : ''}`}
+                aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+                aria-expanded={notifyOpen}
+                aria-controls="header-notifications"
+                onClick={openNotifications}
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="dashboard-header__badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                )}
+              </button>
+
+              {notifyOpen && (
+                <div id="header-notifications" className="dashboard-header__notify-panel" role="dialog" aria-label="Notifications">
+                  <div className="dashboard-header__notify-head">
+                    <strong>Notifications</strong>
+                    <button
+                      type="button"
+                      className="dashboard-header__notify-mark"
+                      onClick={handleMarkAllRead}
+                      disabled={unreadCount === 0}
+                    >
+                      <CheckCheck size={14} aria-hidden="true" />
+                      Mark all read
+                    </button>
+                  </div>
+                  <div className="dashboard-header__notify-list">
+                    {notifications.length === 0 ? (
+                      <p className="dashboard-header__notify-empty">You are all caught up.</p>
+                    ) : (
+                      notifications.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className={`dashboard-header__notify-item${item.read ? '' : ' is-unread'}`}
+                          onClick={() => handleNotificationClick(item)}
+                        >
+                          <span className="dashboard-header__notify-item-title">{item.title}</span>
+                          <span className="dashboard-header__notify-item-body">{item.body}</span>
+                          <span className="dashboard-header__notify-item-time">{formatNotificationTime(item.createdAt)}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             <Link to="/profile" className="dashboard-header__profile">
               <span className="dashboard-header__profile-avatar">
@@ -368,6 +464,7 @@ export function DashboardLayout() {
         </header>
 
         <div className="dashboard-content">
+          <AppBreadcrumbs pathname={location.pathname} />
           <Outlet />
         </div>
       </div>
