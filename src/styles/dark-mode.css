@@ -226,6 +226,25 @@ html[data-theme='dark'] .mgmt-card {
   color: #ffffff !important;
 }
 
+html[data-theme='dark'] .mp-date-card--keys-sent {
+  background: color-mix(in srgb, var(--color-semantic-success) 16%, #1c1a19) !important;
+  border-color: color-mix(in srgb, var(--color-semantic-success) 45%, #3a3532) !important;
+}
+
+html[data-theme='dark'] .mp-table__row--keys-sent td {
+  background: color-mix(in srgb, var(--color-semantic-success) 12%, transparent) !important;
+}
+
+html[data-theme='dark'] .mp-table-wrap--scroll {
+  border-color: #3a3532 !important;
+}
+
+/* Sticky header must stay opaque so rows do not show through while scrolling. */
+html[data-theme='dark'] .mp-table-wrap--scroll .mp-table thead th {
+  background: #221f1e !important;
+  box-shadow: inset 0 -1px 0 #3a3532 !important;
+}
+
 html[data-theme='dark'] .mp-field__input,
 html[data-theme='dark'] .mp-field__textarea,
 html[data-theme='dark'] select.mp-field__input,

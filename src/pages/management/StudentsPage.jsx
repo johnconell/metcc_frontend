@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { applicantApi } from '../../api/applicantApi';
+import { notifySchedulesChanged } from '../../api/scheduleApi';
 import { ManagementToolbar, ManagementButton } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
 import { StatusBadge } from '../../components/management/StatusBadge';
@@ -25,10 +26,17 @@ import './students-page.css';
 const PROGRAMS = ['BSIT', 'BSED', 'BEED', 'BSBA', 'BSHM', 'Criminology', 'BSCrim', 'BSN'];
 const STATUSES = ['Pending', 'Scheduled', 'Completed', 'Passed', 'Failed'];
 
-const IMPORT_TEMPLATE = `Applicant Name,Program Desire,Application Date,Time
-Juan Dela Cruz,BSIT,2026-07-20,08:00-09:00
-Maria Santos,BSED,2026-07-20,09:30-10:30
+const IMPORT_TEMPLATE = `Applicant Name,Program Desire,Application Date,Time,Gmail
+Juan Dela Cruz,BSIT,2026-07-20,08:00-09:00,family@gmail.com
+Maria Santos,BSED,2026-07-20,09:30-10:30,maria@gmail.com
 `;
+
+const IMPORT_STEPS = [
+  'Uploading spreadsheet…',
+  'Parsing rows…',
+  'Creating students & schedules…',
+  'Refreshing student list…',
+];
 
 function RowActionsMenu({ row }) {
   const [open, setOpen] = useState(false);
@@ -126,10 +134,13 @@ export default function StudentsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
+  const [importStep, setImportStep] = useState(0);
+  const [importElapsed, setImportElapsed] = useState(0);
   const [notice, setNotice] = useState('');
   const [duplicateNotice, setDuplicateNotice] = useState('');
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
   const [program, setProgram] = useState('all');
   const [status, setStatus] = useState('all');
   const [examDate, setExamDate] = useState('');
@@ -185,19 +196,40 @@ export default function StudentsPage() {
     URL.revokeObjectURL(url);
   };
 
+  useEffect(() => {
+    if (!importing) return undefined;
+    setImportElapsed(0);
+    const tick = setInterval(() => setImportElapsed((s) => s + 1), 1000);
+    const stepTimer = setInterval(() => {
+      setImportStep((s) => (s < IMPORT_STEPS.length - 2 ? s + 1 : s));
+    }, 1200);
+    return () => {
+      clearInterval(tick);
+      clearInterval(stepTimer);
+    };
+  }, [importing]);
+
   const onImportFile = async (event) => {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
 
     setImporting(true);
+    setImportStep(0);
     setNotice('');
     setDuplicateNotice('');
     setError('');
     try {
+      setImportStep(1);
       const { data } = await applicantApi.importFile(file);
+      setImportStep(2);
       const result = data.data || {};
-      setNotice(data.message || 'Import completed.');
+      const dates = (result.dates_touched || []).join(', ');
+      setNotice(
+        `${data.message || 'Import completed.'}`
+          + (dates ? ` Schedules updated for: ${dates}.` : '')
+          + ' Open Examination / Schedules to review. Proctors should re-download the offline pack.',
+      );
 
       if (result.duplicates > 0) {
         const names = (result.duplicate_applicants || [])
@@ -208,18 +240,24 @@ export default function StudentsPage() {
           ? ` (+${result.duplicates - names.length} more)`
           : '';
         setDuplicateNotice(
-          `${result.duplicates} applicant(s) already imported and were skipped: ${names.join(', ')}${more}`,
+          `${result.duplicates} duplicate name(s) inside the file were ignored: ${names.join(', ')}${more}`,
         );
       }
 
       if (result.errors?.length) {
         setError(result.errors.slice(0, 5).join(' '));
       }
+      setImportStep(3);
+      notifySchedulesChanged({
+        dates: result.dates_touched || [],
+        schedules: result.schedules_touched || [],
+      });
       await load();
     } catch (err) {
       setError(err.response?.data?.message || 'Import failed.');
     } finally {
       setImporting(false);
+      setImportStep(0);
     }
   };
 
@@ -252,6 +290,11 @@ export default function StudentsPage() {
         key: 'examination_time',
         label: 'Time',
         render: (row) => row.examination_time || row.preferred_exam_time || '—',
+      },
+      {
+        key: 'gmail',
+        label: 'Gmail',
+        render: (row) => row.gmail || '—',
       },
       {
         key: 'status',
@@ -305,6 +348,44 @@ export default function StudentsPage() {
         </div>
       </header>
 
+      {importing && (
+        <div className="mp-alert mp-alert--success" role="status" aria-live="polite">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <Loader2 size={18} className="spin" />
+            <strong>{IMPORT_STEPS[importStep] || 'Importing…'}</strong>
+            <span className="mp-table__sub">({importElapsed}s)</span>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {IMPORT_STEPS.map((label, index) => (
+              <span
+                key={label}
+                className="mp-table__sub"
+                style={{
+                  fontWeight: index === importStep ? 700 : 500,
+                  opacity: index <= importStep ? 1 : 0.45,
+                }}
+              >
+                {index + 1}. {label.replace('…', '')}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {notice && (
+        <div className="mp-alert mp-alert--success" role="status">
+          {notice}{' '}
+          <button
+            type="button"
+            className="mp-link-back"
+            style={{ display: 'inline', margin: 0 }}
+            onClick={() => navigate('/management/schedules')}
+          >
+            Open Examination / Schedules
+          </button>
+        </div>
+      )}
+
       <section className="students-panel" aria-label="Applicant records">
         <ManagementToolbar
           searchId="student-search"
@@ -343,11 +424,6 @@ export default function StudentsPage() {
           ]}
         />
 
-        {notice && (
-          <div className="students-notice" role="status">
-            {notice}
-          </div>
-        )}
         {duplicateNotice && (
           <div className="students-notice students-notice--warn" role="status">
             {duplicateNotice}

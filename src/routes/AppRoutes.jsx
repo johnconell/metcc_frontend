@@ -16,6 +16,7 @@ const GoogleCallbackPage = lazy(() => import('../pages/auth/GoogleCallbackPage')
 const DashboardPage = lazy(() => import('../pages/dashboard/DashboardPage'));
 const SchedulesPage = lazy(() => import('../pages/management/SchedulesPage'));
 const ScheduleDetailPage = lazy(() => import('../pages/management/ScheduleDetailPage'));
+const PasskeysMonitoringPage = lazy(() => import('../pages/management/PasskeysMonitoringPage'));
 const QuestionBankPage = lazy(() => import('../pages/management/QuestionBankPage'));
 const QuestionBankSubjectPage = lazy(() => import('../pages/management/QuestionBankSubjectPage'));
 const QuestionBankDetailPage = lazy(() => import('../pages/management/QuestionBankDetailPage'));
@@ -70,7 +71,9 @@ export default function AppRoutes() {
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/management" element={<Navigate to="/management/schedules" replace />} />
                   <Route path="/management/schedules" element={<SchedulesPage />} />
+                  <Route path="/management/schedules/by-date/:date/passkeys" element={<PasskeysMonitoringPage />} />
                   <Route path="/management/schedules/:id" element={<ScheduleDetailPage />} />
+                  <Route path="/management/schedules/:id/passkeys" element={<PasskeysMonitoringPage />} />
                   <Route path="/management/question-bank" element={<QuestionBankPage />} />
                   <Route path="/management/question-review" element={<Navigate to="/management/question-bank" replace />} />
                   <Route path="/management/question-bank/:bankId/exam-preview" element={<ExamPreviewPage />} />

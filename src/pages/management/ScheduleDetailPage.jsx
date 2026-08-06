@@ -5,7 +5,9 @@ import {
   CalendarClock,
   CalendarDays,
   Clock3,
+  KeyRound,
   Loader2,
+  Mail,
   Shield,
   Users,
   X,
@@ -174,7 +176,37 @@ export default function ScheduleDetailPage() {
             Students are assigned by time slot and may use any available classroom.
           </p>
         </div>
-        <StatusBadge variant={statusVariant(data.status)}>{data.status}</StatusBadge>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          {data.exam_date ? (
+            <>
+              <Link
+                to={`/management/schedules/by-date/${data.exam_date}/passkeys`}
+                className="mp-link-back"
+                style={{ margin: 0 }}
+              >
+                <KeyRound size={16} /> Keys for this day
+              </Link>
+              <ManagementButton
+                type="button"
+                onClick={async () => {
+                  setSuccess('');
+                  setError('');
+                  try {
+                    await scheduleApi.generatePasskeysByDate(data.exam_date);
+                    const { data: response } = await scheduleApi.sendPasskeysByDate(data.exam_date);
+                    setSuccess(response.message || 'Examination keys sent for this exam day.');
+                    await load();
+                  } catch (err) {
+                    setError(err.response?.data?.message || 'Unable to send examination keys.');
+                  }
+                }}
+              >
+                <Mail size={16} /> Send Keys (whole day)
+              </ManagementButton>
+            </>
+          ) : null}
+          <StatusBadge variant={statusVariant(data.status)}>{data.status}</StatusBadge>
+        </div>
       </header>
 
       {success && (
