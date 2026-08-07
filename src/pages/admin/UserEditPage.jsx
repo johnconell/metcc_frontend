@@ -6,6 +6,13 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
+import {
+  alertFromApiError,
+  confirmAction,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 
 export default function UserEditPage() {
   const { id } = useParams();
@@ -24,13 +31,26 @@ export default function UserEditPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: form.password
+        ? `Update user "${form.name}" and reset password?`
+        : `Update user "${form.name}"?`,
+    });
+    if (!ok) return;
+
+    showLoading('Updating User...');
     try {
       const payload = { ...form };
       if (!payload.password) delete payload.password;
       await userApi.update(id, payload);
+      closeLoading();
+      await toastSuccess(form.password ? 'Password Reset Successfully' : 'User Updated Successfully');
       navigate('/admin/users');
     } catch (err) {
+      closeLoading();
       setError(err.response?.data?.message || 'Update failed.');
+      await alertFromApiError(err, 'Update failed.');
     }
   };
 

@@ -6,6 +6,13 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
+import {
+  alertFromApiError,
+  confirmAction,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 
 export default function UserCreatePage() {
   const navigate = useNavigate();
@@ -19,11 +26,22 @@ export default function UserCreatePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: `Add user "${form.name.trim()}"?`,
+    });
+    if (!ok) return;
+
+    showLoading('Creating User...');
     try {
       await userApi.create(form);
+      closeLoading();
+      await toastSuccess('User Created Successfully');
       navigate('/admin/users');
     } catch (err) {
+      closeLoading();
       setError(err.response?.data?.message || 'Create failed.');
+      await alertFromApiError(err, 'Create failed.');
     }
   };
 

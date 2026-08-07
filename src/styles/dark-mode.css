@@ -387,3 +387,31 @@ html[data-theme='dark'] .mp-stats__item--neutral .mp-stats__icon,
 html[data-theme='dark'] .mp-stats__item--accent .mp-stats__icon {
   color: #ffd27a !important;
 }
+
+/* SweetAlert2 — dark mode */
+html[data-theme='dark'] .metcc-swal-popup,
+html[data-theme='dark'] .swal2-popup {
+  background: #1c1a19 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .swal2-title,
+html[data-theme='dark'] .swal2-html-container,
+html[data-theme='dark'] .swal2-content,
+html[data-theme='dark'] .metcc-swal-toast-title,
+html[data-theme='dark'] .metcc-swal-toast-text,
+html[data-theme='dark'] .metcc-swal-popup .swal2-html-container {
+  color: #f3efe9 !important;
+}
+
+html[data-theme='dark'] .swal2-timer-progress-bar,
+html[data-theme='dark'] .metcc-swal-toast .swal2-timer-progress-bar {
+  background: #ff8a9a !important;
+}
+
+html[data-theme='dark'] .metcc-swal-toast.swal2-toast {
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.25) !important;
+}
+

@@ -1,13 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
+  BookOpen,
   CheckSquare,
-  Loader2,
+  FileUp,
+  FolderOpen,
+  Layers,
   Pencil,
   Plus,
   Square,
   Trash2,
+  Upload,
   X,
 } from 'lucide-react';
 import { questionBankApi } from '../../api/questionBankApi';
@@ -15,7 +19,19 @@ import { ManagementButton, ManagementToolbar } from '../../components/management
 import { StatusBadge } from '../../components/management/StatusBadge';
 import { DataTable } from '../../components/management/DataTable';
 import { Pagination } from '../../components/management/Pagination';
+import { FileTypeIcon, getFileTypePreset } from '../../components/ui/FileTypeIcon';
+import { Skeleton, SkeletonPageHeader, SkeletonStats, SkeletonTable } from '../../components/ui/Skeleton';
 import { useTableState, statusVariant } from './useTableState';
+import {
+  alertFromApiError,
+  confirmAction,
+  confirmDelete,
+  showLoading,
+  closeLoading,
+  toastError,
+  toastSuccess,
+  toastWarning,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import './management-pages.css';
 
@@ -30,16 +46,47 @@ const EMPTY_FORM = {
   is_selected_for_exam: false,
 };
 
+const FILE_TYPE_OPTIONS = [
+  {
+    value: 'excel',
+    label: 'Excel',
+    ext: '.xlsx · .xls · .csv',
+    accept: '.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv',
+    hint: 'Columns: stem, option_a, option_b, option_c, option_d, correct_answer',
+  },
+  {
+    value: 'word',
+    label: 'Word',
+    ext: '.docx',
+    accept: '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    hint: 'Numbered questions with A–D choices (.docx)',
+  },
+  {
+    value: 'documents',
+    label: 'Documents',
+    ext: '.txt · .csv · .rtf',
+    accept: '.txt,.csv,.rtf,text/plain,text/csv,application/rtf',
+    hint: 'Plain text, CSV, or RTF with numbered A–D items',
+  },
+  {
+    value: 'pdf',
+    label: 'PDF',
+    ext: '.pdf',
+    accept: '.pdf,application/pdf',
+    hint: 'Text-based exam PDF with numbered A–D items',
+  },
+];
+
 function formatNumber(value) {
   return Number(value || 0).toLocaleString();
 }
 
 export default function QuestionBankDetailPage() {
   const { bankId, subjectId } = useParams();
+  const fileInputRef = useRef(null);
   const [subject, setSubject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -49,6 +96,13 @@ export default function QuestionBankDetailPage() {
   const [showLimitForm, setShowLimitForm] = useState(false);
   const [limitValue, setLimitValue] = useState(5);
   const [savingLimit, setSavingLimit] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [importFileType, setImportFileType] = useState('excel');
+  const [importFile, setImportFile] = useState(null);
+  const [replaceExisting, setReplaceExisting] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState('');
+  const [dragging, setDragging] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -59,6 +113,7 @@ export default function QuestionBankDetailPage() {
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to load subject questions.');
       setSubject(null);
+      await alertFromApiError(err, 'Unable to load subject questions.');
     } finally {
       setLoading(false);
     }
@@ -88,6 +143,8 @@ export default function QuestionBankDetailPage() {
   const selectionLimit = subject?.selection_limit ?? 5;
   const selectedCount = subject?.selected_questions_count ?? 0;
   const atSelectionLimit = selectedCount >= selectionLimit;
+  const selectedFileType = FILE_TYPE_OPTIONS.find((item) => item.value === importFileType) || FILE_TYPE_OPTIONS[0];
+  const selectedPreset = getFileTypePreset(selectedFileType.value);
 
   const openLimitForm = () => {
     setLimitValue(selectionLimit);
@@ -98,7 +155,6 @@ export default function QuestionBankDetailPage() {
     event.preventDefault();
     const nextLimit = Math.max(0, Number(limitValue) || 0);
     setSavingLimit(true);
-    setError('');
     try {
       const { data } = await questionBankApi.updateSubject(subjectId, { selection_limit: nextLimit });
       setSubject((prev) => ({
@@ -108,10 +164,10 @@ export default function QuestionBankDetailPage() {
         questions: prev?.questions,
       }));
       setShowLimitForm(false);
-      setSuccess(`Selection limit updated to ${nextLimit}.`);
+      await toastSuccess(`Selection limit updated to ${nextLimit}.`);
       await load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to update selection limit.');
+      await alertFromApiError(err, 'Unable to update selection limit.');
     } finally {
       setSavingLimit(false);
     }
@@ -130,6 +186,16 @@ export default function QuestionBankDetailPage() {
     setForm(EMPTY_FORM);
     setFormError('');
     setShowForm(true);
+  };
+
+  const openImport = () => {
+    setImportFileType('excel');
+    setImportFile(null);
+    setReplaceExisting(true);
+    setImportError('');
+    setDragging(false);
+    setShowImport(true);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const openEdit = (question) => {
@@ -158,10 +224,12 @@ export default function QuestionBankDetailPage() {
 
     if (form.stem.trim().length < 5) {
       setFormError('Enter a full question stem.');
+      await toastWarning('Check the form', 'Enter a full question stem.');
       return;
     }
     if (options.length < 2) {
       setFormError('Add at least two answer options.');
+      await toastWarning('Check the form', 'Add at least two answer options.');
       return;
     }
 
@@ -178,11 +246,27 @@ export default function QuestionBankDetailPage() {
     setFormError('');
     try {
       if (editing) {
+        const ok = await confirmAction({
+          title: 'Are you sure?',
+          text: 'Update this question?',
+        });
+        if (!ok) {
+          setSaving(false);
+          return;
+        }
         await questionBankApi.updateQuestion(editing.id, payload);
-        setSuccess('Question updated.');
+        await toastSuccess('Question Updated Successfully');
       } else {
+        const ok = await confirmAction({
+          title: 'Are you sure?',
+          text: 'Add this question to the bank?',
+        });
+        if (!ok) {
+          setSaving(false);
+          return;
+        }
         await questionBankApi.createQuestion(subjectId, payload);
-        setSuccess('Question added.');
+        await toastSuccess('Question Added Successfully');
       }
       setShowForm(false);
       setEditing(null);
@@ -191,39 +275,103 @@ export default function QuestionBankDetailPage() {
       const first = err.response?.data?.errors
         ? Object.values(err.response.data.errors).flat()[0]
         : null;
-      setFormError(first || err.response?.data?.message || (editing ? 'Unable to update question.' : 'Unable to add question.'));
+      const message = first || err.response?.data?.message || (editing ? 'Unable to update question.' : 'Unable to add question.');
+      setFormError(message);
+      await toastError('Unable to save', message);
     } finally {
       setSaving(false);
     }
   };
 
+  const submitImport = async (event) => {
+    event.preventDefault();
+    const bankKey = bankId || subject?.question_bank_id;
+    if (!bankKey) {
+      await toastError('Missing bank', 'Unable to determine question bank.');
+      return;
+    }
+    if (!importFile) {
+      setImportError('Choose a file to upload.');
+      await toastWarning('File required', 'Click the upload area and choose a file.');
+      return;
+    }
+    if (replaceExisting) {
+      const ok = await confirmAction({
+        title: 'Are you sure?',
+        text: `Questions in "${subject.name}" will be cleared before import. This action cannot be undone.`,
+      });
+      if (!ok) return;
+    } else {
+      const ok = await confirmAction({
+        title: 'Are you sure?',
+        text: 'Import questions into this category?',
+      });
+      if (!ok) return;
+    }
+
+    setImporting(true);
+    setImportError('');
+    showLoading('Importing Questions...');
+    try {
+      const formData = new FormData();
+      formData.append('file', importFile);
+      formData.append('file_type', importFileType);
+      formData.append('exam_subject_id', subjectId);
+      formData.append('replace_existing', replaceExisting ? '1' : '0');
+      const { data } = await questionBankApi.importQuestions(bankKey, formData);
+      const summary = data.data?.import_summary?.[0];
+      closeLoading();
+      await toastSuccess(
+        data.message || 'Questions Imported Successfully',
+        summary ? `${summary.imported} question(s) imported.` : ''
+      );
+      setShowImport(false);
+      setImportFile(null);
+      await load();
+    } catch (err) {
+      closeLoading();
+      const first = err.response?.data?.errors
+        ? Object.values(err.response.data.errors).flat()[0]
+        : null;
+      const message = first || err.response?.data?.message || 'Unable to import questions.';
+      setImportError(message);
+      await toastError('Import Failed', message);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const toggleSelection = async (question) => {
     if (!question.selected && atSelectionLimit) {
-      setError(`Selection limit reached (${selectionLimit}). Increase the limit or deselect another question.`);
+      await toastWarning(
+        'Selection limit reached',
+        `Limit is ${selectionLimit}. Increase the limit or deselect another question.`
+      );
       return;
     }
     setBusyId(question.id);
-    setError('');
     try {
       const { data } = await questionBankApi.toggleSelection(question.id);
-      setSuccess(data.message || 'Selection updated.');
+      await toastSuccess(data.message || 'Selection updated.');
       await load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to update exam selection.');
+      await alertFromApiError(err, 'Unable to update exam selection.');
     } finally {
       setBusyId(null);
     }
   };
 
   const removeQuestion = async (question) => {
-    if (!window.confirm('Delete this question?')) return;
+    const ok = await confirmDelete();
+    if (!ok) return;
+
     setBusyId(question.id);
     try {
       await questionBankApi.deleteQuestion(question.id);
-      setSuccess('Question deleted.');
+      await toastSuccess('Record Deleted Successfully');
       await load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to delete question.');
+      await alertFromApiError(err, 'Unable to delete question.');
     } finally {
       setBusyId(null);
     }
@@ -329,10 +477,10 @@ export default function QuestionBankDetailPage() {
   if (loading && !subject) {
     return (
       <div className="mp-page">
-        <div className="mp-loading">
-          <Loader2 size={18} className="mp-loading__icon" />
-          Loading questions...
-        </div>
+        <Skeleton className="ui-skeleton--lede" style={{ width: '10rem', marginBottom: '1rem' }} />
+        <SkeletonPageHeader />
+        <SkeletonStats count={3} />
+        <SkeletonTable rows={6} cols={5} />
       </div>
     );
   }
@@ -366,12 +514,25 @@ export default function QuestionBankDetailPage() {
           </p>
           <h1 className="mp-header__title">{subject.name}</h1>
           <p className="mp-header__lede">
-            {subject.description || 'Add questions and select which ones will be used in the entrance exam.'}
+            {subject.description || 'Add questions manually or import from Excel, Word, or PDF.'}
+          </p>
+          <p className="mp-hierarchy-crumb">
+            <FolderOpen size={14} aria-hidden="true" />
+            <Link to="/management/question-bank">Banks</Link>
+            <span aria-hidden="true">→</span>
+            <Layers size={14} aria-hidden="true" />
+            <Link to={backTo}>Categories</Link>
+            <span aria-hidden="true">→</span>
+            <BookOpen size={14} aria-hidden="true" />
+            <strong>Questions</strong>
           </p>
         </div>
         <div className="mp-header__actions">
           <ManagementButton variant="secondary" onClick={openLimitForm}>
             <Pencil size={16} aria-hidden="true" /> Edit selection limit
+          </ManagementButton>
+          <ManagementButton variant="secondary" onClick={openImport}>
+            <FileUp size={16} aria-hidden="true" /> Import Questions
           </ManagementButton>
           <ManagementButton variant="primary" onClick={openCreate}>
             <Plus size={16} aria-hidden="true" /> Add Question
@@ -398,16 +559,13 @@ export default function QuestionBankDetailPage() {
         </div>
       </div>
 
-      {success && <div className="mp-alert mp-alert--success" role="status">{success}</div>}
-      {error && <div className="mp-alert mp-alert--error" role="alert">{error}</div>}
-
       <section className="mp-panel">
         <div className="mp-panel__head">
           <div>
-            <h2 className="mp-panel__title">Questions</h2>
+            <h2 className="mp-panel__title"><BookOpen size={16} /> Questions</h2>
             <p className="mp-panel__hint">
               You can select up to <strong>{selectionLimit}</strong> questions for the exam.
-              Change the limit anytime with <strong>Edit selection limit</strong>.
+              Import with Excel (green), Word (blue), or PDF (red), or add one by one.
             </p>
           </div>
         </div>
@@ -420,10 +578,7 @@ export default function QuestionBankDetailPage() {
         />
 
         {loading ? (
-          <div className="mp-loading mp-loading--compact">
-            <Loader2 size={18} className="mp-loading__icon" />
-            Loading questions...
-          </div>
+          <SkeletonTable rows={5} cols={5} />
         ) : (
           <>
             <DataTable
@@ -434,7 +589,7 @@ export default function QuestionBankDetailPage() {
               sortDir={table.sortDir}
               onSort={table.onSort}
               emptyTitle="No questions yet"
-              emptyDescription="Add your first question to this subject."
+              emptyDescription="Import a file or add your first question to this category."
             />
             <Pagination
               page={table.page}
@@ -445,6 +600,136 @@ export default function QuestionBankDetailPage() {
           </>
         )}
       </section>
+
+      {showImport && (
+        <div className="mp-modal-overlay" role="presentation" onClick={() => !importing && setShowImport(false)}>
+          <div className="mp-modal" role="dialog" aria-modal="true" aria-labelledby="import-cat-title" onClick={(e) => e.stopPropagation()}>
+            <div className="mp-modal__header">
+              <div>
+                <h2 id="import-cat-title" className="mp-modal__title">Import into {subject.name}</h2>
+                <p className="mp-modal__subtitle">Choose a file type, then click the upload area.</p>
+              </div>
+              <button type="button" className="mp-modal__close" onClick={() => setShowImport(false)} aria-label="Close">
+                <X size={18} />
+              </button>
+            </div>
+            {importError && <div className="mp-alert mp-alert--error" role="alert">{importError}</div>}
+            <form className="mp-form" onSubmit={submitImport}>
+              <div className="mp-field">
+                <span className="mp-field__label">File type</span>
+                <div className="mp-filetype-grid" role="radiogroup" aria-label="Import file type">
+                  {FILE_TYPE_OPTIONS.map((opt) => {
+                    const preset = getFileTypePreset(opt.value);
+                    const selected = importFileType === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        className={`mp-filetype-card${selected ? ' is-selected' : ''}`}
+                        style={{
+                          '--mp-ft-color': preset.color,
+                          borderColor: selected ? preset.color : preset.border,
+                          background: selected ? preset.bg : undefined,
+                        }}
+                        onClick={() => {
+                          setImportFileType(opt.value);
+                          setImportFile(null);
+                          if (fileInputRef.current) fileInputRef.current.value = '';
+                        }}
+                      >
+                        <FileTypeIcon type={opt.value} size={32} />
+                        <span className="mp-filetype-card__label">{opt.label}</span>
+                        <span className="mp-filetype-card__ext">{opt.ext}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="mp-field__hint">{selectedFileType.hint}</span>
+              </div>
+
+              <div className="mp-field">
+                <span className="mp-field__label">Upload {selectedFileType.label} file</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={selectedFileType.accept}
+                  hidden
+                  onChange={(e) => {
+                    setImportFile(e.target.files?.[0] || null);
+                    setImportError('');
+                  }}
+                />
+                <div
+                  className={`mp-dropzone${dragging ? ' is-dragging' : ''}${importFile ? ' is-filled' : ''}`}
+                  style={{ '--mp-ft-color': selectedPreset.color }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
+                  onDragEnter={(e) => { e.preventDefault(); setDragging(true); }}
+                  onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragging(false);
+                    setImportFile(e.dataTransfer.files?.[0] || null);
+                    setImportError('');
+                  }}
+                >
+                  <FileTypeIcon type={selectedFileType.value} size={40} />
+                  {importFile ? (
+                    <>
+                      <p className="mp-dropzone__title">File ready to import</p>
+                      <div className="mp-dropzone__file">
+                        <FileTypeIcon type={selectedFileType.value} size={16} />
+                        <span>{importFile.name}</span>
+                      </div>
+                      <p className="mp-dropzone__hint">Click to choose a different file</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mp-dropzone__title">Click to upload {selectedFileType.label}</p>
+                      <p className="mp-dropzone__hint">Or drag and drop · {selectedFileType.ext}</p>
+                      <span className="mp-dropzone__browse">
+                        <Upload size={14} aria-hidden="true" /> Browse files
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <label className="mp-field mp-field--check">
+                <span className="mp-field__label">Replace existing questions</span>
+                <label className="mp-check">
+                  <input
+                    type="checkbox"
+                    checked={replaceExisting}
+                    onChange={(e) => setReplaceExisting(e.target.checked)}
+                  />
+                  Clear questions in this category before importing
+                </label>
+              </label>
+
+              <div className="mp-modal__actions">
+                <ManagementButton type="button" variant="secondary" onClick={() => setShowImport(false)} disabled={importing}>
+                  Cancel
+                </ManagementButton>
+                <ManagementButton type="submit" variant="primary" disabled={importing}>
+                  <FileUp size={16} aria-hidden="true" />
+                  {importing ? 'Importing...' : 'Import questions'}
+                </ManagementButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="mp-modal-overlay" role="presentation" onClick={closeForm}>
@@ -571,7 +856,6 @@ export default function QuestionBankDetailPage() {
                   required
                 />
                 <span className="mp-field__hint">
-                  Example: bank has 20 questions — set 5 to allow only 5 selected, or change to 10 later.
                   If you lower the limit below the current selection, extras are automatically deselected.
                 </span>
               </label>

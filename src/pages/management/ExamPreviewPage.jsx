@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, Search, Shuffle } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Search, Shuffle } from 'lucide-react';
 import { questionBankApi } from '../../api/questionBankApi';
 import { ManagementButton, ManagementToolbar } from '../../components/management/ManagementToolbar';
 import { StatusBadge } from '../../components/management/StatusBadge';
+import { SkeletonPageHeader, SkeletonTable } from '../../components/ui/Skeleton';
+import { alertFromApiError } from '../../utils/swal';
 import { statusVariant } from './useTableState';
 import '../../components/management/management.css';
 import './management-pages.css';
@@ -39,6 +41,7 @@ export default function ExamPreviewPage() {
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to load exam preview.');
       setData(null);
+      await alertFromApiError(err, 'Unable to load exam preview.');
     } finally {
       setLoading(false);
     }
@@ -81,6 +84,15 @@ export default function ExamPreviewPage() {
   const categories = data?.category_breakdown || [];
   const selectionLimitHint = data?.total_selected ?? 0;
 
+  if (loading && !data) {
+    return (
+      <div className="mp-page">
+        <SkeletonPageHeader />
+        <SkeletonTable rows={8} cols={4} />
+      </div>
+    );
+  }
+
   return (
     <div className="mp-page">
       <header className="mp-header">
@@ -103,15 +115,11 @@ export default function ExamPreviewPage() {
 
       {error ? <div className="mp-alert mp-alert--error" role="alert">{error}</div> : null}
 
-      {loading ? (
-        <div className="mp-loading">
-          <Loader2 size={18} className="mp-loading__icon" /> Loading questions…
-        </div>
-      ) : data ? (
+      {data ? (
         <section className="mp-panel">
           <div className="mp-panel__header-row" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
             <div>
-              <h2 className="mp-panel__title">Questions</h2>
+              <h2 className="mp-panel__title"><ClipboardList size={16} /> Questions</h2>
               <p className="mp-panel__hint" style={{ margin: 0 }}>
                 {selectionLimitHint} question{selectionLimitHint === 1 ? '' : 's'} selected for the exam
                 {categories.length ? (

@@ -6,7 +6,6 @@ import {
   CalendarDays,
   Clock3,
   KeyRound,
-  Loader2,
   Mail,
   Shield,
   Users,
@@ -15,7 +14,15 @@ import {
 import { scheduleApi } from '../../api/scheduleApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { StatusBadge } from '../../components/management/StatusBadge';
+import { SkeletonPageHeader, SkeletonStats, SkeletonTable } from '../../components/ui/Skeleton';
 import { statusVariant } from './useTableState';
+import {
+  alertFromApiError,
+  confirmSendExaminationKey,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import './management-pages.css';
 
@@ -139,10 +146,9 @@ export default function ScheduleDetailPage() {
   if (loading && !data) {
     return (
       <div className="mp-page">
-        <div className="mp-loading" aria-live="polite">
-          <Loader2 size={18} className="mp-loading__icon" />
-          Loading batch details...
-        </div>
+        <SkeletonPageHeader />
+        <SkeletonStats count={4} />
+        <SkeletonTable rows={8} cols={5} />
       </div>
     );
   }
@@ -189,15 +195,24 @@ export default function ScheduleDetailPage() {
               <ManagementButton
                 type="button"
                 onClick={async () => {
+                  const ok = await confirmSendExaminationKey({
+                    text: 'The examination key will be distributed to authorized proctors for this exam day.',
+                  });
+                  if (!ok) return;
                   setSuccess('');
                   setError('');
+                  showLoading('Sending Examination Key...');
                   try {
                     await scheduleApi.generatePasskeysByDate(data.exam_date);
                     const { data: response } = await scheduleApi.sendPasskeysByDate(data.exam_date);
+                    closeLoading();
                     setSuccess(response.message || 'Examination keys sent for this exam day.');
+                    await toastSuccess('Examination Key Sent Successfully');
                     await load();
                   } catch (err) {
+                    closeLoading();
                     setError(err.response?.data?.message || 'Unable to send examination keys.');
+                    await alertFromApiError(err, 'Unable to send examination keys.');
                   }
                 }}
               >

@@ -557,3 +557,38 @@
 [data-theme='dark'] .dashboard-quick-action {
   background: #151312;
 }
+
+.dashboard-skeleton {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.dashboard-skeleton__header {
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-skeleton__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.9rem;
+}
+
+.dashboard-skeleton__stat,
+.dashboard-skeleton__card {
+  padding: 1rem;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #ece7e2;
+}
+
+.dashboard-skeleton__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.9rem;
+}
+
+html[data-theme='dark'] .dashboard-skeleton__stat,
+html[data-theme='dark'] .dashboard-skeleton__card {
+  background: #1c1c1f;
+  border-color: #333;
+}

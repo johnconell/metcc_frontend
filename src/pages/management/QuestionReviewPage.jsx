@@ -3,7 +3,6 @@ import { Link, useSearchParams } from 'react-router-dom';
 import {
   CheckCircle2,
   Eye,
-  Loader2,
   Pencil,
   Power,
   PowerOff,
@@ -17,7 +16,16 @@ import { ManagementButton, ManagementToolbar } from '../../components/management
 import { StatusBadge } from '../../components/management/StatusBadge';
 import { DataTable } from '../../components/management/DataTable';
 import { Pagination } from '../../components/management/Pagination';
+import { SkeletonTable } from '../../components/ui/Skeleton';
 import { statusVariant } from './useTableState';
+import {
+  alertFromApiError,
+  confirmAction,
+  confirmDelete,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import './management-pages.css';
 
@@ -137,8 +145,16 @@ export default function QuestionReviewPage() {
       move_category: 'move',
       export: 'export',
     };
-    if (action !== 'export' && !window.confirm(`Confirm bulk ${labels[action]} for ${selectedKeys.length} question(s)?`)) {
-      return;
+    if (action !== 'export') {
+      const ok = action === 'delete'
+        ? await confirmDelete({
+            text: `Delete ${selectedKeys.length} question(s)? This action cannot be undone.`,
+          })
+        : await confirmAction({
+            title: 'Are you sure?',
+            text: `Confirm bulk ${labels[action]} for ${selectedKeys.length} question(s)?`,
+          });
+      if (!ok) return;
     }
     if (action === 'move_category' && !moveCategoryId) {
       setError('Select a target category to move questions.');
@@ -147,12 +163,14 @@ export default function QuestionReviewPage() {
     setBusy(true);
     setError('');
     setSuccess('');
+    showLoading(action === 'export' ? 'Exporting Questions...' : 'Processing...');
     try {
       const { data } = await questionBankApi.bulkQuestions({
         ids: selectedKeys,
         action,
         exam_subject_id: action === 'move_category' ? Number(moveCategoryId) : undefined,
       });
+      closeLoading();
       if (action === 'export') {
         const blob = new Blob([JSON.stringify(data.data || [], null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -162,39 +180,59 @@ export default function QuestionReviewPage() {
         a.click();
         URL.revokeObjectURL(url);
         setSuccess(`Exported ${selectedKeys.length} question(s).`);
+        await toastSuccess('Questions Exported Successfully');
       } else {
         setSuccess(data.message || 'Bulk action completed.');
+        await toastSuccess(
+          action === 'delete' ? 'Record Deleted Successfully' : (data.message || 'Bulk Action Completed Successfully')
+        );
         await load();
       }
     } catch (err) {
+      closeLoading();
       setError(err.response?.data?.message || 'Bulk action failed.');
+      await alertFromApiError(err, 'Bulk action failed.');
     } finally {
       setBusy(false);
     }
   };
 
   const setStatus = async (row, nextStatus) => {
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: `Set question #${row.id} to ${nextStatus}?`,
+    });
+    if (!ok) return;
+
     setBusy(true);
     try {
       await questionBankApi.updateQuestion(row.id, { status: nextStatus });
       setSuccess(`Question #${row.id} set to ${nextStatus}.`);
+      await toastSuccess('Question Updated Successfully');
       await load();
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to update status.');
+      await alertFromApiError(err, 'Unable to update status.');
     } finally {
       setBusy(false);
     }
   };
 
   const removeOne = async (row) => {
-    if (!window.confirm(`Delete question #${row.id}?`)) return;
+    const ok = await confirmDelete();
+    if (!ok) return;
     setBusy(true);
+    showLoading('Deleting Question...');
     try {
       await questionBankApi.deleteQuestion(row.id);
+      closeLoading();
       setSuccess(`Question #${row.id} deleted.`);
+      await toastSuccess('Record Deleted Successfully');
       await load();
     } catch (err) {
+      closeLoading();
       setError(err.response?.data?.message || 'Unable to delete.');
+      await alertFromApiError(err, 'Unable to delete.');
     } finally {
       setBusy(false);
     }
@@ -318,7 +356,7 @@ export default function QuestionReviewPage() {
 
       <div className="mp-panel">
         {loading ? (
-          <p className="mp-panel__hint"><Loader2 size={14} className="mp-loading__icon" /> Loading questions…</p>
+          <SkeletonTable rows={8} cols={6} />
         ) : (
           <>
             <DataTable

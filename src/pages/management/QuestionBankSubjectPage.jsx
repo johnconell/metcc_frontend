@@ -1,8 +1,28 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, BookOpen, CheckCircle2, FileUp, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle2,
+  ClipboardList,
+  FolderOpen,
+  Layers,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { questionBankApi } from '../../api/questionBankApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
+import { Skeleton, SkeletonCardGrid, SkeletonPageHeader, SkeletonStats } from '../../components/ui/Skeleton';
+import {
+  alertFromApiError,
+  confirmAction,
+  confirmDelete,
+  toastError,
+  toastSuccess,
+  toastWarning,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import './management-pages.css';
 
@@ -67,33 +87,6 @@ const DEFAULT_CATEGORIES = [
   },
 ];
 
-const FILE_TYPE_OPTIONS = [
-  {
-    value: 'excel',
-    label: 'Excel',
-    accept: '.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv',
-    hint: 'Columns: stem, option_a, option_b, option_c, option_d, correct_answer',
-  },
-  {
-    value: 'word',
-    label: 'Word',
-    accept: '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    hint: 'Numbered questions with A–D choices (.docx)',
-  },
-  {
-    value: 'documents',
-    label: 'Documents',
-    accept: '.txt,.csv,.rtf,text/plain,text/csv,application/rtf',
-    hint: 'Plain text, CSV, or RTF with numbered A–D items',
-  },
-  {
-    value: 'pdf',
-    label: 'PDF',
-    accept: '.pdf,application/pdf',
-    hint: 'Text-based PDF with numbered A–D items',
-  },
-];
-
 const EMPTY_FORM = {
   categoryKey: '',
   customName: '',
@@ -103,24 +96,23 @@ const EMPTY_FORM = {
 
 export default function QuestionBankSubjectPage() {
   const { bankId } = useParams();
-  const fileInputRef = useRef(null);
   const [bank, setBank] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
-  const [showImport, setShowImport] = useState(false);
-  const [importSubjectId, setImportSubjectId] = useState('');
-  const [importFileType, setImportFileType] = useState('excel');
-  const [importFile, setImportFile] = useState(null);
-  const [replaceExisting, setReplaceExisting] = useState(true);
-  const [importing, setImporting] = useState(false);
-  const [importError, setImportError] = useState('');
-  const [importSummary, setImportSummary] = useState([]);
+  const [activeBankId, setActiveBankId] = useState(bankId);
+
+  // Reset local state when the route param changes (avoid sync setState in an effect).
+  if (bankId !== activeBankId) {
+    setActiveBankId(bankId);
+    setBank(null);
+    setLoading(true);
+    setError('');
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -131,14 +123,37 @@ export default function QuestionBankSubjectPage() {
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to load question bank.');
       setBank(null);
+      await alertFromApiError(err, 'Unable to load question bank.');
     } finally {
       setLoading(false);
     }
   }, [bankId]);
 
+  // Fetch on mount / bankId change. setState only runs after await so it is not
+  // synchronous inside the effect (react-hooks/set-state-in-effect).
   useEffect(() => {
-    load();
-  }, [load]);
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { data } = await questionBankApi.getBank(bankId);
+        if (cancelled) return;
+        setBank(data.data);
+        setError('');
+      } catch (err) {
+        if (cancelled) return;
+        setError(err.response?.data?.message || 'Unable to load question bank.');
+        setBank(null);
+        await alertFromApiError(err, 'Unable to load question bank.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bankId]);
 
   const categoryOptions = useMemo(() => {
     const existingNames = new Set(
@@ -174,25 +189,9 @@ export default function QuestionBankSubjectPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({
-      ...EMPTY_FORM,
-      categoryKey: '',
-    });
+    setForm({ ...EMPTY_FORM, categoryKey: '' });
     setFormError('');
     setShowForm(true);
-  };
-
-  const openImport = () => {
-    const firstSubject = bank?.subjects?.[0];
-    setImportSubjectId(firstSubject ? String(firstSubject.id) : '');
-    setImportFileType('excel');
-    setImportFile(null);
-    setReplaceExisting(true);
-    setImportError('');
-    setShowImport(true);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   const openEdit = (subject, event) => {
@@ -212,15 +211,17 @@ export default function QuestionBankSubjectPage() {
   const handleDelete = async (subject, event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (!window.confirm(`Delete category "${subject.name}" and all of its questions?`)) {
-      return;
-    }
+    const ok = await confirmDelete({
+      text: `Delete "${subject.name}" and all of its questions? This action cannot be undone.`,
+    });
+    if (!ok) return;
+
     try {
       await questionBankApi.deleteSubject(subject.id);
-      setSuccess('Category deleted.');
+      await toastSuccess('Record Deleted Successfully');
       await load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to delete category.');
+      await alertFromApiError(err, 'Unable to delete category.');
     }
   };
 
@@ -228,9 +229,7 @@ export default function QuestionBankSubjectPage() {
     const key = form.categoryKey || (categoryOptions[0]?.key || '__new__');
     if (key === '__new__') {
       const name = form.customName.trim();
-      if (!name) {
-        return { error: 'Enter a name for the new category.' };
-      }
+      if (!name) return { error: 'Enter a name for the new category.' };
       return {
         name,
         code: codeFromName(name) || null,
@@ -239,9 +238,7 @@ export default function QuestionBankSubjectPage() {
     }
 
     const selected = categoryOptions.find((opt) => opt.key === key);
-    if (!selected) {
-      return { error: 'Choose a category.' };
-    }
+    if (!selected) return { error: 'Choose a category.' };
 
     return {
       name: selected.name,
@@ -255,8 +252,15 @@ export default function QuestionBankSubjectPage() {
     const resolved = resolveCategoryPayload();
     if (resolved.error) {
       setFormError(resolved.error);
+      await toastWarning('Check the form', resolved.error);
       return;
     }
+
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: editing ? `Update category "${resolved.name}"?` : `Add category "${resolved.name}"?`,
+    });
+    if (!ok) return;
 
     setSaving(true);
     setFormError('');
@@ -269,10 +273,10 @@ export default function QuestionBankSubjectPage() {
       };
       if (editing) {
         await questionBankApi.updateSubject(editing.id, payload);
-        setSuccess('Category updated.');
+        await toastSuccess('Category Updated Successfully');
       } else {
         await questionBankApi.createSubject(bankId, payload);
-        setSuccess('Category added.');
+        await toastSuccess('Category Added Successfully');
       }
       setShowForm(false);
       await load();
@@ -280,54 +284,21 @@ export default function QuestionBankSubjectPage() {
       const first = err.response?.data?.errors
         ? Object.values(err.response.data.errors).flat()[0]
         : null;
-      setFormError(first || err.response?.data?.message || 'Unable to save category.');
+      const message = first || err.response?.data?.message || 'Unable to save category.';
+      setFormError(message);
+      await toastError('Unable to save', message);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const submitImport = async (event) => {
-    event.preventDefault();
-    if (!importSubjectId) {
-      setImportError('Choose a category to import into.');
-      return;
-    }
-    if (!importFile) {
-      setImportError('Choose a file to upload.');
-      return;
-    }
-
-    setImporting(true);
-    setImportError('');
-    try {
-      const formData = new FormData();
-      formData.append('file', importFile);
-      formData.append('file_type', importFileType);
-      formData.append('exam_subject_id', importSubjectId);
-      formData.append('replace_existing', replaceExisting ? '1' : '0');
-      const { data } = await questionBankApi.importQuestions(bankId, formData);
-      setBank(data.data);
-      setImportSummary(data.data?.import_summary || []);
-      setSuccess(data.message || 'Questions imported.');
-      setShowImport(false);
-      setImportFile(null);
-    } catch (err) {
-      const first = err.response?.data?.errors
-        ? Object.values(err.response.data.errors).flat()[0]
-        : null;
-      setImportError(first || err.response?.data?.message || 'Unable to import questions.');
-    } finally {
-      setImporting(false);
     }
   };
 
   if (loading && !bank) {
     return (
       <div className="mp-page">
-        <div className="mp-loading">
-          <Loader2 size={18} className="mp-loading__icon" />
-          Loading question bank...
-        </div>
+        <Skeleton className="ui-skeleton--lede" style={{ width: '8rem', marginBottom: '1rem' }} />
+        <SkeletonPageHeader />
+        <SkeletonStats count={3} />
+        <SkeletonCardGrid count={6} />
       </div>
     );
   }
@@ -344,7 +315,6 @@ export default function QuestionBankSubjectPage() {
   }
 
   const subjects = bank.subjects || [];
-  const selectedFileType = FILE_TYPE_OPTIONS.find((item) => item.value === importFileType) || FILE_TYPE_OPTIONS[0];
   const activeCategoryKey = form.categoryKey || (categoryOptions[0]?.key || '__new__');
   const isNewCategory = activeCategoryKey === '__new__';
 
@@ -367,26 +337,40 @@ export default function QuestionBankSubjectPage() {
           </p>
           <h1 className="mp-header__title">{bank.title}</h1>
           <p className="mp-header__lede">
-            Manage exam categories, then import questions from Excel, Word, Documents, or PDF.
+            Manage exam categories for this bank. Open a category to add or import questions.
+          </p>
+          <p className="mp-hierarchy-crumb">
+            <FolderOpen size={14} aria-hidden="true" />
+            <Link to="/management/question-bank">Banks</Link>
+            <span aria-hidden="true">→</span>
+            <Layers size={14} aria-hidden="true" />
+            <strong>Categories</strong>
+            <span aria-hidden="true">→</span>
+            <BookOpen size={14} aria-hidden="true" />
+            Questions
           </p>
         </div>
         <div className="mp-header__actions">
           <ManagementButton as={Link} to={`/management/question-bank/${bankId}/exam-preview`} variant="secondary">
-            Review Exam
-          </ManagementButton>
-          <ManagementButton variant="secondary" onClick={openImport} disabled={subjects.length === 0}>
-            <FileUp size={16} aria-hidden="true" /> Import Questions
+            <ClipboardList size={16} aria-hidden="true" /> Review Exam
           </ManagementButton>
           {!bank.is_active && (
             <ManagementButton
               variant="secondary"
               onClick={async () => {
+                const ok = await confirmAction({
+                  title: 'Set active question bank?',
+                  text: `"${bank.title}" will become the examination question set.`,
+                  confirmText: 'Set Active',
+                  icon: 'question',
+                });
+                if (!ok) return;
                 try {
                   const { data } = await questionBankApi.activateBank(bank.id);
-                  setSuccess(data.message || 'Question bank activated.');
+                  await toastSuccess(data.message || 'Question bank activated.');
                   await load();
                 } catch (err) {
-                  setError(err.response?.data?.message || 'Unable to activate question bank.');
+                  await alertFromApiError(err, 'Unable to activate question bank.');
                 }
               }}
             >
@@ -394,7 +378,7 @@ export default function QuestionBankSubjectPage() {
             </ManagementButton>
           )}
           <ManagementButton variant="primary" onClick={openCreate}>
-            <Plus size={16} aria-hidden="true" /> Add Subject
+            <Plus size={16} aria-hidden="true" /> Add Category
           </ManagementButton>
         </div>
       </header>
@@ -414,28 +398,19 @@ export default function QuestionBankSubjectPage() {
         </div>
       </div>
 
-      {success && <div className="mp-alert mp-alert--success" role="status">{success}</div>}
-      {error && <div className="mp-alert mp-alert--error" role="alert">{error}</div>}
-      {importSummary.length > 0 && (
-        <div className="mp-alert mp-alert--success" role="status">
-          Last import:{' '}
-          {importSummary.map((item) => `${item.subject} (${item.imported}${item.file_type ? ` · ${item.file_type}` : ''})`).join(' · ')}
-        </div>
-      )}
-
       <section className="mp-panel">
         <div className="mp-panel__head">
           <div>
-            <h2 className="mp-panel__title"><BookOpen size={16} /> Categories</h2>
+            <h2 className="mp-panel__title"><Layers size={16} /> Categories</h2>
             <p className="mp-panel__hint">
-              Add a category, then use <strong>Import Questions</strong> and choose Excel, Word, Documents, or PDF.
+              Open a category to import questions (Excel, Word, or PDF) or add them manually.
             </p>
           </div>
         </div>
 
         <div className="mp-cat-grid">
           {subjects.length === 0 ? (
-            <p className="mp-panel__hint">No categories yet. Add General Information, Verbal Ability, Scientific Ability, or Numerical Ability.</p>
+            <p className="mp-panel__hint">No categories yet. Add Mathematics, Science, Verbal Ability, or create your own.</p>
           ) : subjects.map((subject) => (
             <Link
               key={subject.id}
@@ -468,100 +443,13 @@ export default function QuestionBankSubjectPage() {
         </div>
       </section>
 
-      {showImport && (
-        <div className="mp-modal-overlay" role="presentation" onClick={() => !importing && setShowImport(false)}>
-          <div className="mp-modal" role="dialog" aria-modal="true" aria-labelledby="import-exam-title" onClick={(e) => e.stopPropagation()}>
-            <div className="mp-modal__header">
-              <div>
-                <h2 id="import-exam-title" className="mp-modal__title">Import Questions</h2>
-                <p className="mp-modal__subtitle">
-                  Pick a category and file type, then upload the matching file.
-                </p>
-              </div>
-              <button type="button" className="mp-modal__close" onClick={() => setShowImport(false)} aria-label="Close">
-                <X size={18} />
-              </button>
-            </div>
-            {importError && <div className="mp-alert mp-alert--error" role="alert">{importError}</div>}
-            <form className="mp-form" onSubmit={submitImport}>
-              <label className="mp-field">
-                <span className="mp-field__label">Category</span>
-                <select
-                  className="mp-field__input"
-                  value={importSubjectId}
-                  onChange={(e) => setImportSubjectId(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>Select category</option>
-                  {subjects.map((subject) => (
-                    <option key={subject.id} value={subject.id}>{subject.name}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="mp-field">
-                <span className="mp-field__label">File type</span>
-                <select
-                  className="mp-field__input"
-                  value={importFileType}
-                  onChange={(e) => {
-                    setImportFileType(e.target.value);
-                    setImportFile(null);
-                    if (fileInputRef.current) fileInputRef.current.value = '';
-                  }}
-                  required
-                >
-                  {FILE_TYPE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-                <span className="mp-field__hint">{selectedFileType.hint}</span>
-              </label>
-
-              <label className="mp-field">
-                <span className="mp-field__label">Upload {selectedFileType.label} file</span>
-                <input
-                  ref={fileInputRef}
-                  className="mp-field__input"
-                  type="file"
-                  accept={selectedFileType.accept}
-                  onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                  required
-                />
-              </label>
-
-              <label className="mp-field mp-field--check">
-                <span className="mp-field__label">Replace existing questions</span>
-                <label className="mp-check">
-                  <input
-                    type="checkbox"
-                    checked={replaceExisting}
-                    onChange={(e) => setReplaceExisting(e.target.checked)}
-                  />
-                  Clear questions in this category before importing
-                </label>
-              </label>
-
-              <div className="mp-modal__actions">
-                <ManagementButton type="button" variant="secondary" onClick={() => setShowImport(false)} disabled={importing}>
-                  Cancel
-                </ManagementButton>
-                <ManagementButton type="submit" variant="primary" disabled={importing}>
-                  {importing ? 'Importing...' : 'Import questions'}
-                </ManagementButton>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {showForm && (
         <div className="mp-modal-overlay" role="presentation" onClick={() => !saving && setShowForm(false)}>
           <div className="mp-modal" role="dialog" aria-modal="true" aria-labelledby="subject-form-title" onClick={(e) => e.stopPropagation()}>
             <div className="mp-modal__header">
               <div>
                 <h2 id="subject-form-title" className="mp-modal__title">
-                  {editing ? 'Edit subject' : 'Add subject'}
+                  {editing ? 'Edit category' : 'Add category'}
                 </h2>
                 <p className="mp-modal__subtitle">Category under {bank.title}</p>
               </div>
@@ -644,7 +532,7 @@ export default function QuestionBankSubjectPage() {
                   Cancel
                 </ManagementButton>
                 <ManagementButton type="submit" variant="primary" disabled={saving}>
-                  {saving ? 'Saving...' : editing ? 'Save changes' : 'Create subject'}
+                  {saving ? 'Saving...' : editing ? 'Save changes' : 'Create category'}
                 </ManagementButton>
               </div>
             </form>

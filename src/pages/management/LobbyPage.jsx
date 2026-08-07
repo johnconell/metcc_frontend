@@ -14,7 +14,16 @@ import { roomApi } from '../../api/roomApi';
 import { userApi } from '../../api/userApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { StatusBadge } from '../../components/management/StatusBadge';
+import { SkeletonList, SkeletonPanel } from '../../components/ui/Skeleton';
 import { statusVariant } from './useTableState';
+import {
+  alertFromApiError,
+  confirmAction,
+  confirmDelete,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import './management-pages.css';
 
@@ -126,9 +135,16 @@ export default function LobbyPage() {
       setFormError('Room name is required.');
       return;
     }
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: editingRoom ? `Update room "${form.room_name.trim()}"?` : `Create room "${form.room_name.trim()}"?`,
+    });
+    if (!ok) return;
+
     setBusy(true);
     setFormError('');
     setNotice('');
+    showLoading(editingRoom ? 'Updating Room...' : 'Creating Room...');
     try {
       const payload = {
         room_name: form.room_name.trim(),
@@ -137,32 +153,46 @@ export default function LobbyPage() {
       };
       if (editingRoom) {
         await roomApi.update(editingRoom.id, payload);
+        closeLoading();
         setNotice(`Updated ${payload.room_name}.`);
+        await toastSuccess('Room Updated Successfully');
       } else {
         await roomApi.create(selectedScheduleId, payload);
+        closeLoading();
         setNotice(`Created ${payload.room_name}.`);
+        await toastSuccess('Room Created Successfully');
       }
       closeModal();
       await loadRooms(selectedScheduleId);
       await loadSchedules();
     } catch (err) {
+      closeLoading();
       setFormError(err.response?.data?.message || 'Unable to save room.');
+      await alertFromApiError(err, 'Unable to save room.');
     } finally {
       setBusy(false);
     }
   };
 
   const deleteRoom = async (room) => {
-    if (!window.confirm(`Delete ${room.room_name}? This cannot be undone.`)) return;
+    const ok = await confirmDelete({
+      text: `Delete "${room.room_name}"? This action cannot be undone.`,
+    });
+    if (!ok) return;
     setBusy(true);
     setNotice('');
+    showLoading('Deleting Room...');
     try {
       await roomApi.remove(room.id);
+      closeLoading();
       setNotice(`${room.room_name} deleted.`);
+      await toastSuccess('Record Deleted Successfully');
       await loadRooms(selectedScheduleId);
       await loadSchedules();
     } catch (err) {
+      closeLoading();
       setError(err.response?.data?.message || 'Unable to delete room.');
+      await alertFromApiError(err, 'Unable to delete room.');
     } finally {
       setBusy(false);
     }
@@ -232,9 +262,7 @@ export default function LobbyPage() {
       {notice ? <div className="mp-alert mp-alert--success" role="status">{notice}</div> : null}
 
       {loading ? (
-        <div className="mp-panel mp-empty">
-          <Loader2 className="mp-loading__icon" size={22} /> Loading schedules…
-        </div>
+        <SkeletonPanel rows={6} />
       ) : (
         <div className="mp-split">
           <section className="mp-panel" aria-label="Schedules">
@@ -331,7 +359,7 @@ export default function LobbyPage() {
               </div>
 
               {roomsLoading ? (
-                <p className="mp-panel__hint"><Loader2 size={14} className="mp-loading__icon" /> Loading rooms…</p>
+                <SkeletonList rows={4} />
               ) : (
                 <ul className="mp-simple-list">
                   {rooms.length === 0 ? (

@@ -8,6 +8,13 @@ import { Pagination } from '../../components/ui/Pagination';
 import { Alert } from '../../components/ui/Alert';
 import { formatDate } from '../../utils/formatDate';
 import { TEST_ITEM_STATUSES } from '../../utils/constants';
+import {
+  alertFromApiError,
+  confirmDelete,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 
 export default function TestItemListPage() {
   const [items, setItems] = useState([]);
@@ -25,9 +32,19 @@ export default function TestItemListPage() {
   useEffect(() => { load(); }, [filters]);
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this item?')) return;
-    await testItemApi.delete(id);
-    load();
+    const ok = await confirmDelete();
+    if (!ok) return;
+    showLoading('Deleting...');
+    try {
+      await testItemApi.delete(id);
+      closeLoading();
+      await toastSuccess('Record Deleted Successfully');
+      load();
+    } catch (err) {
+      closeLoading();
+      setError(err.response?.data?.message || 'Unable to delete.');
+      await alertFromApiError(err, 'Unable to delete.');
+    }
   };
 
   return (

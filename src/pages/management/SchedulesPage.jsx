@@ -11,7 +11,15 @@ import {
 import { scheduleApi, SCHEDULES_CHANGED_EVENT } from '../../api/scheduleApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { StatusBadge } from '../../components/management/StatusBadge';
+import { SkeletonCardGrid, SkeletonStats } from '../../components/ui/Skeleton';
 import { statusVariant } from './useTableState';
+import {
+  alertFromApiError,
+  confirmSendExaminationKey,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import './management-pages.css';
 
@@ -115,16 +123,26 @@ export default function SchedulesPage() {
 
   const sendKeysForDate = async (examDate, event) => {
     event?.stopPropagation?.();
+    const ok = await confirmSendExaminationKey({
+      text: `The examination key will be distributed to authorized proctors for ${formatDateLabel(examDate)}.`,
+    });
+    if (!ok) return;
+
     setSendingDate(examDate);
     setNotice('');
     setError('');
+    showLoading('Sending Examination Key...');
     try {
       await scheduleApi.generatePasskeysByDate(examDate);
       const { data } = await scheduleApi.sendPasskeysByDate(examDate);
+      closeLoading();
       setNotice(data.message || `Examination keys sent for ${formatDateLabel(examDate)}.`);
+      await toastSuccess('Examination Key Sent Successfully');
       await load();
     } catch (err) {
+      closeLoading();
       setError(err.response?.data?.message || 'Unable to send examination keys for this date.');
+      await alertFromApiError(err, 'Unable to send examination keys for this date.');
     } finally {
       setSendingDate(null);
     }
@@ -182,10 +200,10 @@ export default function SchedulesPage() {
       {error && <div className="mp-alert mp-alert--error" role="alert">{error}</div>}
 
       {loading ? (
-        <div className="mp-loading">
-          <Loader2 size={18} className="mp-loading__icon" />
-          Loading schedules...
-        </div>
+        <>
+          <SkeletonStats count={3} />
+          <SkeletonCardGrid count={6} />
+        </>
       ) : level === 'dates' ? (
         <section className="mp-panel">
           <div className="mp-panel__head">

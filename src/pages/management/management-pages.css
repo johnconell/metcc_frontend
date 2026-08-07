@@ -52,7 +52,7 @@
   gap: var(--space-xs);
 }
 
-/* Inline stat strip — hairline separated, no boxes */
+/* Inline stat strip â€” hairline separated, no boxes */
 .mp-stats {
   display: flex;
   flex-wrap: wrap;
@@ -820,7 +820,7 @@
   margin-top: var(--space-sm);
 }
 
-/* Users page — compact full-width layout */
+/* Users page â€” compact full-width layout */
 .mp-users-page {
   gap: var(--space-base);
   max-width: none;
@@ -1496,3 +1496,173 @@
   }
 }
 
+/* Question import: file types + dropzone */
+.mp-filetype-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .mp-filetype-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.mp-filetype-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.95rem 0.65rem;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: #faf8f6;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  font-family: var(--font-sans);
+  text-align: center;
+}
+
+.mp-filetype-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.mp-filetype-card:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.mp-filetype-card.is-selected {
+  background: #fff;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mp-ft-color, #7A1F2B) 20%, transparent);
+}
+
+.mp-filetype-card__label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.mp-filetype-card__ext {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+}
+
+.mp-filetype-icon {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.mp-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 9.5rem;
+  padding: 1.25rem 1rem;
+  border: 2px dashed #c9bfb6;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff 0%, #faf7f4 100%);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  text-align: center;
+}
+
+.mp-dropzone:hover,
+.mp-dropzone:focus-visible {
+  border-color: var(--color-ink);
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(122, 31, 43, 0.08);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.mp-dropzone.is-dragging {
+  border-color: #7A1F2B;
+  background: rgba(122, 31, 43, 0.04);
+}
+
+.mp-dropzone.is-filled {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--mp-ft-color, #7A1F2B) 55%, #c9bfb6);
+  background: #fff;
+}
+
+.mp-dropzone__title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.mp-dropzone__hint {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  max-width: 26rem;
+}
+
+.mp-dropzone__file {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: #f3eee9;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  max-width: 100%;
+}
+
+.mp-dropzone__file span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp-dropzone__browse {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #d6cdc4;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #7A1F2B;
+  pointer-events: none;
+}
+
+.mp-hierarchy-crumb {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.mp-hierarchy-crumb a {
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.mp-hierarchy-crumb a:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+}
+
+.mp-hierarchy-crumb strong {
+  color: var(--color-ink);
+  font-weight: 700;
+}

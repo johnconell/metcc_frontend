@@ -9,6 +9,13 @@ import { Pagination } from '../../components/ui/Pagination';
 import { Alert } from '../../components/ui/Alert';
 import { formatDate } from '../../utils/formatDate';
 import { USER_STATUSES } from '../../utils/constants';
+import {
+  alertFromApiError,
+  confirmAction,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 
 export default function UserListPage() {
   const [users, setUsers] = useState([]);
@@ -33,16 +40,32 @@ export default function UserListPage() {
   }, [filters]);
 
   const handleDisable = async (user) => {
-    const action = user.status === 'active' ? 'disable' : 'enable';
-    if (!confirm(`Are you sure you want to ${action} this account?`)) return;
+    const isActive = user.status === 'active';
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: isActive
+        ? `Disable user "${user.name}"? This action cannot be undone.`
+        : `Activate user "${user.name}"?`,
+    });
+    if (!ok) return;
 
-    if (user.status === 'active') {
-      await userApi.disable(user.id);
-    } else {
-      await userApi.enable(user.id);
+    showLoading(isActive ? 'Disabling User...' : 'Activating User...');
+    try {
+      if (isActive) {
+        await userApi.disable(user.id);
+        closeLoading();
+        await toastSuccess('User Disabled Successfully');
+      } else {
+        await userApi.enable(user.id);
+        closeLoading();
+        await toastSuccess('User Activated Successfully');
+      }
+      load();
+    } catch (err) {
+      closeLoading();
+      setError(err.response?.data?.message || 'Unable to update account.');
+      await alertFromApiError(err, 'Unable to update account.');
     }
-
-    load();
   };
 
   return (

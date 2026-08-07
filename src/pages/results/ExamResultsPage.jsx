@@ -15,7 +15,15 @@ import {
 import { downloadExamResultsExport, examResultApi } from '../../api/examResultApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { StatusBadge } from '../../components/management/StatusBadge';
+import { SkeletonCardGrid, SkeletonStats, SkeletonTable } from '../../components/ui/Skeleton';
 import { statusVariant } from '../management/useTableState';
+import {
+  alertFromApiError,
+  confirmAction,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
 import './results-pages.css';
@@ -136,17 +144,25 @@ export default function ExamResultsPage() {
   const sendBatchScores = async (batch) => {
     const key = batch.schedule_id || batch.batch_code;
     if (!key) return;
-    if (!window.confirm(`Send scores to Gmail for all students in ${batch.batch_code}?`)) {
-      return;
-    }
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: `Send scores to Gmail for all students in ${batch.batch_code}? This action cannot be undone.`,
+    });
+    if (!ok) return;
+
     setBusyBatch(String(key));
     setNotice('');
+    showLoading('Sending Scores...');
     try {
       const { data } = await examResultApi.sendBatchEmail(key);
+      closeLoading();
       setNotice(data.message || `Queued emails for ${batch.batch_code}.`);
+      await toastSuccess(data.message || 'Scores Sent Successfully');
       await loadResults();
     } catch (err) {
+      closeLoading();
       setNotice(err.response?.data?.message || 'Failed to send batch emails.');
+      await alertFromApiError(err, 'Failed to send batch emails.');
     } finally {
       setBusyBatch(null);
     }
@@ -291,10 +307,11 @@ export default function ExamResultsPage() {
       {notice && <div className="mp-panel__hint" role="status">{notice}</div>}
 
       {loading ? (
-        <div className="mp-loading">
-          <Loader2 size={18} className="mp-loading__icon" />
-          Loading results…
-        </div>
+        <>
+          <SkeletonStats count={4} />
+          <SkeletonCardGrid count={6} />
+          <SkeletonTable rows={6} cols={5} />
+        </>
       ) : level === 'dates' ? (
         <section className="mp-panel">
           <div className="mp-panel__head">

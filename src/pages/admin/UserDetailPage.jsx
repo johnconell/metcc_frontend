@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { userApi } from '../../api/userApi';
 import { Avatar } from '../../components/ui/Avatar';
+import { Skeleton, SkeletonText } from '../../components/ui/Skeleton';
 import { formatDate } from '../../utils/formatDate';
 import { Button } from '../../components/ui/Button';
 
@@ -13,7 +14,23 @@ export default function UserDetailPage() {
     userApi.get(id).then(({ data }) => setUser(data.data));
   }, [id]);
 
-  if (!user) return <p>Loading...</p>;
+  if (!user) {
+    return (
+      <div className="max-w-lg" aria-busy="true" aria-label="Loading user">
+        <Skeleton className="ui-skeleton--page-title" style={{ marginBottom: 24 }} />
+        <div className="rounded-xl bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center gap-4">
+            <Skeleton className="ui-skeleton--avatar" style={{ width: 64, height: 64 }} />
+            <div style={{ flex: 1 }}>
+              <Skeleton className="ui-skeleton--title" style={{ width: '50%', marginTop: 0 }} />
+              <Skeleton className="ui-skeleton--line" style={{ width: '70%', marginTop: 10 }} />
+            </div>
+          </div>
+          <SkeletonText lines={4} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-lg">

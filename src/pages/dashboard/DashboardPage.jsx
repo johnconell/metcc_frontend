@@ -8,7 +8,6 @@ import {
   ChevronRight,
   ClipboardList,
   FileCheck,
-  Loader2,
   Mail,
   Settings,
   Shield,
@@ -19,6 +18,7 @@ import {
 } from 'lucide-react';
 import { dashboardApi } from '../../api/dashboardApi';
 import { useAuth } from '../../auth/useAuth';
+import { Skeleton, SkeletonText } from '../../components/ui/Skeleton';
 import './DashboardPage.css';
 
 const QUICK_ACTIONS = [
@@ -256,9 +256,29 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="dashboard-state">
-        <Loader2 className="dashboard-state__spin" size={22} />
-        Loading dashboard...
+      <div className="dashboard-skeleton" aria-busy="true" aria-label="Loading dashboard">
+        <div className="dashboard-skeleton__header">
+          <Skeleton className="ui-skeleton--page-title" />
+          <Skeleton className="ui-skeleton--lede" style={{ width: '70%', marginTop: 12 }} />
+        </div>
+        <div className="dashboard-skeleton__stats">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="dashboard-skeleton__stat">
+              <Skeleton className="ui-skeleton--stat" />
+              <Skeleton className="ui-skeleton--label" />
+              <Skeleton className="ui-skeleton--line" style={{ width: '55%', marginTop: 10 }} />
+            </div>
+          ))}
+        </div>
+        <div className="dashboard-skeleton__grid">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="dashboard-skeleton__card">
+              <Skeleton className="ui-skeleton--icon" />
+              <Skeleton className="ui-skeleton--title" />
+              <SkeletonText lines={2} />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

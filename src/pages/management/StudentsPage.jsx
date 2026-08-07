@@ -18,6 +18,9 @@ import { ManagementToolbar, ManagementButton } from '../../components/management
 import { DataTable } from '../../components/management/DataTable';
 import { StatusBadge } from '../../components/management/StatusBadge';
 import { FilterDropdown } from '../../components/management/FilterDropdown';
+import { FileTypeIcon } from '../../components/ui/FileTypeIcon';
+import { SkeletonTable } from '../../components/ui/Skeleton';
+import { alertFromApiError, confirmAction, showLoading, closeLoading, toastSuccess, toastWarning } from '../../utils/swal';
 import { statusVariant } from './useTableState';
 import '../../components/management/management.css';
 import './management-pages.css';
@@ -220,11 +223,18 @@ export default function StudentsPage() {
     event.target.value = '';
     if (!file) return;
 
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: `Import students from "${file.name}"? This action cannot be undone.`,
+    });
+    if (!ok) return;
+
     setImporting(true);
     setImportStep(0);
     setNotice('');
     setDuplicateNotice('');
     setError('');
+    showLoading('Importing Students...');
     try {
       setImportStep(1);
       const { data } = await applicantApi.importFile(file);
@@ -248,6 +258,10 @@ export default function StudentsPage() {
         setDuplicateNotice(
           `${result.duplicates} duplicate name(s) inside the file were ignored: ${names.join(', ')}${more}`,
         );
+        await toastWarning(
+          'Duplicate Record Detected',
+          `${result.duplicates} duplicate name(s) inside the file were ignored.`,
+        );
       }
 
       if (result.errors?.length) {
@@ -258,9 +272,14 @@ export default function StudentsPage() {
         dates: result.dates_touched || [],
         schedules: result.schedules_touched || [],
       });
+      closeLoading();
+      await toastSuccess(data.message || 'Student Imported Successfully');
       await load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Import failed.');
+      closeLoading();
+      const message = err.response?.data?.message || 'Import failed.';
+      setError(message);
+      await alertFromApiError(err, 'Import Failed');
     } finally {
       setImporting(false);
       setImportStep(0);
@@ -341,7 +360,11 @@ export default function StudentsPage() {
             disabled={importing}
             onClick={() => fileRef.current?.click()}
           >
-            {importing ? <Loader2 size={14} className="spin" /> : <Upload size={14} aria-hidden="true" />}
+            {importing ? (
+              <Loader2 size={14} className="spin" />
+            ) : (
+              <FileTypeIcon type="excel" size={16} />
+            )}
             {importing ? 'Importing…' : 'Import Students'}
           </ManagementButton>
           <input
@@ -442,9 +465,7 @@ export default function StudentsPage() {
         )}
 
         {loading ? (
-          <div className="students-loading">
-            <Loader2 className="spin" size={18} /> Loading…
-          </div>
+          <SkeletonTable rows={8} cols={6} />
         ) : (
           <div className="students-table-wrap">
             <DataTable

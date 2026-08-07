@@ -15,8 +15,16 @@ import { ManagementToolbar, ManagementButton } from '../../components/management
 import { DataTable } from '../../components/management/DataTable';
 import { StatusBadge } from '../../components/management/StatusBadge';
 import { Pagination } from '../../components/management/Pagination';
+import { SkeletonTable } from '../../components/ui/Skeleton';
 import { useTableState, statusVariant } from './useTableState';
 import { formatDate } from '../../utils/formatDate';
+import {
+  alertFromApiError,
+  confirmAction,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import './management-pages.css';
 
@@ -133,9 +141,10 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const showSuccess = useCallback((message) => {
+  const showSuccess = useCallback(async (message) => {
     setSuccess(message);
     setError('');
+    await toastSuccess(message);
   }, []);
 
   const loadUsers = useCallback(async ({ silent = false } = {}) => {
@@ -294,6 +303,17 @@ export default function UsersPage() {
       return;
     }
 
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: editingUser
+        ? `Update user "${form.name.trim()}"?`
+        : `Add user "${form.name.trim()}"?`,
+    });
+    if (!ok) {
+      setSaving(false);
+      return;
+    }
+
     const payload = {
       name: form.name.trim(),
       email: form.email.trim(),
@@ -304,20 +324,25 @@ export default function UsersPage() {
       payload.password = form.password;
     }
 
+    showLoading(editingUser ? 'Updating User...' : 'Creating User...');
     try {
       if (editingUser) {
         await userApi.update(editingUser.id, payload);
-        showSuccess(`${payload.name} was updated successfully.`);
+        closeLoading();
+        await showSuccess('User Updated Successfully');
       } else {
         // Status defaults to active on the server — not set from the form.
         await userApi.create({ ...payload, password: form.password });
-        showSuccess(`${payload.name} was created successfully.`);
+        closeLoading();
+        await showSuccess('User Created Successfully');
       }
 
       closeForm();
       await refreshUsers();
     } catch (err) {
+      closeLoading();
       setFormError(extractErrorMessage(err));
+      await alertFromApiError(err, 'Unable to save user.');
     } finally {
       setSaving(false);
     }
@@ -326,20 +351,31 @@ export default function UsersPage() {
   const handleToggleStatus = async (row) => {
     const isActive = row.statusRaw === 'active';
     const action = isActive ? 'disable' : 'activate';
-    if (!window.confirm(`Are you sure you want to ${action} ${row.user}?`)) return;
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: isActive
+        ? `Disable user "${row.user}"? This action cannot be undone.`
+        : `Activate user "${row.user}"?`,
+    });
+    if (!ok) return;
 
     setError('');
+    showLoading(isActive ? 'Disabling User...' : 'Activating User...');
     try {
       if (isActive) {
         await userApi.disable(row.id);
-        showSuccess(`${row.user} has been disabled.`);
+        closeLoading();
+        await showSuccess('User Disabled Successfully');
       } else {
         await userApi.enable(row.id);
-        showSuccess(`${row.user} has been activated.`);
+        closeLoading();
+        await showSuccess('User Activated Successfully');
       }
       await refreshUsers();
     } catch (err) {
+      closeLoading();
       setError(extractErrorMessage(err));
+      await alertFromApiError(err, `Unable to ${action} user.`);
     }
   };
 
@@ -486,10 +522,7 @@ export default function UsersPage() {
         />
 
         {loading ? (
-          <div className="mp-loading mp-loading--compact" aria-live="polite">
-            <Loader2 size={18} className="mp-loading__icon" aria-hidden="true" />
-            Loading users...
-          </div>
+          <SkeletonTable rows={8} cols={5} />
         ) : (
           <>
             <DataTable

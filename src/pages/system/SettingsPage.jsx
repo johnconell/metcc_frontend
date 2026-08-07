@@ -3,6 +3,15 @@ import { Building2, ClipboardList, Loader2, Mail, Plus, Save, Shield, Trash2, Us
 import { examinationSettingsApi } from '../../api/examinationSettingsApi';
 import { gradingApi } from '../../api/gradingApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
+import { SkeletonTable } from '../../components/ui/Skeleton';
+import {
+  alertFromApiError,
+  confirmAction,
+  confirmDelete,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
 import './system-pages.css';
@@ -75,9 +84,16 @@ export default function SettingsPage() {
 
   const saveExamSettings = async (event) => {
     event.preventDefault();
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: 'Save examination settings?',
+    });
+    if (!ok) return;
+
     setExamSaving(true);
     setExamError('');
     setExamNotice('');
+    showLoading('Saving Settings...');
     try {
       const { data } = await examinationSettingsApi.update({
         duration_minutes: Number(examSettings.duration_minutes) || 90,
@@ -95,9 +111,13 @@ export default function SettingsPage() {
         shuffle_categories: Boolean(row.shuffle_categories),
         shuffle_both: Boolean(row.shuffle_both),
       });
+      closeLoading();
       setExamNotice('Examination settings saved.');
+      await toastSuccess('Settings Saved Successfully');
     } catch (err) {
+      closeLoading();
       setExamError(err.response?.data?.message || 'Unable to save examination settings.');
+      await alertFromApiError(err, 'Unable to save examination settings.');
     } finally {
       setExamSaving(false);
     }
@@ -108,9 +128,16 @@ export default function SettingsPage() {
   };
 
   const saveCourse = async (row) => {
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: `Save grading settings for ${row.course_name}?`,
+    });
+    if (!ok) return;
+
     setSavingId(row.id);
     setCourseNotice('');
     setCourseError('');
+    showLoading('Saving Settings...');
     try {
       const { data } = await gradingApi.update(row.id, {
         course_name: row.course_name,
@@ -119,9 +146,13 @@ export default function SettingsPage() {
         is_active: row.is_active !== false,
       });
       updateLocal(row.id, data.data || row);
+      closeLoading();
       setCourseNotice(`Saved passing grade for ${row.course_name}.`);
+      await toastSuccess('Settings Saved Successfully');
     } catch (err) {
+      closeLoading();
       setCourseError(err.response?.data?.message || 'Unable to save grading setting.');
+      await alertFromApiError(err, 'Unable to save grading setting.');
     } finally {
       setSavingId(null);
     }
@@ -130,8 +161,15 @@ export default function SettingsPage() {
   const createCourse = async (event) => {
     event.preventDefault();
     if (!newCourse.course_name.trim()) return;
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: `Add grading settings for "${newCourse.course_name.trim()}"?`,
+    });
+    if (!ok) return;
+
     setSavingId('new');
     setCourseError('');
+    showLoading('Saving Settings...');
     try {
       await gradingApi.create({
         course_name: newCourse.course_name.trim(),
@@ -140,10 +178,14 @@ export default function SettingsPage() {
         failing_grade_point: 5,
       });
       setNewCourse({ course_name: '', course_code: '', passing_percentage: 75 });
+      closeLoading();
       setCourseNotice('Course grading setting added.');
+      await toastSuccess('Settings Saved Successfully');
       await loadCourses();
     } catch (err) {
+      closeLoading();
       setCourseError(err.response?.data?.message || 'Unable to add course.');
+      await alertFromApiError(err, 'Unable to add course.');
     } finally {
       setSavingId(null);
     }
@@ -151,13 +193,21 @@ export default function SettingsPage() {
 
   const removeCourse = async (row) => {
     if (row.course_code === 'GENERAL') return;
-    if (!window.confirm(`Remove grading settings for ${row.course_name}?`)) return;
+    const ok = await confirmDelete({
+      text: `Remove grading settings for ${row.course_name}? This action cannot be undone.`,
+    });
+    if (!ok) return;
+    showLoading('Deleting...');
     try {
       await gradingApi.remove(row.id);
+      closeLoading();
       setCourseNotice(`Removed ${row.course_name}.`);
+      await toastSuccess('Record Deleted Successfully');
       await loadCourses();
     } catch (err) {
+      closeLoading();
       setCourseError(err.response?.data?.message || 'Unable to delete setting.');
+      await alertFromApiError(err, 'Unable to delete setting.');
     }
   };
 
@@ -285,7 +335,7 @@ export default function SettingsPage() {
               {courseNotice ? <div className="mp-alert mp-alert--success" role="status">{courseNotice}</div> : null}
 
               {loadingCourses ? (
-                <p className="mp-panel__hint"><Loader2 size={14} className="mp-loading__icon" /> Loading courses…</p>
+                <SkeletonTable rows={4} cols={4} />
               ) : (
                 <div className="mp-table-wrap" style={{ marginBottom: 20 }}>
                   <table className="mp-table">

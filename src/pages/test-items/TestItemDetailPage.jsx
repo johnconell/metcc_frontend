@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { testItemApi } from '../../api/testItemApi';
+import { Skeleton, SkeletonText } from '../../components/ui/Skeleton';
 import { formatDate } from '../../utils/formatDate';
 import { Button } from '../../components/ui/Button';
 
@@ -12,7 +13,16 @@ export default function TestItemDetailPage() {
     testItemApi.get(id).then(({ data }) => setItem(data.data));
   }, [id]);
 
-  if (!item) return <p>Loading...</p>;
+  if (!item) {
+    return (
+      <div className="max-w-lg" aria-busy="true" aria-label="Loading item">
+        <Skeleton className="ui-skeleton--page-title" style={{ marginBottom: 24 }} />
+        <div className="rounded-xl bg-white p-6 shadow-sm">
+          <SkeletonText lines={5} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-lg">

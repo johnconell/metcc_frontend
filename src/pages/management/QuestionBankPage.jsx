@@ -1,8 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, CheckCircle2, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
+import {
+  BookOpen,
+  CheckCircle2,
+  FolderOpen,
+  Layers,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { questionBankApi } from '../../api/questionBankApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
+import { SkeletonCardGrid, SkeletonPageHeader, SkeletonStats } from '../../components/ui/Skeleton';
+import {
+  alertFromApiError,
+  confirmAction,
+  confirmDelete,
+  toastError,
+  toastSuccess,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import './management-pages.css';
 
@@ -15,8 +32,6 @@ const EMPTY_FORM = { school_year: '', title: '' };
 export default function QuestionBankPage() {
   const [banks, setBanks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -26,12 +41,11 @@ export default function QuestionBankPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError('');
     try {
       const { data } = await questionBankApi.listBanks();
       setBanks(data.data || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to load question banks.');
+      await alertFromApiError(err, 'Unable to load question banks.');
     } finally {
       setLoading(false);
     }
@@ -45,7 +59,6 @@ export default function QuestionBankPage() {
     banks: banks.length,
     subjects: banks.reduce((sum, item) => sum + (item.subjects_count || 0), 0),
     questions: banks.reduce((sum, item) => sum + (item.questions_count || 0), 0),
-    selected: banks.reduce((sum, item) => sum + (item.selected_questions_count || 0), 0),
     active: banks.find((item) => item.is_active)?.school_year || '—',
   }), [banks]);
 
@@ -72,14 +85,22 @@ export default function QuestionBankPage() {
     event.preventDefault();
     event.stopPropagation();
     if (bank.is_active) return;
+
+    const ok = await confirmAction({
+      title: 'Set active question bank?',
+      text: `"${bank.title}" will become the examination question set.`,
+      confirmText: 'Set Active',
+      icon: 'question',
+    });
+    if (!ok) return;
+
     setBusyId(bank.id);
-    setError('');
     try {
       const { data } = await questionBankApi.activateBank(bank.id);
-      setSuccess(data.message || 'Question bank activated.');
+      await toastSuccess(data.message || 'Question bank activated.');
       await load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to activate question bank.');
+      await alertFromApiError(err, 'Unable to activate question bank.');
     } finally {
       setBusyId(null);
     }
@@ -88,15 +109,17 @@ export default function QuestionBankPage() {
   const handleDelete = async (bank, event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (!window.confirm(`Delete "${bank.title}" and all of its subjects and questions?`)) {
-      return;
-    }
+    const ok = await confirmDelete({
+      text: `Delete "${bank.title}" and all of its categories and questions? This action cannot be undone.`,
+    });
+    if (!ok) return;
+
     try {
       await questionBankApi.deleteBank(bank.id);
-      setSuccess('Question bank deleted.');
+      await toastSuccess('Record Deleted Successfully');
       await load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to delete question bank.');
+      await alertFromApiError(err, 'Unable to delete question bank.');
     }
   };
 
@@ -106,6 +129,12 @@ export default function QuestionBankPage() {
       setFormError('School year is required.');
       return;
     }
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: editing ? 'Update this question bank?' : 'Create this question bank?',
+    });
+    if (!ok) return;
+
     setSaving(true);
     setFormError('');
     try {
@@ -115,10 +144,10 @@ export default function QuestionBankPage() {
       };
       if (editing) {
         await questionBankApi.updateBank(editing.id, payload);
-        setSuccess('Question bank updated.');
+        await toastSuccess('Question Bank Updated Successfully');
       } else {
         await questionBankApi.createBank(payload);
-        setSuccess('Question bank created.');
+        await toastSuccess('Question Bank Created Successfully');
       }
       setShowForm(false);
       await load();
@@ -126,7 +155,9 @@ export default function QuestionBankPage() {
       const first = err.response?.data?.errors
         ? Object.values(err.response.data.errors).flat()[0]
         : null;
-      setFormError(first || err.response?.data?.message || 'Unable to save question bank.');
+      const message = first || err.response?.data?.message || 'Unable to save question bank.';
+      setFormError(message);
+      await toastError('Unable to save', message);
     } finally {
       setSaving(false);
     }
@@ -134,100 +165,110 @@ export default function QuestionBankPage() {
 
   return (
     <div className="mp-page">
-      <header className="mp-header">
-        <div>
-          <p className="mp-header__eyebrow">Management</p>
-          <h1 className="mp-header__title">Question Bank</h1>
-          <p className="mp-header__lede">
-            Pick one school-year bank as Active (green). That bank is the current examination question set.
-          </p>
-        </div>
-        <div className="mp-header__actions">
-          <ManagementButton variant="primary" onClick={openCreate}>
-            <Plus size={16} aria-hidden="true" /> Add Question Bank
-          </ManagementButton>
-        </div>
-      </header>
-
-      <div className="mp-stats" aria-label="Question bank summary">
-        <div className="mp-stats__item">
-          <div className="mp-stats__value">{formatNumber(totals.banks)}</div>
-          <div className="mp-stats__label">Question Banks</div>
-        </div>
-        <div className="mp-stats__item">
-          <div className="mp-stats__value mp-stats__value--active">{totals.active}</div>
-          <div className="mp-stats__label">Active Bank</div>
-        </div>
-        <div className="mp-stats__item">
-          <div className="mp-stats__value">{formatNumber(totals.subjects)}</div>
-          <div className="mp-stats__label">Subjects</div>
-        </div>
-        <div className="mp-stats__item">
-          <div className="mp-stats__value">{formatNumber(totals.questions)}</div>
-          <div className="mp-stats__label">Total Questions</div>
-        </div>
-      </div>
-
-      {success && <div className="mp-alert mp-alert--success" role="status">{success}</div>}
-      {error && <div className="mp-alert mp-alert--error" role="alert">{error}</div>}
-
       {loading ? (
-        <div className="mp-loading">
-          <Loader2 size={18} className="mp-loading__icon" />
-          Loading question banks...
-        </div>
+        <>
+          <SkeletonPageHeader />
+          <SkeletonStats count={4} />
+          <SkeletonCardGrid count={6} />
+        </>
       ) : (
-        <section aria-label="Question banks list">
-          <div className="mp-cat-grid">
-            {banks.length === 0 ? (
-              <p className="mp-panel__hint">No question banks yet. Create a school-year bank to begin.</p>
-            ) : banks.map((bank) => (
-              <Link
-                key={bank.id}
-                to={`/management/question-bank/${bank.id}`}
-                className={`mp-cat-card mp-cat-card--link${bank.is_active ? ' mp-cat-card--active' : ''}`}
-              >
-                <div className="mp-cat-card__top">
-                  <BookOpen size={18} aria-hidden="true" />
-                  {bank.is_active && (
-                    <span className="mp-active-badge">
-                      <CheckCircle2 size={14} aria-hidden="true" />
-                      Active
-                    </span>
-                  )}
-                  <span className="mp-cat-card__code">{bank.school_year}</span>
-                </div>
-                <h2 className="mp-cat-card__subject">{bank.title}</h2>
-                <p className="mp-cat-card__desc">
-                  {formatNumber(bank.subjects_count)} Subjects
-                  <br />
-                  {formatNumber(bank.questions_count)} Questions
-                </p>
-                <div className="mp-cat-card__meta">
-                  {bank.is_active ? 'Currently used for examinations' : 'View Question Bank →'}
-                </div>
-                <div className="mp-cat-card__actions" onClick={(e) => e.preventDefault()}>
-                  <ManagementButton
-                    type="button"
-                    variant={bank.is_active ? 'primary' : 'secondary'}
-                    size="sm"
-                    disabled={busyId === bank.id || bank.is_active}
-                    onClick={(e) => handleActivate(bank, e)}
-                  >
-                    <CheckCircle2 size={14} aria-hidden="true" />
-                    {bank.is_active ? 'Active' : busyId === bank.id ? 'Activating...' : 'Set Active'}
-                  </ManagementButton>
-                  <ManagementButton type="button" variant="tertiary" size="sm" onClick={(e) => openEdit(bank, e)}>
-                    <Pencil size={14} aria-hidden="true" /> Edit
-                  </ManagementButton>
-                  <ManagementButton type="button" variant="tertiary" size="sm" onClick={(e) => handleDelete(bank, e)}>
-                    <Trash2 size={14} aria-hidden="true" /> Delete
-                  </ManagementButton>
-                </div>
-              </Link>
-            ))}
+        <>
+          <header className="mp-header">
+            <div>
+              <p className="mp-header__eyebrow">Management</p>
+              <h1 className="mp-header__title">Question Bank</h1>
+              <p className="mp-header__lede">
+                Question Bank → Categories → Questions. Create a school-year bank, add categories, then import or write questions.
+              </p>
+              <p className="mp-hierarchy-crumb">
+                <FolderOpen size={14} aria-hidden="true" />
+                <strong>Bank</strong>
+                <span aria-hidden="true">→</span>
+                <Layers size={14} aria-hidden="true" />
+                Categories
+                <span aria-hidden="true">→</span>
+                <BookOpen size={14} aria-hidden="true" />
+                Questions
+              </p>
+            </div>
+            <div className="mp-header__actions">
+              <ManagementButton variant="primary" onClick={openCreate}>
+                <Plus size={16} aria-hidden="true" /> Add Question Bank
+              </ManagementButton>
+            </div>
+          </header>
+
+          <div className="mp-stats" aria-label="Question bank summary">
+            <div className="mp-stats__item">
+              <div className="mp-stats__value">{formatNumber(totals.banks)}</div>
+              <div className="mp-stats__label">Question Banks</div>
+            </div>
+            <div className="mp-stats__item">
+              <div className="mp-stats__value mp-stats__value--active">{totals.active}</div>
+              <div className="mp-stats__label">Active Bank</div>
+            </div>
+            <div className="mp-stats__item">
+              <div className="mp-stats__value">{formatNumber(totals.subjects)}</div>
+              <div className="mp-stats__label">Categories</div>
+            </div>
+            <div className="mp-stats__item">
+              <div className="mp-stats__value">{formatNumber(totals.questions)}</div>
+              <div className="mp-stats__label">Total Questions</div>
+            </div>
           </div>
-        </section>
+
+          <section aria-label="Question banks list">
+            <div className="mp-cat-grid">
+              {banks.length === 0 ? (
+                <p className="mp-panel__hint">No question banks yet. Create a school-year bank to begin.</p>
+              ) : banks.map((bank) => (
+                <Link
+                  key={bank.id}
+                  to={`/management/question-bank/${bank.id}`}
+                  className={`mp-cat-card mp-cat-card--link${bank.is_active ? ' mp-cat-card--active' : ''}`}
+                >
+                  <div className="mp-cat-card__top">
+                    <FolderOpen size={18} aria-hidden="true" />
+                    {bank.is_active && (
+                      <span className="mp-active-badge">
+                        <CheckCircle2 size={14} aria-hidden="true" />
+                        Active
+                      </span>
+                    )}
+                    <span className="mp-cat-card__code">{bank.school_year}</span>
+                  </div>
+                  <h2 className="mp-cat-card__subject">{bank.title}</h2>
+                  <p className="mp-cat-card__desc">
+                    {formatNumber(bank.subjects_count)} Categories
+                    <br />
+                    {formatNumber(bank.questions_count)} Questions
+                  </p>
+                  <div className="mp-cat-card__meta">
+                    {bank.is_active ? 'Currently used for examinations' : 'Open bank to manage categories →'}
+                  </div>
+                  <div className="mp-cat-card__actions" onClick={(e) => e.preventDefault()}>
+                    <ManagementButton
+                      type="button"
+                      variant={bank.is_active ? 'primary' : 'secondary'}
+                      size="sm"
+                      disabled={busyId === bank.id || bank.is_active}
+                      onClick={(e) => handleActivate(bank, e)}
+                    >
+                      <CheckCircle2 size={14} aria-hidden="true" />
+                      {bank.is_active ? 'Active' : busyId === bank.id ? 'Activating...' : 'Set Active'}
+                    </ManagementButton>
+                    <ManagementButton type="button" variant="tertiary" size="sm" onClick={(e) => openEdit(bank, e)}>
+                      <Pencil size={14} aria-hidden="true" /> Edit
+                    </ManagementButton>
+                    <ManagementButton type="button" variant="tertiary" size="sm" onClick={(e) => handleDelete(bank, e)}>
+                      <Trash2 size={14} aria-hidden="true" /> Delete
+                    </ManagementButton>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </>
       )}
 
       {showForm && (

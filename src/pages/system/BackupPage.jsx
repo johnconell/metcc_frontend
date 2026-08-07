@@ -5,6 +5,7 @@ import { DataTable } from '../../components/management/DataTable';
 import { StatusBadge } from '../../components/management/StatusBadge';
 import { Pagination } from '../../components/management/Pagination';
 import { useTableState, statusVariant } from '../management/useTableState';
+import { confirmAction, toastSuccess, toastInfo } from '../../utils/swal';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
 import './system-pages.css';
@@ -28,6 +29,33 @@ export default function BackupPage() {
 
   const completedCount = BACKUP_HISTORY.filter((b) => b.status === 'Completed').length;
 
+  const handleCreateBackup = async () => {
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: 'Create a new system backup?',
+    });
+    if (!ok) return;
+    await toastSuccess('Backup Created Successfully');
+  };
+
+  const handleRestore = async (name) => {
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: `Restore backup${name ? ` "${name}"` : ''}? This action cannot be undone.`,
+    });
+    if (!ok) return;
+    await toastSuccess('Backup Restored Successfully');
+  };
+
+  const handleDownload = async (name) => {
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: `Download backup${name ? ` "${name}"` : ''}?`,
+    });
+    if (!ok) return;
+    await toastInfo('Download Started', name ? `Preparing ${name}…` : 'Preparing latest backup…');
+  };
+
   const columns = [
     { key: 'name', label: 'Backup Name', sortable: true },
     { key: 'size', label: 'Size', sortable: true },
@@ -42,12 +70,12 @@ export default function BackupPage() {
     {
       key: 'actions',
       label: '',
-      render: () => (
+      render: (row) => (
         <div className="mgmt-table__actions">
-          <ManagementButton variant="tertiary" size="sm" aria-label="Download backup">
+          <ManagementButton variant="tertiary" size="sm" aria-label="Download backup" onClick={() => handleDownload(row.name)}>
             <Download size={14} aria-hidden="true" /> Download
           </ManagementButton>
-          <ManagementButton variant="tertiary" size="sm" aria-label="Restore backup">
+          <ManagementButton variant="tertiary" size="sm" aria-label="Restore backup" onClick={() => handleRestore(row.name)}>
             <RotateCcw size={14} aria-hidden="true" /> Restore
           </ManagementButton>
         </div>
@@ -66,7 +94,7 @@ export default function BackupPage() {
           </p>
         </div>
         <div className="mp-header__actions">
-          <ManagementButton variant="primary">
+          <ManagementButton variant="primary" onClick={handleCreateBackup}>
             <Database size={16} aria-hidden="true" /> Create Backup
           </ManagementButton>
         </div>
@@ -80,7 +108,16 @@ export default function BackupPage() {
               <input
                 type="checkbox"
                 checked={autoBackup}
-                onChange={(e) => setAutoBackup(e.target.checked)}
+                onChange={async (e) => {
+                  const next = e.target.checked;
+                  const ok = await confirmAction({
+                    title: 'Are you sure?',
+                    text: next ? 'Enable automatic daily backup?' : 'Disable automatic daily backup?',
+                  });
+                  if (!ok) return;
+                  setAutoBackup(next);
+                  await toastSuccess('Settings Saved Successfully');
+                }}
               />
               <span>Enable automatic daily backup at 2:00 AM</span>
             </label>
@@ -106,13 +143,13 @@ export default function BackupPage() {
         <section className="mp-panel" aria-label="Quick actions">
           <h2 className="mp-panel__title">Quick Actions</h2>
           <div className="mp-panel__body">
-            <ManagementButton variant="primary" className="sp-action-btn">
+            <ManagementButton variant="primary" className="sp-action-btn" onClick={handleCreateBackup}>
               <Database size={16} aria-hidden="true" /> Create Backup
             </ManagementButton>
-            <ManagementButton variant="secondary" className="sp-action-btn">
+            <ManagementButton variant="secondary" className="sp-action-btn" onClick={() => handleRestore()}>
               <RotateCcw size={16} aria-hidden="true" /> Restore Backup
             </ManagementButton>
-            <ManagementButton variant="secondary" className="sp-action-btn">
+            <ManagementButton variant="secondary" className="sp-action-btn" onClick={() => handleDownload()}>
               <Download size={16} aria-hidden="true" /> Download Latest Backup
             </ManagementButton>
           </div>

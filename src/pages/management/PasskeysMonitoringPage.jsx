@@ -12,7 +12,15 @@ import {
 import { scheduleApi } from '../../api/scheduleApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { StatusBadge } from '../../components/management/StatusBadge';
+import { SkeletonTable } from '../../components/ui/Skeleton';
 import { statusVariant } from './useTableState';
+import {
+  alertFromApiError,
+  confirmSendExaminationKey,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 import '../../components/management/management.css';
 import './management-pages.css';
 
@@ -117,22 +125,31 @@ export default function PasskeysMonitoringPage() {
   }, [loadPasskeys]);
 
   const sendKeys = async () => {
+    const ok = await confirmSendExaminationKey();
+    if (!ok) return;
+
     setSending(true);
     setNotice('');
     setError('');
+    showLoading('Sending Examination Key...');
     try {
       if (examDate) {
         await scheduleApi.generatePasskeysByDate(examDate);
         const { data } = await scheduleApi.sendPasskeysByDate(examDate);
+        closeLoading();
         setNotice(data.message || 'Examination keys sent for this date.');
       } else {
         await scheduleApi.generatePasskeys(scheduleId);
         const { data } = await scheduleApi.sendPasskeys(scheduleId);
+        closeLoading();
         setNotice(data.message || 'Examination keys sent.');
       }
+      await toastSuccess('Examination Key Sent Successfully');
       await loadPasskeys();
     } catch (err) {
+      closeLoading();
       setError(err.response?.data?.message || 'Unable to send examination keys.');
+      await alertFromApiError(err, 'Unable to send examination keys.');
     } finally {
       setSending(false);
     }
@@ -151,15 +168,26 @@ export default function PasskeysMonitoringPage() {
   };
 
   const resendOne = async (registrationId) => {
+    const ok = await confirmSendExaminationKey({
+      title: 'Resend Examination Key?',
+      text: 'The examination key will be resent to this student.',
+    });
+    if (!ok) return;
+
     setResendingId(registrationId);
     setNotice('');
     setError('');
+    showLoading('Sending Examination Key...');
     try {
       const { data } = await scheduleApi.resendPasskey(registrationId);
+      closeLoading();
       setNotice(data.message || 'Examination key resent.');
+      await toastSuccess('Examination Key Sent Successfully');
       await loadPasskeys();
     } catch (err) {
+      closeLoading();
       setError(err.response?.data?.message || 'Unable to resend key.');
+      await alertFromApiError(err, 'Unable to resend key.');
     } finally {
       setResendingId(null);
     }
@@ -317,8 +345,8 @@ export default function PasskeysMonitoringPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={examDate ? 8 : 7} className="mp-table__empty">
-                    <Loader2 size={18} className="spin" /> Loading keys…
+                  <td colSpan={examDate ? 8 : 7} style={{ padding: 0, border: 'none' }}>
+                    <SkeletonTable rows={8} cols={examDate ? 8 : 7} />
                   </td>
                 </tr>
               ) : rows.length === 0 ? (

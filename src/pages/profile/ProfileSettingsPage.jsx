@@ -5,6 +5,13 @@ import { authApi } from '../../api/authApi';
 import { useAuth } from '../../auth/useAuth';
 import { tokenStorage } from '../../auth/tokenStorage';
 import { usePreferences } from '../../preferences/PreferencesContext';
+import {
+  alertFromApiError,
+  confirmAction,
+  showLoading,
+  closeLoading,
+  toastSuccess,
+} from '../../utils/swal';
 import './profile-settings.css';
 
 function getInitials(name) {
@@ -102,32 +109,43 @@ export default function ProfileSettingsPage() {
     return () => window.clearTimeout(timer);
   }, [message]);
 
-  const showSuccess = (text) => {
+  const showSuccess = async (text) => {
     setMessage(text);
     setError('');
+    await toastSuccess(text);
   };
 
-  const showError = (err, fallback) => {
+  const showError = async (err, fallback) => {
     const data = err?.response?.data;
     const detail = data?.errors
       ? Object.values(data.errors).flat().join(' ')
       : data?.message;
     setError(detail || fallback);
     setMessage('');
+    await alertFromApiError(err, fallback);
   };
 
   const handleProfileSubmit = async (event) => {
     event.preventDefault();
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: 'Save profile changes?',
+    });
+    if (!ok) return;
+
     setSavingProfile(true);
+    showLoading('Saving Settings...');
     try {
       await profileApi.update({
         name: profileForm.name.trim(),
         email: profileForm.email.trim(),
       });
       await fetchUser();
-      showSuccess(t('profileUpdated'));
+      closeLoading();
+      await showSuccess(t('profileUpdated'));
     } catch (err) {
-      showError(err, 'Update failed.');
+      closeLoading();
+      await showError(err, 'Update failed.');
     } finally {
       setSavingProfile(false);
     }
@@ -140,19 +158,24 @@ export default function ProfileSettingsPage() {
     try {
       await profileApi.uploadPhoto(file);
       await fetchUser();
-      showSuccess(t('photoUploaded'));
+      await showSuccess(t('photoUploaded'));
     } catch (err) {
-      showError(err, 'Upload failed.');
+      await showError(err, 'Upload failed.');
     }
   };
 
   const handleRemovePhoto = async () => {
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: 'Remove your profile photo?',
+    });
+    if (!ok) return;
     try {
       await profileApi.removePhoto();
       await fetchUser();
-      showSuccess(t('photoRemoved'));
+      await showSuccess(t('photoRemoved'));
     } catch (err) {
-      showError(err, 'Remove failed.');
+      await showError(err, 'Remove failed.');
     }
   };
 
@@ -164,30 +187,49 @@ export default function ProfileSettingsPage() {
       return;
     }
 
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: 'Change your password? This action cannot be undone.',
+    });
+    if (!ok) return;
+
     setSavingPassword(true);
+    showLoading('Updating Password...');
     try {
       const { data } = await authApi.changePassword(passwordForm);
       if (data?.data?.token) {
         tokenStorage.set(data.data.token);
       }
       setPasswordForm({ current_password: '', password: '', password_confirmation: '' });
-      showSuccess(t('passwordUpdated'));
+      closeLoading();
+      await showSuccess(t('passwordUpdated'));
     } catch (err) {
-      showError(err, 'Change password failed.');
+      closeLoading();
+      await showError(err, 'Change password failed.');
     } finally {
       setSavingPassword(false);
     }
   };
 
   const persistPreference = async (payload, applyLocal) => {
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: payload.theme
+        ? 'Change theme?'
+        : payload.language
+          ? 'Change language?'
+          : 'Save preferences?',
+    });
+    if (!ok) return;
+
     applyLocal();
     setSavingPrefs(true);
     try {
       await profileApi.update(payload);
       await fetchUser();
-      showSuccess(t('preferencesSaved'));
+      await showSuccess(t('preferencesSaved'));
     } catch (err) {
-      showError(err, 'Could not save preferences.');
+      await showError(err, 'Could not save preferences.');
     } finally {
       setSavingPrefs(false);
     }

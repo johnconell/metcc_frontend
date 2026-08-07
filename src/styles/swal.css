@@ -1,0 +1,206 @@
+/* SweetAlert2 — smooth motion + compact success toast */
+
+@keyframes metcc-swal-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes metcc-swal-out {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.97);
+  }
+}
+
+@keyframes metcc-swal-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes metcc-swal-backdrop-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes metcc-swal-icon-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes metcc-swal-toast-in {
+  from {
+    opacity: 0;
+    transform: translate3d(24px, -8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes metcc-swal-toast-out {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(16px, -6px, 0);
+  }
+}
+
+.metcc-swal-in {
+  animation: metcc-swal-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+.metcc-swal-out {
+  animation: metcc-swal-out 0.2s cubic-bezier(0.4, 0, 1, 1) both !important;
+}
+
+.metcc-swal-backdrop-in {
+  animation: metcc-swal-backdrop-in 0.25s ease-out both !important;
+}
+
+.metcc-swal-backdrop-out {
+  animation: metcc-swal-backdrop-out 0.18s ease-in both !important;
+}
+
+.metcc-swal-icon-in {
+  animation: metcc-swal-icon-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both !important;
+}
+
+.metcc-swal-toast-in {
+  animation: metcc-swal-toast-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+.metcc-swal-toast-out {
+  animation: metcc-swal-toast-out 0.22s cubic-bezier(0.4, 0, 1, 1) both !important;
+}
+
+.metcc-swal-popup {
+  border-radius: 14px !important;
+  padding: 1.35rem 1.25rem 1.2rem !important;
+  box-shadow:
+    0 18px 40px rgba(18, 17, 16, 0.16),
+    0 2px 8px rgba(18, 17, 16, 0.06) !important;
+  will-change: transform, opacity;
+}
+
+.metcc-swal-popup .swal2-title {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+  padding: 0.15rem 0 0 !important;
+}
+
+.metcc-swal-popup .swal2-html-container {
+  font-size: 0.95rem !important;
+  line-height: 1.45 !important;
+  margin: 0.35rem 0 0 !important;
+  color: #4b5563;
+}
+
+.metcc-swal-actions {
+  margin-top: 1.1rem !important;
+  gap: 0.55rem !important;
+}
+
+.metcc-swal-confirm,
+.metcc-swal-cancel {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  padding: 0.55rem 1.15rem !important;
+  transition: transform 0.15s ease, filter 0.15s ease, background-color 0.15s ease !important;
+}
+
+.metcc-swal-confirm:hover,
+.metcc-swal-cancel:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.metcc-swal-confirm:active,
+.metcc-swal-cancel:active {
+  transform: translateY(0);
+}
+
+/* Compact success toast — top-right, quick vanish */
+.metcc-swal-toast.swal2-toast {
+  padding: 0.7rem 0.9rem !important;
+  width: auto !important;
+  max-width: min(22rem, calc(100vw - 1.5rem)) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 12px 28px rgba(18, 17, 16, 0.14),
+    0 2px 6px rgba(18, 17, 16, 0.06) !important;
+}
+
+.metcc-swal-toast .swal2-icon {
+  margin: 0 0.55rem 0 0 !important;
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  border-width: 0.15em !important;
+}
+
+.metcc-swal-toast .swal2-success-circular-line-left,
+.metcc-swal-toast .swal2-success-circular-line-right,
+.metcc-swal-toast .swal2-success-fix-tip,
+.metcc-swal-toast .swal2-success-fix-long,
+.metcc-swal-toast .swal2-success-ring,
+.metcc-swal-toast .swal2-success-fix-hide {
+  /* keep default icon drawing; just scale via container */
+}
+
+.metcc-swal-toast-title {
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+
+.metcc-swal-toast-text {
+  font-size: 0.82rem !important;
+  margin: 0.1rem 0 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  line-height: 1.35 !important;
+  color: #4b5563;
+}
+
+.metcc-swal-toast .swal2-timer-progress-bar {
+  background: #7a1f2b !important;
+  height: 2px !important;
+}
+
+.metcc-swal-loading {
+  padding: 1.5rem 1.4rem !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metcc-swal-in,
+  .metcc-swal-out,
+  .metcc-swal-backdrop-in,
+  .metcc-swal-backdrop-out,
+  .metcc-swal-icon-in,
+  .metcc-swal-toast-in,
+  .metcc-swal-toast-out {
+    animation-duration: 0.01ms !important;
+  }
+}

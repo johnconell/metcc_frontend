@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BookOpen, Calendar, Eye, Upload, UserPlus, Users } from 'lucide-react';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
+import { confirmAction, showLoading, closeLoading, toastSuccess } from '../../utils/swal';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
 import './system-pages.css';
@@ -79,6 +80,25 @@ export default function ImportPage() {
       setFileName(file.name);
       setHasPreview(true);
     }
+  };
+
+  const handleImport = async () => {
+    if (!hasPreview) return;
+    const ok = await confirmAction({
+      title: 'Are you sure?',
+      text: `Import ${activeImport?.label?.toLowerCase() || 'records'} from "${fileName}"? This action cannot be undone.`,
+    });
+    if (!ok) return;
+    showLoading(`Importing ${activeImport?.label || 'Records'}...`);
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    closeLoading();
+    await toastSuccess(
+      activeType === 'students'
+        ? 'Student Imported Successfully'
+        : activeType === 'questions'
+          ? 'Questions Imported Successfully'
+          : 'Schedule Imported Successfully'
+    );
   };
 
   return (
@@ -168,7 +188,7 @@ export default function ImportPage() {
             <ManagementButton variant="secondary" disabled={!hasPreview}>
               <Eye size={16} aria-hidden="true" /> Preview Data
             </ManagementButton>
-            <ManagementButton variant="primary" disabled={!hasPreview}>
+            <ManagementButton variant="primary" disabled={!hasPreview} onClick={handleImport}>
               <Upload size={16} aria-hidden="true" /> Import
             </ManagementButton>
           </div>
