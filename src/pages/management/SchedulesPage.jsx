@@ -250,7 +250,7 @@ export default function SchedulesPage() {
                   </span>
                   <span className="mp-date-card__cta">View times</span>
                 </button>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div className="mp-date-card__actions">
                   <ManagementButton
                     type="button"
                     size="sm"

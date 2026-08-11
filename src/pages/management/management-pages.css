@@ -1440,6 +1440,28 @@
   color: var(--color-ink);
 }
 
+.mp-date-card__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.mp-date-card__actions > .mgmt-btn,
+.mp-date-card__actions > .mp-link-back {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  white-space: normal;
+  text-align: center;
+}
+
+.mp-date-card__actions > .mgmt-btn {
+  min-width: 0;
+}
+
 .mp-batch-pills {
   display: flex;
   flex-wrap: wrap;

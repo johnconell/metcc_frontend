@@ -95,13 +95,13 @@ export default function LoginPage() {
   };
 
   const inputFocusClasses =
-    '[&_input]:focus:border-[#0B2D5C] [&_input]:focus:ring-2 [&_input]:focus:ring-[#0B2D5C]/20';
+    '[&_input]:focus:border-[#7B1020] [&_input]:focus:ring-2 [&_input]:focus:ring-[#7B1020]/20';
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex min-h-screen bg-rose-50">
       {/* Left branding panel */}
       <aside
-        className="relative hidden w-1/2 overflow-hidden bg-[#0B2D5C] lg:flex lg:flex-col lg:justify-center lg:px-14 lg:py-16 xl:px-20"
+        className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-[#7B1020] to-[#5C0C18] lg:flex lg:flex-col lg:justify-center lg:px-14 lg:py-16 xl:px-20"
         aria-label="Tagoloan Community College branding"
       >
         {/* Abstract background shapes */}
@@ -134,13 +134,13 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold leading-tight text-white xl:text-4xl">
             Entrance Examination System
           </h1>
-          <p className="mt-4 text-base leading-relaxed text-blue-100/90">
+          <p className="mt-4 text-base leading-relaxed text-rose-100/90">
             Secure, simple, and organized online entrance examination access.
           </p>
 
           <ul className="mt-10 space-y-4" role="list">
             {FEATURES.map((feature) => (
-              <li key={feature} className="flex items-center gap-3 text-sm text-blue-50/90">
+              <li key={feature} className="flex items-center gap-3 text-sm text-rose-50/90">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#D8901F]/20 text-[#D8901F]">
                   <CheckIcon />
                 </span>
@@ -156,7 +156,7 @@ export default function LoginPage() {
         <div className="mb-4 w-full max-w-md">
           <Link
             to="/"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-transparent bg-[#0B2D5C] px-4 py-2.5 text-[13px] font-semibold text-white no-underline transition hover:bg-[#092447] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B2D5C] focus-visible:ring-offset-2"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-transparent bg-[#7B1020] px-4 py-2.5 text-[13px] font-semibold text-white no-underline transition hover:bg-[#5C0C18] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7B1020] focus-visible:ring-offset-2"
           >
             Back to Landing Page
           </Link>
@@ -164,17 +164,17 @@ export default function LoginPage() {
 
         {/* Mobile branding header */}
         <div className="mb-6 flex flex-col items-center text-center lg:hidden">
-          <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-[#0B2D5C]/10 bg-white p-1 shadow-md">
+          <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-[#7B1020]/15 bg-white p-1 shadow-md">
             <img src={tccLogo} alt="Tagoloan Community College logo" className="h-full w-full rounded-full object-cover" />
           </div>
-          <p className="text-sm font-semibold text-[#0B2D5C]">Tagoloan Community College</p>
+          <p className="text-sm font-semibold text-[#7B1020]">Tagoloan Community College</p>
           <p className="text-xs text-gray-500">Entrance Examination System</p>
         </div>
 
-        <div className="w-full max-w-md rounded-2xl bg-white px-6 py-8 shadow-xl shadow-slate-200/60 sm:px-8 sm:py-10">
+        <div className="w-full max-w-md rounded-2xl bg-white px-6 py-8 shadow-xl shadow-rose-200/60 sm:px-8 sm:py-10">
           {/* Logo */}
           <div className="mb-6 flex justify-center">
-            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 border-[#0B2D5C]/10 bg-slate-50 p-1.5 shadow-sm">
+            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 border-[#7B1020]/15 bg-rose-50 p-1.5 shadow-sm">
               <img
                 src={tccLogo}
                 alt="Tagoloan Community College logo"
@@ -184,7 +184,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold text-[#0B2D5C]">Admin Sign In</h2>
+            <h2 className="text-2xl font-bold text-[#7B1020]">Admin Sign In</h2>
             <p className="mt-1.5 text-sm text-gray-500">
               Administrator access only. Proctors use the mobile examination app.
             </p>
@@ -227,12 +227,12 @@ export default function LoginPage() {
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   required
-                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-10 text-sm outline-none transition focus:border-[#0B2D5C] focus:ring-2 focus:ring-[#0B2D5C]/20"
+                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-10 text-sm outline-none transition focus:border-[#7B1020] focus:ring-2 focus:ring-[#7B1020]/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-gray-400 transition hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B2D5C] focus-visible:ring-offset-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-gray-400 transition hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7B1020] focus-visible:ring-offset-1"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOffIcon /> : <EyeIcon />}
@@ -252,7 +252,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full gap-2 bg-[#0B2D5C] py-2.5 hover:bg-[#092447] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B2D5C] focus-visible:ring-offset-2 disabled:cursor-not-allowed"
+              className="w-full gap-2 bg-[#7B1020] py-2.5 hover:bg-[#5C0C18] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7B1020] focus-visible:ring-offset-2 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -278,7 +278,7 @@ export default function LoginPage() {
           {/* Google sign-in */}
           <a
             href={authApi.googleRedirect()}
-            className="inline-flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B2D5C] focus-visible:ring-offset-2"
+            className="inline-flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7B1020] focus-visible:ring-offset-2"
           >
             <GoogleIcon />
             Continue with Google
@@ -288,7 +288,7 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Looking for your exam schedule?{' '}
-          <Link to="/" className="font-semibold text-[#0B2D5C] hover:underline">
+          <Link to="/" className="font-semibold text-[#7B1020] hover:underline">
             Search on the public portal
           </Link>
         </p>

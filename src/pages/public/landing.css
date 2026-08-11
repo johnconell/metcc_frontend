@@ -1,15 +1,23 @@
+html {
+  scroll-behavior: smooth;
+}
+
 .landing {
-  --navy: #0b2d5c;
-  --navy-deep: #082447;
+  --navy: #7b1020;
+  --navy-deep: #5c0c18;
   --gold: #d8901f;
-  --ink: #1f2937;
-  --muted: #64748b;
+  --ink: #2b1b1f;
+  --muted: #7a6468;
   --surface: #ffffff;
-  --canvas: #f1f5f9;
+  --canvas: #faf6f5;
   min-height: 100vh;
   background: var(--canvas);
   color: var(--ink);
   font-family: Inter, system-ui, sans-serif;
+}
+
+.landing section[id] {
+  scroll-margin-top: 92px;
 }
 
 .landing-nav {
@@ -158,7 +166,7 @@
 .landing-hero__lede {
   margin: 14px 0 0;
   max-width: 640px;
-  color: rgba(219, 234, 254, 0.92);
+  color: rgba(250, 236, 239, 0.92);
   line-height: 1.55;
 }
 
@@ -174,7 +182,7 @@
 }
 
 .landing-section--soft {
-  background: #e8eef7;
+  background: #f5e9eb;
 }
 
 .landing-section__head {
@@ -242,7 +250,7 @@
 .landing-search__field select:focus {
   outline: none;
   border-color: var(--navy);
-  box-shadow: 0 0 0 3px rgba(11, 45, 92, 0.15);
+  box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.15);
 }
 
 .landing-portal {
@@ -253,8 +261,8 @@
   max-width: 720px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: #e8eef7;
-  border: 1px solid #c7d5ea;
+  background: #f9edf0;
+  border: 1px solid #e5c6cc;
   color: var(--navy);
   font-size: 14px;
   line-height: 1.5;
@@ -335,7 +343,7 @@
   display: inline-flex;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #e0e7ff;
+  background: #f4dde2;
   color: var(--navy);
   text-transform: capitalize;
   width: fit-content;
@@ -425,5 +433,11 @@
 
   .landing-hero {
     padding-top: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }

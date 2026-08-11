@@ -82,6 +82,7 @@ export function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const notifyWrapRef = useRef(null);
+  const searchWrapRef = useRef(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => preferenceStorage.getSidebarCollapsed());
   const [managementOpen, setManagementOpen] = useState(true);
@@ -90,6 +91,8 @@ export function DashboardLayout() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [notifications, setNotifications] = useState(() => getNotifications());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const displayName = user?.name || 'Administrator';
   const displayRole = user?.role?.name || 'Administrator';
@@ -99,6 +102,33 @@ export function DashboardLayout() {
   const managementActive = location.pathname.startsWith('/management');
   const resultsActive = location.pathname.startsWith('/results');
   const systemActive = location.pathname.startsWith('/system');
+
+  const searchItems = useMemo(() => {
+    const items = [
+      { key: 'dashboard', label: t('dashboard'), meta: t('mainMenu'), path: '/dashboard' },
+      ...MANAGEMENT_SUBMENU
+        .filter((item) => !item.adminOnly || isAdmin)
+        .map((item) => ({ key: item.path, label: t(item.labelKey), meta: t('management'), path: item.path })),
+      ...RESULTS_ITEMS.map((item) => ({ key: item.path, label: t(item.labelKey), meta: t('resultsReports'), path: item.path })),
+      ...SYSTEM_ITEMS.map((item) => ({ key: item.path, label: t(item.labelKey), meta: t('system'), path: item.path })),
+      { key: 'profile', label: t('profileSettings'), meta: t('account'), path: '/profile' },
+      { key: 'change-password', label: t('changePassword'), meta: t('account'), path: '/profile/change-password' },
+    ];
+
+    return items;
+  }, [isAdmin, t]);
+
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return searchItems;
+
+    return searchItems.filter((item) => {
+      const label = item.label.toLowerCase();
+      const meta = item.meta.toLowerCase();
+      const path = item.path.toLowerCase();
+      return label.includes(q) || meta.includes(q) || path.includes(q);
+    });
+  }, [searchItems, searchQuery]);
 
   useEffect(() => {
     preferenceStorage.setSidebarCollapsed(sidebarCollapsed);
@@ -124,6 +154,7 @@ export function DashboardLayout() {
 
   useEffect(() => {
     setNotifyOpen(false);
+    setSearchOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -131,9 +162,23 @@ export function DashboardLayout() {
       if (notifyWrapRef.current && !notifyWrapRef.current.contains(event.target)) {
         setNotifyOpen(false);
       }
+
+      if (searchWrapRef.current && !searchWrapRef.current.contains(event.target)) {
+        setSearchOpen(false);
+      }
     };
     document.addEventListener('mousedown', onPointerDown);
     return () => document.removeEventListener('mousedown', onPointerDown);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
   const closeSidebar = () => setSidebarOpen(false);
@@ -167,6 +212,18 @@ export function DashboardLayout() {
   const handleMarkAllRead = () => {
     markAllNotificationsRead();
     refreshNotifications();
+  };
+
+  const handleSearchNavigate = (path) => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    navigate(path);
+  };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    if (searchResults.length === 0) return;
+    handleSearchNavigate(searchResults[0].path);
   };
 
   const handleLogout = async () => {
@@ -375,16 +432,45 @@ export function DashboardLayout() {
             <Menu size={20} className={`dashboard-header__menu-icon${sidebarCollapsed ? ' dashboard-header__menu-icon--collapsed' : ''}`} />
           </button>
 
-          <div className="dashboard-header__search">
-            <Search className="dashboard-header__search-icon" />
-            <input
-              type="search"
-              className="dashboard-header__search-input"
-              placeholder={t('searchPlaceholder')}
-              aria-label={t('searchPlaceholder')}
-              readOnly
-              tabIndex={-1}
-            />
+          <div className="dashboard-header__search" ref={searchWrapRef}>
+            <form onSubmit={handleSearchSubmit}>
+              <Search className="dashboard-header__search-icon" />
+              <input
+                type="search"
+                className="dashboard-header__search-input"
+                placeholder={t('searchPlaceholder')}
+                aria-label={t('searchPlaceholder')}
+                value={searchQuery}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  setSearchOpen(true);
+                }}
+                onFocus={() => setSearchOpen(true)}
+                aria-expanded={searchOpen}
+                aria-controls="dashboard-header-search-panel"
+                autoComplete="off"
+              />
+            </form>
+
+            {searchOpen && (
+              <div id="dashboard-header-search-panel" className="dashboard-header__search-panel" role="listbox" aria-label="Header search results">
+                {searchResults.length === 0 ? (
+                  <p className="dashboard-header__search-empty">No matches found.</p>
+                ) : (
+                  searchResults.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      className="dashboard-header__search-item"
+                      onClick={() => handleSearchNavigate(item.path)}
+                    >
+                      <span className="dashboard-header__search-item-title">{item.label}</span>
+                      <span className="dashboard-header__search-item-meta">{item.meta}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           <div className="dashboard-header__actions">
