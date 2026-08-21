@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
 import { Spinner } from '../../components/ui/Spinner';
 import tccLogo from '../../assets/tcc_logo.png';
+import authBackground from '../../assets/222e5081-d3b9-446c-9c68-9341734ec816.png';
 
 const FEATURES = [
   'Secure student access',
@@ -101,8 +102,14 @@ export default function LoginPage() {
     <div className="flex min-h-screen bg-rose-50">
       {/* Left branding panel */}
       <aside
-        className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-[#7B1020] to-[#5C0C18] lg:flex lg:flex-col lg:justify-center lg:px-14 lg:py-16 xl:px-20"
+        className="relative hidden w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-center lg:px-14 lg:py-16 xl:px-20"
         aria-label="Tagoloan Community College branding"
+        style={{
+          backgroundImage: `linear-gradient(135deg, rgba(113, 11, 27, 0.84) 0%, rgba(62, 4, 12, 0.76) 100%), url(${authBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
+        }}
       >
         {/* Abstract background shapes */}
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">

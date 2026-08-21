@@ -85,9 +85,10 @@ export function DashboardLayout() {
   const searchWrapRef = useRef(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => preferenceStorage.getSidebarCollapsed());
-  const [managementOpen, setManagementOpen] = useState(true);
-  const [resultsOpen, setResultsOpen] = useState(true);
-  const [systemOpen, setSystemOpen] = useState(true);
+  const initialSections = useMemo(() => preferenceStorage.getSidebarSections(), []);
+  const [managementOpen, setManagementOpen] = useState(initialSections.management);
+  const [resultsOpen, setResultsOpen] = useState(initialSections.results);
+  const [systemOpen, setSystemOpen] = useState(initialSections.system);
   const [loggingOut, setLoggingOut] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [notifications, setNotifications] = useState(() => getNotifications());
@@ -135,22 +136,12 @@ export function DashboardLayout() {
   }, [sidebarCollapsed]);
 
   useEffect(() => {
-    if (managementActive) {
-      queueMicrotask(() => setManagementOpen(true));
-    }
-  }, [managementActive]);
-
-  useEffect(() => {
-    if (resultsActive) {
-      queueMicrotask(() => setResultsOpen(true));
-    }
-  }, [resultsActive]);
-
-  useEffect(() => {
-    if (systemActive) {
-      queueMicrotask(() => setSystemOpen(true));
-    }
-  }, [systemActive]);
+    preferenceStorage.setSidebarSections({
+      management: managementOpen,
+      results: resultsOpen,
+      system: systemOpen,
+    });
+  }, [managementOpen, resultsOpen, systemOpen]);
 
   useEffect(() => {
     setNotifyOpen(false);

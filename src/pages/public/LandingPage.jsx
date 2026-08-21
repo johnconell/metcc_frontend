@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import tccLogo from '../../assets/tcc_logo.png';
+import heroBackground from '../../assets/222e5081-d3b9-446c-9c68-9341734ec816.png';
 import { publicApi } from '../../api/publicApi';
 import { useAuth } from '../../auth/useAuth';
 import './landing.css';
@@ -140,7 +141,16 @@ export default function LandingPage() {
         </div>
       )}
 
-      <section className="landing-hero" aria-labelledby="landing-hero-title">
+      <section
+        className="landing-hero"
+        aria-labelledby="landing-hero-title"
+        style={{
+          backgroundImage: `linear-gradient(145deg, rgba(90, 8, 18, 0.82) 0%, rgba(41, 0, 10, 0.8) 100%), url(${heroBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         <div className="landing-hero__content">
           <img src={tccLogo} alt="Tagoloan Community College logo" className="landing-hero__logo" />
           <p className="landing-hero__eyebrow">Tagoloan Community College</p>

@@ -133,9 +133,18 @@ function RowActionsMenu({ row }) {
 
 export default function StudentsPage() {
   const fileRef = useRef(null);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [studentForm, setStudentForm] = useState({
+    name: '',
+    gmail: '',
+    desired_program: '',
+    status: '',
+  });
+  const [studentSaving, setStudentSaving] = useState(false);
+  const [studentError, setStudentError] = useState('');
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const [importStep, setImportStep] = useState(0);
@@ -155,6 +164,86 @@ export default function StudentsPage() {
     const q = searchParams.get('q');
     if (q != null) setSearch(q);
   }, [searchParams]);
+
+  const closeStudentModal = useCallback(() => {
+    const next = new URLSearchParams(searchParams);
+    next.delete('view');
+    next.delete('edit');
+    setSearchParams(next);
+    setSelectedStudent(null);
+    setStudentError('');
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    const viewId = searchParams.get('view') || searchParams.get('edit');
+    if (!viewId) {
+      setSelectedStudent(null);
+      return;
+    }
+
+    const existing = rows.find((row) => String(row.id) === String(viewId));
+    if (existing) {
+      setSelectedStudent(existing);
+      setStudentForm({
+        name: existing.name || '',
+        gmail: existing.gmail || '',
+        desired_program: existing.desired_program || '',
+        status: existing.status || '',
+      });
+      setStudentError('');
+      return;
+    }
+
+    let cancelled = false;
+    applicantApi.get(viewId)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const student = data.data || data;
+        setSelectedStudent(student);
+        setStudentForm({
+          name: student.name || '',
+          gmail: student.gmail || '',
+          desired_program: student.desired_program || '',
+          status: student.status || '',
+        });
+        setStudentError('');
+      })
+      .catch(() => {
+        if (!cancelled) setStudentError('Unable to load student details.');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, rows]);
+
+  const saveStudent = async (event) => {
+    event.preventDefault();
+    if (!selectedStudent) return;
+
+    setStudentSaving(true);
+    setStudentError('');
+    try {
+      const payload = {
+        name: studentForm.name.trim(),
+        gmail: studentForm.gmail.trim(),
+        desired_program: studentForm.desired_program,
+        status: studentForm.status,
+      };
+      const { data } = await applicantApi.update(selectedStudent.id, payload);
+      const updated = data.data || data;
+      setSelectedStudent(updated);
+      setRows((prev) => prev.map((row) => (String(row.id) === String(updated.id) ? { ...row, ...updated } : row)));
+      setTotal((prev) => (prev > 0 ? prev : 0));
+      setStudentError('');
+      closeStudentModal();
+      await load();
+    } catch (err) {
+      setStudentError(err.response?.data?.message || 'Unable to update student.');
+    } finally {
+      setStudentSaving(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -452,6 +541,123 @@ export default function StudentsPage() {
             </label>,
           ]}
         />
+
+        {selectedStudent && (
+          <div className="mp-modal-overlay" role="presentation" onClick={closeStudentModal}>
+            <div className="mp-modal mp-users-modal" role="dialog" aria-modal="true" aria-labelledby="student-modal-title" onClick={(e) => e.stopPropagation()}>
+              <div className="mp-modal__header">
+                <div>
+                  <h2 id="student-modal-title" className="mp-modal__title">
+                    {searchParams.get('view') ? 'Student details' : 'Edit student'}
+                  </h2>
+                  <p className="mp-modal__subtitle">{selectedStudent.name || 'Applicant'}</p>
+                </div>
+                <button type="button" className="mp-modal__close" onClick={closeStudentModal} aria-label="Close student details">
+                  ×
+                </button>
+              </div>
+
+              {studentError && <div className="mp-alert mp-alert--error" role="alert">{studentError}</div>}
+
+              {searchParams.get('view') ? (
+                <div className="mp-form">
+                  <div className="mp-dl">
+                    <div>
+                      <dt>Applicant ID</dt>
+                      <dd>{selectedStudent.applicant_code || selectedStudent.id}</dd>
+                    </div>
+                    <div>
+                      <dt>Program</dt>
+                      <dd>{selectedStudent.desired_program || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt>Gmail</dt>
+                      <dd>{selectedStudent.gmail || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd>{selectedStudent.status || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt>Exam date</dt>
+                      <dd>{selectedStudent.examination_date_label || selectedStudent.application_date_label || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt>Time</dt>
+                      <dd>{selectedStudent.examination_time || selectedStudent.preferred_exam_time || '—'}</dd>
+                    </div>
+                  </div>
+                  <div className="mp-modal__actions">
+                    <ManagementButton type="button" variant="secondary" onClick={closeStudentModal}>Close</ManagementButton>
+                    <ManagementButton
+                      type="button"
+                      variant="primary"
+                      onClick={() => {
+                        const next = new URLSearchParams(searchParams);
+                        next.delete('view');
+                        next.set('edit', String(selectedStudent.id));
+                        setSearchParams(next);
+                      }}
+                    >
+                      Edit
+                    </ManagementButton>
+                  </div>
+                </div>
+              ) : (
+                <form className="mp-form" onSubmit={saveStudent}>
+                  <label className="mp-field">
+                    <span className="mp-field__label">Name</span>
+                    <input
+                      className="mp-field__input"
+                      value={studentForm.name}
+                      onChange={(e) => setStudentForm((prev) => ({ ...prev, name: e.target.value }))}
+                    />
+                  </label>
+                  <label className="mp-field">
+                    <span className="mp-field__label">Gmail</span>
+                    <input
+                      className="mp-field__input"
+                      value={studentForm.gmail}
+                      onChange={(e) => setStudentForm((prev) => ({ ...prev, gmail: e.target.value }))}
+                    />
+                  </label>
+                  <label className="mp-field">
+                    <span className="mp-field__label">Program desire</span>
+                    <select
+                      className="mp-field__input"
+                      value={studentForm.desired_program}
+                      onChange={(e) => setStudentForm((prev) => ({ ...prev, desired_program: e.target.value }))}
+                    >
+                      <option value="">Select program</option>
+                      {PROGRAMS.map((programName) => (
+                        <option key={programName} value={programName}>{programName}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="mp-field">
+                    <span className="mp-field__label">Status</span>
+                    <select
+                      className="mp-field__input"
+                      value={studentForm.status}
+                      onChange={(e) => setStudentForm((prev) => ({ ...prev, status: e.target.value }))}
+                    >
+                      <option value="">Select status</option>
+                      {STATUSES.map((statusName) => (
+                        <option key={statusName} value={statusName}>{statusName}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="mp-modal__actions">
+                    <ManagementButton type="button" variant="secondary" onClick={closeStudentModal} disabled={studentSaving}>Cancel</ManagementButton>
+                    <ManagementButton type="submit" variant="primary" disabled={studentSaving}>
+                      {studentSaving ? 'Saving...' : 'Save changes'}
+                    </ManagementButton>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
 
         {duplicateNotice && (
           <div className="students-notice students-notice--warn" role="status">

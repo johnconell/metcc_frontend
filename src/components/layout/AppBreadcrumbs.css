@@ -24,21 +24,19 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 4px;
-  border-radius: 4px;
-  color: var(--maroon, #7b1020);
-  text-decoration: underline;
-  text-decoration-color: rgba(123, 16, 32, 0.35);
-  text-underline-offset: 3px;
-  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 6px;
+  color: var(--color-muted, #5f6773);
+  text-decoration: none;
+  font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .app-breadcrumbs__link:hover,
 .app-breadcrumbs__link:focus-visible {
-  color: #5c0c18;
-  text-decoration-color: currentColor;
-  background: rgba(123, 16, 32, 0.06);
+  color: var(--color-ink, #1f2937);
+  background: rgba(15, 23, 42, 0.04);
   outline: none;
 }
 

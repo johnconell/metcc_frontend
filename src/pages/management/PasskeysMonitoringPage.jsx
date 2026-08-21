@@ -274,7 +274,7 @@ export default function PasskeysMonitoringPage() {
             </form>
             {examDate && slots.length > 0 && (
               <select
-                className="mp-field__input mp-field__input--sm"
+                className="mp-field__input mp-field__input--sm mp-keys-select"
                 value={slotId}
                 onChange={(e) => {
                   setPage(1);
@@ -291,7 +291,7 @@ export default function PasskeysMonitoringPage() {
               </select>
             )}
             <select
-              className="mp-field__input mp-field__input--sm"
+              className="mp-field__input mp-field__input--sm mp-keys-select"
               value={emailStatus}
               onChange={(e) => {
                 setPage(1);
@@ -306,7 +306,7 @@ export default function PasskeysMonitoringPage() {
               <option value="failed">Failed</option>
             </select>
             <select
-              className="mp-field__input mp-field__input--sm"
+              className="mp-field__input mp-field__input--sm mp-keys-select"
               value={joinStatus}
               onChange={(e) => {
                 setPage(1);

@@ -99,12 +99,23 @@ export function buildBreadcrumbs(pathname) {
       ],
     },
     {
-      test: /^\/management\/question-bank\/([^/]+)$/,
-      crumbs: [
+      test: /^\/management\/question-bank\/([^/]+)\/([^/]+)$/,
+      crumbs: (m) => [
         home,
         { label: 'Management', to: '/management/question-bank' },
         { label: 'Question Bank', to: '/management/question-bank' },
-        { label: 'Bank' },
+        { label: 'Bank', to: `/management/question-bank/${m[1]}` },
+        { label: 'Subject' },
+      ],
+    },
+    {
+      test: /^\/management\/question-bank\/([^/]+)$/,
+      crumbs: (m) => [
+        home,
+        { label: 'Management', to: '/management/question-bank' },
+        { label: 'Question Bank', to: '/management/question-bank' },
+        { label: 'Bank', to: `/management/question-bank/${m[1]}` },
+        { label: 'Overview' },
       ],
     },
     {

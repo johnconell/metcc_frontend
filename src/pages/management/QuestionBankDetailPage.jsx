@@ -18,7 +18,6 @@ import { questionBankApi } from '../../api/questionBankApi';
 import { ManagementButton, ManagementToolbar } from '../../components/management/ManagementToolbar';
 import { StatusBadge } from '../../components/management/StatusBadge';
 import { DataTable } from '../../components/management/DataTable';
-import { Pagination } from '../../components/management/Pagination';
 import { FileTypeIcon, getFileTypePreset } from '../../components/ui/FileTypeIcon';
 import { Skeleton, SkeletonPageHeader, SkeletonStats, SkeletonTable } from '../../components/ui/Skeleton';
 import { useTableState, statusVariant } from './useTableState';
@@ -137,7 +136,7 @@ export default function QuestionBankDetailPage() {
 
   const table = useTableState(questions, {
     searchKeys: ['stem', 'difficulty', 'status', 'correct', 'optionsLabel'],
-    pageSize: 8,
+    pageSize: Number.MAX_SAFE_INTEGER,
   });
 
   const selectionLimit = subject?.selection_limit ?? 5;
@@ -342,19 +341,71 @@ export default function QuestionBankDetailPage() {
   };
 
   const toggleSelection = async (question) => {
-    if (!question.selected && atSelectionLimit) {
+    const nextSelected = !question.selected;
+
+    if (nextSelected && atSelectionLimit) {
       await toastWarning(
         'Selection limit reached',
         `Limit is ${selectionLimit}. Increase the limit or deselect another question.`
       );
       return;
     }
+
     setBusyId(question.id);
+    setSubject((prev) => {
+      if (!prev) return prev;
+      const nextQuestions = (prev.questions || []).map((item) => (item.id === question.id
+        ? {
+            ...item,
+            is_selected_for_exam: nextSelected,
+            status: nextSelected ? 'active' : 'draft',
+          }
+        : item));
+
+      return {
+        ...prev,
+        questions: nextQuestions,
+        selected_questions_count: nextQuestions.filter((item) => item.is_selected_for_exam).length,
+      };
+    });
+
     try {
       const { data } = await questionBankApi.toggleSelection(question.id);
+      const apiSelected = Boolean(data?.data?.is_selected_for_exam ?? nextSelected);
+      setSubject((prev) => {
+        if (!prev) return prev;
+        const nextQuestions = (prev.questions || []).map((item) => (item.id === question.id
+          ? {
+              ...item,
+              is_selected_for_exam: apiSelected,
+              status: apiSelected ? 'active' : 'draft',
+            }
+          : item));
+
+        return {
+          ...prev,
+          questions: nextQuestions,
+          selected_questions_count: nextQuestions.filter((item) => item.is_selected_for_exam).length,
+        };
+      });
       await toastSuccess(data.message || 'Selection updated.');
-      await load();
     } catch (err) {
+      setSubject((prev) => {
+        if (!prev) return prev;
+        const nextQuestions = (prev.questions || []).map((item) => (item.id === question.id
+          ? {
+              ...item,
+              is_selected_for_exam: question.selected,
+              status: question.selected ? 'active' : 'draft',
+            }
+          : item));
+
+        return {
+          ...prev,
+          questions: nextQuestions,
+          selected_questions_count: nextQuestions.filter((item) => item.is_selected_for_exam).length,
+        };
+      });
       await alertFromApiError(err, 'Unable to update exam selection.');
     } finally {
       setBusyId(null);
@@ -583,19 +634,13 @@ export default function QuestionBankDetailPage() {
           <>
             <DataTable
               columns={columns}
-              rows={table.rows}
+              rows={table.allRows}
               rowKey="id"
               sortKey={table.sortKey}
               sortDir={table.sortDir}
               onSort={table.onSort}
               emptyTitle="No questions yet"
               emptyDescription="Import a file or add your first question to this category."
-            />
-            <Pagination
-              page={table.page}
-              pageSize={table.pageSize}
-              total={table.total}
-              onPageChange={table.setPage}
             />
           </>
         )}
