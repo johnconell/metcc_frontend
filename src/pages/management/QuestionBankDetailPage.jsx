@@ -99,6 +99,7 @@ export default function QuestionBankDetailPage() {
   const [importFileType, setImportFileType] = useState('excel');
   const [importFile, setImportFile] = useState(null);
   const [replaceExisting, setReplaceExisting] = useState(true);
+  const [selectionFilter, setSelectionFilter] = useState('all');
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState('');
   const [dragging, setDragging] = useState(false);
@@ -134,9 +135,16 @@ export default function QuestionBankDetailPage() {
     raw: item,
   })), [subject]);
 
+  const filterQuestions = useCallback((row) => {
+    if (selectionFilter === 'selected') return row.selected;
+    if (selectionFilter === 'unselected') return !row.selected;
+    return true;
+  }, [selectionFilter]);
+
   const table = useTableState(questions, {
     searchKeys: ['stem', 'difficulty', 'status', 'correct', 'optionsLabel'],
     pageSize: Number.MAX_SAFE_INTEGER,
+    filterFn: filterQuestions,
   });
 
   const selectionLimit = subject?.selection_limit ?? 5;
@@ -626,6 +634,19 @@ export default function QuestionBankDetailPage() {
           searchValue={table.search}
           onSearchChange={table.setSearch}
           searchPlaceholder="Search questions..."
+          filters={[
+            <select
+              key="selection-filter"
+              className="mp-field__input"
+              value={selectionFilter}
+              onChange={(event) => setSelectionFilter(event.target.value)}
+              aria-label="Filter questions by exam selection"
+            >
+              <option value="all">All questions</option>
+              <option value="selected">Selected for exam</option>
+              <option value="unselected">Unselected</option>
+            </select>,
+          ]}
         />
 
         {loading ? (
