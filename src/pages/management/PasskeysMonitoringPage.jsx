@@ -1,17 +1,24 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
+  Check,
+  Clock,
+  Copy,
+  Filter,
   KeyRound,
   Loader2,
   Mail,
+  MailCheck,
   RefreshCw,
+  RotateCcw,
   Search,
+  Users,
   X,
 } from 'lucide-react';
 import { scheduleApi } from '../../api/scheduleApi';
-import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { StatusBadge } from '../../components/management/StatusBadge';
+import { Pagination } from '../../components/management/Pagination';
 import { SkeletonTable } from '../../components/ui/Skeleton';
 import { statusVariant } from './useTableState';
 import {
@@ -23,6 +30,7 @@ import {
 } from '../../utils/swal';
 import '../../components/management/management.css';
 import './management-pages.css';
+import './passkeys-monitoring.css';
 
 function emailVariant(status) {
   const value = String(status || '').toLowerCase();
@@ -34,10 +42,17 @@ function emailVariant(status) {
 
 function joinVariant(status) {
   const value = String(status || '').toLowerCase();
-  if (value === 'taking_exam' || value === 'waiting') return 'success';
+  if (value === 'taking_exam' || value === 'waiting' || value === 'joined') return 'success';
   if (value === 'finished') return 'info';
   if (value === 'disconnected' || value === 'terminated') return 'error';
-  return 'neutral';
+  return 'default';
+}
+
+function formatLabel(str) {
+  if (!str) return '—';
+  return String(str)
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function formatDateLabel(date) {
@@ -48,6 +63,10 @@ function formatDateLabel(date) {
     day: 'numeric',
     year: 'numeric',
   });
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString();
 }
 
 const PER_PAGE = 100;
@@ -64,7 +83,6 @@ export default function PasskeysMonitoringPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  // `searchInput` is what the admin types; `search` is what was actually submitted.
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [slotId, setSlotId] = useState('all');
@@ -73,6 +91,7 @@ export default function PasskeysMonitoringPage() {
   const [page, setPage] = useState(1);
   const [sending, setSending] = useState(false);
   const [resendingId, setResendingId] = useState(null);
+  const [copiedKey, setCopiedKey] = useState(null);
 
   const loadSchedule = useCallback(async () => {
     if (!scheduleId) return;
@@ -167,6 +186,26 @@ export default function PasskeysMonitoringPage() {
     setSearch('');
   };
 
+  const resetAllFilters = () => {
+    setPage(1);
+    setSearchInput('');
+    setSearch('');
+    setSlotId('all');
+    setEmailStatus('all');
+    setJoinStatus('all');
+  };
+
+  const hasActiveFilters = Boolean(search || slotId !== 'all' || emailStatus !== 'all' || joinStatus !== 'all');
+
+  const copyPasskey = (passkey) => {
+    if (!passkey || passkey === '—') return;
+    navigator.clipboard.writeText(passkey);
+    setCopiedKey(passkey);
+    setTimeout(() => {
+      setCopiedKey((curr) => (curr === passkey ? null : curr));
+    }, 2000);
+  };
+
   const resendOne = async (registrationId) => {
     const ok = await confirmSendExaminationKey({
       title: 'Resend Examination Key?',
@@ -196,31 +235,87 @@ export default function PasskeysMonitoringPage() {
   const backTo = examDate
     ? '/management/schedules'
     : `/management/schedules/${scheduleId}`;
+
   const title = examDate
     ? `Keys · ${formatDateLabel(examDate)}`
-    : (schedule?.batch_label || schedule?.title || 'Passkey monitoring');
+    : (schedule?.batch_label || schedule?.title || 'Passkey Monitoring');
+
+  const sentCount = useMemo(() => {
+    return rows.filter((r) => String(r.passkey_email_status).toLowerCase() === 'sent').length;
+  }, [rows]);
 
   return (
-    <div className="mp-page">
-      <Link to={backTo} className="mp-link-back">
+    <div className="passkeys-page">
+      <Link to={backTo} className="passkeys-back-link">
         <ArrowLeft size={16} /> Back to schedules
       </Link>
 
-      <header className="mp-header">
-        <div>
-          <p className="mp-header__eyebrow">Examination Keys</p>
-          <h1 className="mp-header__title">{title}</h1>
-          <p className="mp-header__lede">
+      {/* Header Banner */}
+      <header className="passkeys-header">
+        <div className="passkeys-header__content">
+          <p className="passkeys-header__eyebrow">Examination Management</p>
+          <h1 className="passkeys-header__title">{title}</h1>
+          <p className="passkeys-header__lede">
             {examDate
-              ? 'Sending keys covers every time slot on this exam day. Each student still gets their own unique key.'
-              : 'Each student receives a unique examination key by Gmail.'}
+              ? 'Sending keys covers every time slot on this exam day. Each student receives a unique examination key.'
+              : 'Each student receives a unique examination key sent directly to their registered Gmail.'}
           </p>
         </div>
-        <ManagementButton type="button" onClick={sendKeys} disabled={sending}>
-          {sending ? <Loader2 size={16} className="spin" /> : <Mail size={16} />}
-          {sending ? 'Sending…' : 'Send Examination Keys'}
-        </ManagementButton>
+        <div className="passkeys-header__actions">
+          <button
+            type="button"
+            className="passkeys-btn-primary"
+            onClick={sendKeys}
+            disabled={sending}
+          >
+            {sending ? <Loader2 size={16} className="spin" /> : <Mail size={16} />}
+            {sending ? 'Sending…' : 'Send Examination Keys'}
+          </button>
+        </div>
       </header>
+
+      {/* Quick Statistics Strip */}
+      <section className="passkeys-stats-strip">
+        <div className="passkeys-stat-card">
+          <div className="passkeys-stat-card__icon passkeys-stat-card__icon--primary">
+            <Users size={20} />
+          </div>
+          <div className="passkeys-stat-card__content">
+            <span className="passkeys-stat-card__value">{formatNumber(meta.total)}</span>
+            <span className="passkeys-stat-card__label">Total Examinees</span>
+          </div>
+        </div>
+
+        <div className="passkeys-stat-card">
+          <div className="passkeys-stat-card__icon passkeys-stat-card__icon--info">
+            <Clock size={20} />
+          </div>
+          <div className="passkeys-stat-card__content">
+            <span className="passkeys-stat-card__value">{slots.length || (schedule ? 1 : '—')}</span>
+            <span className="passkeys-stat-card__label">Exam Batches</span>
+          </div>
+        </div>
+
+        <div className="passkeys-stat-card">
+          <div className="passkeys-stat-card__icon passkeys-stat-card__icon--success">
+            <MailCheck size={20} />
+          </div>
+          <div className="passkeys-stat-card__content">
+            <span className="passkeys-stat-card__value">{formatNumber(sentCount)}</span>
+            <span className="passkeys-stat-card__label">Keys Sent (Page)</span>
+          </div>
+        </div>
+
+        <div className="passkeys-stat-card">
+          <div className="passkeys-stat-card__icon passkeys-stat-card__icon--warning">
+            <KeyRound size={20} />
+          </div>
+          <div className="passkeys-stat-card__content">
+            <span className="passkeys-stat-card__value">{formatNumber(meta.total - sentCount)}</span>
+            <span className="passkeys-stat-card__label">Pending / Unsent</span>
+          </div>
+        </div>
+      </section>
 
       {notice && (
         <div className="mp-alert mp-alert--success" role="status">
@@ -233,113 +328,153 @@ export default function PasskeysMonitoringPage() {
         </div>
       )}
 
-      <section className="mp-panel">
-        <div className="mp-panel__head">
-          <div>
-            <h2 className="mp-panel__title">
-              <KeyRound size={16} /> Keys ({formatNumber(meta.total)})
+      {/* Main Monitoring Panel */}
+      <section className="passkeys-panel">
+        {/* Panel Header */}
+        <div className="passkeys-panel__top">
+          <div className="passkeys-panel__title-group">
+            <h2 className="passkeys-panel__title">
+              <KeyRound size={18} />
+              Examination Keys &amp; Passcode Monitoring
             </h2>
-            <p className="mp-panel__hint">
-              {search || slotId !== 'all'
-                ? `Showing ${formatNumber(rows.length)} of ${formatNumber(meta.total)} matching keys.`
-                : 'Search by name, Gmail, key, or batch time (e.g. 10:30-11:30).'}
-            </p>
+            <span className="passkeys-panel__count-badge">
+              {formatNumber(meta.total)} Total
+            </span>
           </div>
-          <div className="mp-keys-toolbar">
-            <form className="mp-keys-search" onSubmit={submitSearch} role="search">
-              <div className="mp-keys-search__field">
-                <Search size={14} className="mp-keys-search__icon" />
-                <input
-                  className="mp-field__input mp-field__input--sm mp-keys-search__input"
-                  type="search"
-                  placeholder="Search name, Gmail, key, or batch (10:30-11:30)…"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  aria-label="Search keys by name, Gmail, key, or batch"
-                />
-              </div>
-              <ManagementButton type="submit" size="sm">
-                <Search size={14} /> Search
-              </ManagementButton>
-              {(search || searchInput) && (
-                <ManagementButton
-                  type="button"
-                  variant="tertiary"
-                  size="sm"
-                  onClick={clearSearch}
-                >
-                  <X size={14} /> Clear
-                </ManagementButton>
-              )}
-            </form>
-            {examDate && slots.length > 0 && (
-              <select
-                className="mp-field__input mp-field__input--sm mp-keys-select"
-                value={slotId}
-                onChange={(e) => {
-                  setPage(1);
-                  setSlotId(e.target.value);
-                }}
-                aria-label="Filter by batch or time slot"
-              >
-                <option value="all">All batches ({slots.length})</option>
-                {slots.map((slot) => (
-                  <option key={slot.id} value={slot.id}>
-                    {slot.label}
-                  </option>
-                ))}
-              </select>
-            )}
-            <select
-              className="mp-field__input mp-field__input--sm mp-keys-select"
-              value={emailStatus}
-              onChange={(e) => {
-                setPage(1);
-                setEmailStatus(e.target.value);
-              }}
-              aria-label="Filter email status"
+          <div className="passkeys-panel__top-actions">
+            <button
+              type="button"
+              className="passkeys-btn-action"
+              onClick={loadPasskeys}
+              disabled={loading}
+              title="Refresh list"
             >
-              <option value="all">All email statuses</option>
-              <option value="pending">Pending</option>
-              <option value="queued">Queued</option>
-              <option value="sent">Sent</option>
-              <option value="failed">Failed</option>
-            </select>
-            <select
-              className="mp-field__input mp-field__input--sm mp-keys-select"
-              value={joinStatus}
-              onChange={(e) => {
-                setPage(1);
-                setJoinStatus(e.target.value);
-              }}
-              aria-label="Filter join status"
-            >
-              <option value="all">All join statuses</option>
-              <option value="not_joined">Not joined</option>
-              <option value="joined">Joined</option>
-              <option value="waiting">Waiting</option>
-              <option value="taking_exam">Taking exam</option>
-              <option value="finished">Finished</option>
-              <option value="disconnected">Disconnected</option>
-            </select>
-            <ManagementButton type="button" variant="tertiary" size="sm" onClick={loadPasskeys}>
-              <RefreshCw size={14} /> Refresh
-            </ManagementButton>
+              <RefreshCw size={14} className={loading ? 'spin' : ''} />
+              Refresh
+            </button>
           </div>
         </div>
 
-        <div className="mp-table-wrap mp-table-wrap--scroll">
-          <table className="mp-table">
+        {/* Toolbar & Filters */}
+        <div className="passkeys-toolbar-card">
+          <div className="passkeys-toolbar-row">
+            {/* Search Field */}
+            <form className="passkeys-search-form" onSubmit={submitSearch} role="search">
+              <div className="passkeys-search-field">
+                <Search size={15} className="passkeys-search-field__icon" />
+                <input
+                  className="passkeys-search-input"
+                  type="search"
+                  placeholder="Search name, Gmail, passkey, or batch time…"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  aria-label="Search keys"
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    className="passkeys-search-clear"
+                    onClick={clearSearch}
+                    title="Clear search input"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+              <button type="submit" className="passkeys-btn-action passkeys-btn-action--primary">
+                <Search size={14} />
+                Search
+              </button>
+            </form>
+
+            {/* Filter Dropdowns */}
+            <div className="passkeys-filter-selects">
+              {examDate && slots.length > 0 && (
+                <select
+                  className="passkeys-select"
+                  value={slotId}
+                  onChange={(e) => {
+                    setPage(1);
+                    setSlotId(e.target.value);
+                  }}
+                  aria-label="Filter by batch"
+                >
+                  <option value="all">All Batches ({slots.length})</option>
+                  {slots.map((slot) => (
+                    <option key={slot.id} value={slot.id}>
+                      {slot.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              <select
+                className="passkeys-select"
+                value={emailStatus}
+                onChange={(e) => {
+                  setPage(1);
+                  setEmailStatus(e.target.value);
+                }}
+                aria-label="Filter by email status"
+              >
+                <option value="all">All Email Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="queued">Queued</option>
+                <option value="sent">Sent</option>
+                <option value="failed">Failed</option>
+              </select>
+
+              <select
+                className="passkeys-select"
+                value={joinStatus}
+                onChange={(e) => {
+                  setPage(1);
+                  setJoinStatus(e.target.value);
+                }}
+                aria-label="Filter by join status"
+              >
+                <option value="all">All Join Statuses</option>
+                <option value="not_joined">Not Joined</option>
+                <option value="joined">Joined</option>
+                <option value="waiting">Waiting</option>
+                <option value="taking_exam">Taking Exam</option>
+                <option value="finished">Finished</option>
+                <option value="disconnected">Disconnected</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Active Filter Helper */}
+          {hasActiveFilters && (
+            <div className="passkeys-active-filters">
+              <span>
+                Showing {rows.length} of {formatNumber(meta.total)} filtered examinees.
+              </span>
+              <button
+                type="button"
+                className="passkeys-reset-btn"
+                onClick={resetAllFilters}
+              >
+                <RotateCcw size={12} />
+                Reset all filters
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Data Table */}
+        <div className="passkeys-table-container">
+          <table className="passkeys-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Gmail</th>
-                {examDate ? <th>Time slot</th> : null}
-                <th>Passkey</th>
-                <th>Email status</th>
-                <th>Join status</th>
-                <th>Exam status</th>
-                <th />
+                <th style={{ width: '22%' }}>Examinee</th>
+                <th style={{ width: '18%' }}>Gmail Address</th>
+                {examDate ? <th style={{ width: '16%' }}>Time Slot &amp; Batch</th> : null}
+                <th style={{ width: '14%' }}>Passkey Code</th>
+                <th style={{ width: '10%' }}>Email Status</th>
+                <th style={{ width: '10%' }}>Join Status</th>
+                <th style={{ width: '10%' }}>Exam Status</th>
+                <th style={{ width: '10%', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -351,70 +486,117 @@ export default function PasskeysMonitoringPage() {
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={examDate ? 8 : 7} className="mp-table__empty">
-                    No keys yet. Click Send Examination Keys to generate and email them.
+                  <td colSpan={examDate ? 8 : 7}>
+                    <div className="passkeys-empty-state">
+                      <KeyRound size={32} className="passkeys-empty-state__icon" />
+                      <p className="passkeys-empty-state__text">
+                        {hasActiveFilters
+                          ? 'No passkeys found matching your filters.'
+                          : 'No examination keys generated yet.'}
+                      </p>
+                      <p className="passkeys-empty-state__hint">
+                        {hasActiveFilters
+                          ? 'Try changing your search query or reset filters.'
+                          : 'Click "Send Examination Keys" above to generate and dispatch keys to students.'}
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 rows.map((row) => {
-                  const keySent = String(row.passkey_email_status || '').toLowerCase() === 'sent'
-                    || row.passkey_email_sent;
+                  const hasPasskey = Boolean(row.exam_passkey);
+                  const isCopied = copiedKey === row.exam_passkey;
+
                   return (
-                  <tr
-                    key={row.registration_id}
-                    className={keySent ? 'mp-table__row--keys-sent' : undefined}
-                  >
-                    <td>
-                      <div>{row.name}</div>
-                      <div className="mp-table__sub">{row.applicant_code}</div>
-                    </td>
-                    <td>{row.gmail || '—'}</td>
-                    {examDate ? (
+                    <tr key={row.registration_id}>
+                      {/* Name & ID */}
                       <td>
-                        <div>{row.time_slot || '—'}</div>
-                        <div className="mp-table__sub">{row.batch_code}</div>
+                        <div className="passkeys-examinee-name">{row.name}</div>
+                        <div className="passkeys-examinee-code">{row.applicant_code || '—'}</div>
                       </td>
-                    ) : null}
-                    <td>
-                      <code style={{ letterSpacing: '0.08em', fontWeight: 700 }}>
-                        {row.exam_passkey || '—'}
-                      </code>
-                    </td>
-                    <td>
-                      <StatusBadge variant={emailVariant(row.passkey_email_status)}>
-                        {row.passkey_email_status || 'pending'}
-                      </StatusBadge>
-                      {row.passkey_email_error && (
-                        <div className="mp-table__sub">{row.passkey_email_error}</div>
-                      )}
-                    </td>
-                    <td>
-                      <StatusBadge variant={joinVariant(row.join_status)}>
-                        {row.join_status || 'not_joined'}
-                      </StatusBadge>
-                    </td>
-                    <td>
-                      <StatusBadge variant={statusVariant(row.result_status)}>
-                        {row.result_status || 'pending'}
-                      </StatusBadge>
-                    </td>
-                    <td>
-                      <ManagementButton
-                        type="button"
-                        variant="tertiary"
-                        size="sm"
-                        disabled={resendingId === row.registration_id || !row.gmail}
-                        onClick={() => resendOne(row.registration_id)}
-                      >
-                        {resendingId === row.registration_id ? (
-                          <Loader2 size={14} className="spin" />
+
+                      {/* Gmail */}
+                      <td>
+                        {row.gmail ? (
+                          <span className="passkeys-gmail">{row.gmail}</span>
                         ) : (
-                          <Mail size={14} />
+                          <span className="passkeys-gmail passkeys-gmail--empty">No Gmail</span>
                         )}
-                        Resend
-                      </ManagementButton>
-                    </td>
-                  </tr>
+                      </td>
+
+                      {/* Time slot */}
+                      {examDate ? (
+                        <td>
+                          <div className="passkeys-slot-time">{row.time_slot || '—'}</div>
+                          {row.batch_code && (
+                            <span className="passkeys-slot-batch">{row.batch_code}</span>
+                          )}
+                        </td>
+                      ) : null}
+
+                      {/* Passkey code with copy button */}
+                      <td>
+                        {hasPasskey ? (
+                          <span className="passkeys-code-chip" title="Click icon to copy">
+                            <code>{row.exam_passkey}</code>
+                            <button
+                              type="button"
+                              className={`passkeys-copy-btn ${isCopied ? 'passkeys-copy-btn--copied' : ''}`}
+                              onClick={() => copyPasskey(row.exam_passkey)}
+                              title={isCopied ? 'Copied!' : 'Copy passkey'}
+                            >
+                              {isCopied ? <Check size={13} /> : <Copy size={13} />}
+                            </button>
+                          </span>
+                        ) : (
+                          <span className="passkeys-gmail--empty">—</span>
+                        )}
+                      </td>
+
+                      {/* Email Status */}
+                      <td>
+                        <StatusBadge variant={emailVariant(row.passkey_email_status)}>
+                          {formatLabel(row.passkey_email_status || 'pending')}
+                        </StatusBadge>
+                        {row.passkey_email_error && (
+                          <div className="mp-table__sub" title={row.passkey_email_error}>
+                            {row.passkey_email_error}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Join Status */}
+                      <td>
+                        <StatusBadge variant={joinVariant(row.join_status)}>
+                          {formatLabel(row.join_status || 'not_joined')}
+                        </StatusBadge>
+                      </td>
+
+                      {/* Exam Status */}
+                      <td>
+                        <StatusBadge variant={statusVariant(row.result_status)}>
+                          {formatLabel(row.result_status || 'pending')}
+                        </StatusBadge>
+                      </td>
+
+                      {/* Actions */}
+                      <td style={{ textAlign: 'right' }}>
+                        <button
+                          type="button"
+                          className="passkeys-resend-btn"
+                          disabled={resendingId === row.registration_id || !row.gmail}
+                          onClick={() => resendOne(row.registration_id)}
+                          title={row.gmail ? 'Resend examination key to Gmail' : 'No Gmail available'}
+                        >
+                          {resendingId === row.registration_id ? (
+                            <Loader2 size={13} className="spin" />
+                          ) : (
+                            <Mail size={13} />
+                          )}
+                          Resend
+                        </button>
+                      </td>
+                    </tr>
                   );
                 })
               )}
@@ -422,36 +604,14 @@ export default function PasskeysMonitoringPage() {
           </table>
         </div>
 
-        {meta.last_page > 1 && (
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12 }}>
-            <ManagementButton
-              type="button"
-              variant="tertiary"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              Previous
-            </ManagementButton>
-            <span className="mp-table__sub" style={{ alignSelf: 'center' }}>
-              Page {meta.current_page} of {meta.last_page}
-            </span>
-            <ManagementButton
-              type="button"
-              variant="tertiary"
-              size="sm"
-              disabled={page >= meta.last_page}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next
-            </ManagementButton>
-          </div>
-        )}
+        {/* Pagination */}
+        <Pagination
+          page={page}
+          pageSize={meta.per_page || PER_PAGE}
+          total={meta.total}
+          onPageChange={(p) => setPage(p)}
+        />
       </section>
     </div>
   );
-}
-
-function formatNumber(value) {
-  return Number(value || 0).toLocaleString();
 }
