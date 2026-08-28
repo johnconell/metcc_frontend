@@ -127,6 +127,10 @@ export function buildBreadcrumbs(pathname) {
       crumbs: [home, { label: 'Management', to: '/management/proctors' }, { label: 'Proctors' }],
     },
     {
+      test: /^\/management\/proctors\/([^/]+)$/,
+      crumbs: [home, { label: 'Management', to: '/management/proctors' }, { label: 'Proctors', to: '/management/proctors' }, { label: 'Assignment' }],
+    },
+    {
       test: /^\/management\/users$/,
       crumbs: [home, { label: 'Management', to: '/management/users' }, { label: 'Users' }],
     },

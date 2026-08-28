@@ -12,6 +12,7 @@ import {
   ClipboardCheck,
   LineChart,
   Settings,
+  SlidersHorizontal,
   FileText,
   HardDrive,
   Upload,
@@ -51,7 +52,7 @@ const RESULTS_ITEMS = [
 ];
 
 const SYSTEM_ITEMS = [
-  { labelKey: 'navSettings', icon: Settings, path: '/system/settings' },
+  { labelKey: 'navSettings', icon: SlidersHorizontal, path: '/system/settings' },
   { labelKey: 'navLogs', icon: FileText, path: '/system/logs' },
   { labelKey: 'navBackup', icon: HardDrive, path: '/system/backup' },
   { labelKey: 'navImport', icon: Upload, path: '/system/import' },

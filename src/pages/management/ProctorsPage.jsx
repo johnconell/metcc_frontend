@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarPlus, Eye, Pencil, Plus, RefreshCw, UserX, Users, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CalendarPlus, Eye, Pencil, Plus, RefreshCw, Shield, UserX, X } from 'lucide-react';
 import { userApi } from '../../api/userApi';
 import { scheduleApi } from '../../api/scheduleApi';
 import { roomApi } from '../../api/roomApi';
 import { ManagementToolbar, ManagementButton } from '../../components/management/ManagementToolbar';
-import { DataTable } from '../../components/management/DataTable';
 import { StatusBadge } from '../../components/management/StatusBadge';
 import { Pagination } from '../../components/management/Pagination';
 import { useTableState, statusVariant } from './useTableState';
@@ -12,6 +12,7 @@ import '../../components/management/management.css';
 import './management-pages.css';
 
 export default function ProctorsPage() {
+  const navigate = useNavigate();
   const [proctors, setProctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,13 +32,15 @@ export default function ProctorsPage() {
         scheduleApi.list({ per_page: 200 }),
       ]);
       const scheduleRows = scheduleResponse.data || [];
-      const roomResponses = await Promise.all(
+      const roomResponses = await Promise.allSettled(
         scheduleRows.map(async (schedule) => {
           const { data: roomResponse } = await roomApi.list(schedule.id);
           return (roomResponse.data || []).map((room) => ({ room, schedule }));
         }),
       );
-      const assignments = roomResponses.flat();
+      const assignments = roomResponses
+        .filter((result) => result.status === 'fulfilled')
+        .flatMap((result) => result.value);
 
       setProctors((data.data || []).map((user) => {
         const userId = String(user.id);
@@ -128,13 +131,19 @@ export default function ProctorsPage() {
     setBusy(true);
     try {
       const list = await loadSchedules();
-      const assigned = [];
-      for (const schedule of list) {
-        const { data } = await roomApi.list(schedule.id);
-        (data.data || []).filter((room) => String(room.proctor_id) === String(row.id)).forEach((room) => {
-          assigned.push({ ...room, schedule });
-        });
-      }
+      // Fetch all room lists in parallel (not sequentially) to avoid N+1 API calls.
+      const roomResults = await Promise.allSettled(
+        list.map((schedule) =>
+          roomApi.list(schedule.id).then(({ data }) =>
+            (data.data || [])
+              .filter((room) => String(room.proctor_id) === String(row.id))
+              .map((room) => ({ ...room, schedule })),
+          ),
+        ),
+      );
+      const assigned = roomResults
+        .filter((r) => r.status === 'fulfilled')
+        .flatMap((r) => r.value);
       setModal({ type: 'view', row, assigned });
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to load proctor assignments.');
@@ -192,42 +201,6 @@ export default function ProctorsPage() {
     return statusVariant(value);
   };
 
-  const columns = [
-    { key: 'proctorId', label: 'ID', sortable: true },
-    { key: 'name', label: 'Name', sortable: true },
-    { key: 'email', label: 'Email' },
-    { key: 'batch', label: 'Assigned Batches', sortable: true },
-    { key: 'schedule', label: 'Schedule', sortable: true },
-    {
-      key: 'availability',
-      label: 'Availability',
-      sortable: true,
-      render: (row) => (
-        <StatusBadge variant={availabilityVariant(row.availability)}>{row.availability}</StatusBadge>
-      ),
-    },
-    {
-      key: 'actions',
-      label: '',
-      render: (row) => (
-        <div className="mgmt-table__actions">
-          <ManagementButton variant="tertiary" size="sm" aria-label="Assign to batch" onClick={() => openAssign(row)} disabled={busy}>
-            <CalendarPlus size={14} aria-hidden="true" />
-          </ManagementButton>
-          <ManagementButton variant="tertiary" size="sm" aria-label="View schedule" onClick={() => openView(row)} disabled={busy}>
-            <Eye size={14} aria-hidden="true" />
-          </ManagementButton>
-          <ManagementButton variant="tertiary" size="sm" aria-label="Edit proctor" onClick={() => openEdit(row)} disabled={busy}>
-            <Pencil size={14} aria-hidden="true" />
-          </ManagementButton>
-          <ManagementButton variant="tertiary" size="sm" aria-label={row.status === 'Active' ? 'Deactivate proctor' : 'Activate proctor'} onClick={() => toggleStatus(row)} disabled={busy}>
-            <UserX size={14} aria-hidden="true" />
-          </ManagementButton>
-        </div>
-      ),
-    },
-  ];
-
   return (
     <div className="mp-page">
       <header className="mp-header">
@@ -276,17 +249,48 @@ export default function ProctorsPage() {
           searchPlaceholder="Search by name, ID, or batch"
         />
         <div style={{ height: 'var(--space-base)' }} aria-hidden="true" />
-        {loading ? <p className="mp-panel__hint">Loading proctors...</p> : (
-          <DataTable
-            columns={columns}
-            rows={table.rows}
-            rowKey="id"
-            sortKey={table.sortKey}
-            sortDir={table.sortDir}
-            onSort={table.onSort}
-            emptyTitle="No proctors found"
-            emptyIcon={Users}
-          />
+        {loading ? <p className="mp-panel__hint">Loading proctors...</p> : table.rows.length === 0 ? <p className="mp-panel__hint">No proctors found.</p> : (
+          <div className="mp-bank-grid" aria-label="Proctor cards">
+            {table.rows.map((row) => (
+              <article
+                key={row.id}
+                className="mp-bank-card"
+                role="link"
+                tabIndex={0}
+                onClick={() => navigate(`/management/proctors/${row.id}`)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    navigate(`/management/proctors/${row.id}`);
+                  }
+                }}
+              >
+                <div className="mp-bank-card__icon"><Shield size={20} /></div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 className="mp-bank-card__title">{row.name}</h3>
+                  <p className="mp-bank-card__desc">{row.email}</p>
+                  <div className="mp-bank-card__meta">
+                    <StatusBadge variant={availabilityVariant(row.availability)}>{row.availability}</StatusBadge>
+                    <span>{row.batch}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+                    <ManagementButton variant="primary" size="sm" onClick={(event) => { event.stopPropagation(); navigate(`/management/proctors/${row.id}`); }}>
+                      <Eye size={14} aria-hidden="true" /> View assignments
+                    </ManagementButton>
+                    <ManagementButton variant="tertiary" size="sm" onClick={(event) => { event.stopPropagation(); openAssign(row); }} disabled={busy}>
+                      <CalendarPlus size={14} aria-hidden="true" /> Assign
+                    </ManagementButton>
+                    <ManagementButton variant="tertiary" size="sm" onClick={(event) => { event.stopPropagation(); openEdit(row); }} disabled={busy}>
+                      <Pencil size={14} aria-hidden="true" /> Edit
+                    </ManagementButton>
+                    <ManagementButton variant="tertiary" size="sm" onClick={(event) => { event.stopPropagation(); toggleStatus(row); }} disabled={busy}>
+                      <UserX size={14} aria-hidden="true" /> {row.status === 'Active' ? 'Deactivate' : 'Activate'}
+                    </ManagementButton>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
         )}
         <Pagination page={table.page} pageSize={table.pageSize} total={table.total} onPageChange={table.setPage} />
       </section>

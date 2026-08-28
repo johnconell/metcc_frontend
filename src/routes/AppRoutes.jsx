@@ -23,6 +23,7 @@ const QuestionBankDetailPage = lazy(() => import('../pages/management/QuestionBa
 const ExamPreviewPage = lazy(() => import('../pages/management/ExamPreviewPage'));
 const StudentsPage = lazy(() => import('../pages/management/StudentsPage'));
 const ProctorsPage = lazy(() => import('../pages/management/ProctorsPage'));
+const ProctorDetailPage = lazy(() => import('../pages/management/ProctorDetailPage'));
 const UsersPage = lazy(() => import('../pages/management/UsersPage'));
 const LobbyPage = lazy(() => import('../pages/management/LobbyPage'));
 const ExamResultsPage = lazy(() => import('../pages/results/ExamResultsPage'));
@@ -85,6 +86,7 @@ export default function AppRoutes() {
                   <Route path="/management/subjects/:subjectId" element={<Navigate to="/management/question-bank" replace />} />
                   <Route path="/management/students" element={<StudentsPage />} />
                   <Route path="/management/proctors" element={<ProctorsPage />} />
+                  <Route path="/management/proctors/:id" element={<ProctorDetailPage />} />
                   <Route element={<RoleRoute roles={[ROLES.ADMIN]} />}>
                     <Route path="/management/users" element={<UsersPage />} />
                   </Route>

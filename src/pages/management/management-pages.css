@@ -408,6 +408,27 @@
   color: var(--color-muted);
 }
 
+.mp-bank-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mp-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 40px 20px;
+  border: 1px dashed var(--color-hairline-strong);
+  border-radius: var(--rounded-md);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.mp-empty-state strong {
+  color: var(--color-ink);
+}
+
 .mp-question-modal {
   max-width: 640px;
   width: min(640px, calc(100vw - 32px));
