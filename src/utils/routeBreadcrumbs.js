@@ -17,74 +17,60 @@ export const ROUTE_SEARCH_INDEX = [
   { path: '/profile', title: 'Profile Settings', keywords: ['account', 'password', 'photo'], group: 'Account' },
 ];
 
-const SEGMENT_LABELS = {
-  dashboard: 'Dashboard',
-  management: 'Management',
-  schedules: 'Schedules',
-  'question-bank': 'Question Bank',
-  subjects: 'Subjects',
-  'exam-preview': 'Exam Preview',
-  students: 'Students',
-  proctors: 'Proctors',
-  users: 'Users',
-  lobby: 'Lobby',
-  results: 'Results',
-  'exam-results': 'Exam Results',
-  'reports-analytics': 'Reports & Analytics',
-  system: 'System',
-  settings: 'Settings',
-  logs: 'Logs',
-  backup: 'Backup',
-  import: 'Import',
-  profile: 'Profile',
-  'change-password': 'Change Password',
-  'test-items': 'Test Items',
-  create: 'Create',
-  edit: 'Edit',
-  admin: 'Admin',
-};
-
 /**
  * Build breadcrumb trail from a pathname.
- * Uses explicit route patterns so trails stay short and readable
- * (no duplicate "Question Bank → Question bank → Subjects → Subject").
+ * Returns only functional, valid, non-redundant paths.
  * @param {string} pathname
  * @returns {{ label: string, to?: string }[]}
  */
 export function buildBreadcrumbs(pathname) {
   const clean = (pathname || '/').split('?')[0].replace(/\/+$/, '') || '/';
 
-  const home = { label: 'Home', to: '/dashboard' };
+  const home = { label: 'Dashboard', to: '/dashboard' };
 
   const patterns = [
     {
       test: /^\/dashboard$/,
-      crumbs: [home, { label: 'Dashboard' }],
+      crumbs: [home],
+    },
+    // Schedules & Passkeys
+    {
+      test: /^\/management\/schedules\/by-date\/([^/]+)\/passkeys$/,
+      crumbs: () => [
+        home,
+        { label: 'Schedules', to: '/management/schedules' },
+        { label: 'Examination Keys' },
+      ],
     },
     {
-      test: /^\/management\/schedules$/,
-      crumbs: [home, { label: 'Management', to: '/management/schedules' }, { label: 'Schedules' }],
+      test: /^\/management\/schedules\/([^/]+)\/passkeys$/,
+      crumbs: (m) => [
+        home,
+        { label: 'Schedules', to: '/management/schedules' },
+        { label: 'Schedule Details', to: `/management/schedules/${m[1]}` },
+        { label: 'Examination Keys' },
+      ],
     },
     {
       test: /^\/management\/schedules\/([^/]+)$/,
       crumbs: [
         home,
-        { label: 'Management', to: '/management/schedules' },
         { label: 'Schedules', to: '/management/schedules' },
-        { label: 'Schedule' },
+        { label: 'Schedule Details' },
       ],
     },
     {
-      test: /^\/management\/question-bank$/,
-      crumbs: [home, { label: 'Management', to: '/management/question-bank' }, { label: 'Question Bank' }],
+      test: /^\/management\/schedules$/,
+      crumbs: [home, { label: 'Schedules' }],
     },
+
+    // Question Bank
     {
       test: /^\/management\/question-bank\/([^/]+)\/exam-preview$/,
       crumbs: (m) => [
         home,
-        { label: 'Management', to: '/management/question-bank' },
         { label: 'Question Bank', to: '/management/question-bank' },
-        { label: 'Bank', to: `/management/question-bank/${m[1]}` },
+        { label: 'Bank Overview', to: `/management/question-bank/${m[1]}` },
         { label: 'Exam Preview' },
       ],
     },
@@ -92,127 +78,148 @@ export function buildBreadcrumbs(pathname) {
       test: /^\/management\/question-bank\/([^/]+)\/subjects\/([^/]+)$/,
       crumbs: (m) => [
         home,
-        { label: 'Management', to: '/management/question-bank' },
         { label: 'Question Bank', to: '/management/question-bank' },
-        { label: 'Bank', to: `/management/question-bank/${m[1]}` },
-        { label: 'Category' },
-      ],
-    },
-    {
-      test: /^\/management\/question-bank\/([^/]+)\/([^/]+)$/,
-      crumbs: (m) => [
-        home,
-        { label: 'Management', to: '/management/question-bank' },
-        { label: 'Question Bank', to: '/management/question-bank' },
-        { label: 'Bank', to: `/management/question-bank/${m[1]}` },
-        { label: 'Subject' },
+        { label: 'Bank Overview', to: `/management/question-bank/${m[1]}` },
+        { label: 'Subject Questions' },
       ],
     },
     {
       test: /^\/management\/question-bank\/([^/]+)$/,
-      crumbs: (m) => [
+      crumbs: [
         home,
-        { label: 'Management', to: '/management/question-bank' },
         { label: 'Question Bank', to: '/management/question-bank' },
-        { label: 'Bank', to: `/management/question-bank/${m[1]}` },
-        { label: 'Overview' },
+        { label: 'Bank Overview' },
       ],
     },
     {
-      test: /^\/management\/students$/,
-      crumbs: [home, { label: 'Management', to: '/management/students' }, { label: 'Students' }],
+      test: /^\/management\/question-bank$/,
+      crumbs: [home, { label: 'Question Bank' }],
     },
+
+    // Other Management
     {
-      test: /^\/management\/proctors$/,
-      crumbs: [home, { label: 'Management', to: '/management/proctors' }, { label: 'Proctors' }],
+      test: /^\/management\/students$/,
+      crumbs: [home, { label: 'Students' }],
     },
     {
       test: /^\/management\/proctors\/([^/]+)$/,
-      crumbs: [home, { label: 'Management', to: '/management/proctors' }, { label: 'Proctors', to: '/management/proctors' }, { label: 'Assignment' }],
+      crumbs: [
+        home,
+        { label: 'Proctors', to: '/management/proctors' },
+        { label: 'Proctor Details' },
+      ],
+    },
+    {
+      test: /^\/management\/proctors$/,
+      crumbs: [home, { label: 'Proctors' }],
     },
     {
       test: /^\/management\/users$/,
-      crumbs: [home, { label: 'Management', to: '/management/users' }, { label: 'Users' }],
+      crumbs: [home, { label: 'Users' }],
     },
     {
       test: /^\/management\/lobby$/,
-      crumbs: [home, { label: 'Management', to: '/management/lobby' }, { label: 'Lobby' }],
+      crumbs: [home, { label: 'Lobby' }],
     },
+
+    // Results
     {
       test: /^\/results\/exam-results$/,
-      crumbs: [home, { label: 'Results', to: '/results/exam-results' }, { label: 'Exam Results' }],
+      crumbs: [home, { label: 'Exam Results' }],
     },
     {
       test: /^\/results\/reports-analytics$/,
-      crumbs: [home, { label: 'Results', to: '/results/reports-analytics' }, { label: 'Reports & Analytics' }],
+      crumbs: [home, { label: 'Reports & Analytics' }],
     },
+
+    // System
     {
       test: /^\/system\/settings$/,
-      crumbs: [home, { label: 'System', to: '/system/settings' }, { label: 'Settings' }],
+      crumbs: [home, { label: 'Settings' }],
     },
     {
       test: /^\/system\/logs$/,
-      crumbs: [home, { label: 'System', to: '/system/logs' }, { label: 'Logs' }],
+      crumbs: [home, { label: 'Logs' }],
     },
     {
       test: /^\/system\/backup$/,
-      crumbs: [home, { label: 'System', to: '/system/backup' }, { label: 'Backup' }],
+      crumbs: [home, { label: 'Backup' }],
     },
     {
       test: /^\/system\/import$/,
-      crumbs: [home, { label: 'System', to: '/system/import' }, { label: 'Import' }],
+      crumbs: [home, { label: 'Import' }],
     },
+
+    // Profile
     {
       test: /^\/profile\/change-password$/,
-      crumbs: [home, { label: 'Profile', to: '/profile' }, { label: 'Change Password' }],
+      crumbs: [
+        home,
+        { label: 'Profile', to: '/profile' },
+        { label: 'Change Password' },
+      ],
     },
     {
       test: /^\/profile$/,
-      crumbs: [home, { label: 'Profile' }],
+      crumbs: [home, { label: 'Profile Settings' }],
     },
+
+    // Admin Users
     {
       test: /^\/admin\/users\/create$/,
-      crumbs: [home, { label: 'Admin', to: '/admin/users' }, { label: 'Users', to: '/admin/users' }, { label: 'Create' }],
+      crumbs: [
+        home,
+        { label: 'Users', to: '/admin/users' },
+        { label: 'Create User' },
+      ],
     },
     {
       test: /^\/admin\/users\/([^/]+)\/edit$/,
       crumbs: (m) => [
         home,
-        { label: 'Admin', to: '/admin/users' },
         { label: 'Users', to: '/admin/users' },
-        { label: 'User', to: `/admin/users/${m[1]}` },
-        { label: 'Edit' },
+        { label: 'User Details', to: `/admin/users/${m[1]}` },
+        { label: 'Edit User' },
       ],
     },
     {
       test: /^\/admin\/users\/([^/]+)$/,
       crumbs: [
         home,
-        { label: 'Admin', to: '/admin/users' },
         { label: 'Users', to: '/admin/users' },
-        { label: 'User' },
+        { label: 'User Details' },
       ],
     },
     {
       test: /^\/admin\/users$/,
-      crumbs: [home, { label: 'Admin', to: '/admin/users' }, { label: 'Users' }],
+      crumbs: [home, { label: 'Users' }],
     },
+
+    // Test Items
     {
       test: /^\/test-items\/create$/,
-      crumbs: [home, { label: 'Test Items', to: '/test-items' }, { label: 'Create' }],
+      crumbs: [
+        home,
+        { label: 'Test Items', to: '/test-items' },
+        { label: 'Create Item' },
+      ],
     },
     {
       test: /^\/test-items\/([^/]+)\/edit$/,
       crumbs: (m) => [
         home,
         { label: 'Test Items', to: '/test-items' },
-        { label: 'Item', to: `/test-items/${m[1]}` },
-        { label: 'Edit' },
+        { label: 'Item Details', to: `/test-items/${m[1]}` },
+        { label: 'Edit Item' },
       ],
     },
     {
       test: /^\/test-items\/([^/]+)$/,
-      crumbs: [home, { label: 'Test Items', to: '/test-items' }, { label: 'Item' }],
+      crumbs: [
+        home,
+        { label: 'Test Items', to: '/test-items' },
+        { label: 'Item Details' },
+      ],
     },
     {
       test: /^\/test-items$/,
@@ -226,38 +233,20 @@ export function buildBreadcrumbs(pathname) {
     return typeof pattern.crumbs === 'function' ? pattern.crumbs(match) : pattern.crumbs;
   }
 
-  // Fallback for unknown routes: skip raw id segments and structural fillers.
+  // Fallback for unknown routes
   const parts = clean.split('/').filter(Boolean);
-  if (parts.length === 0) return [home];
+  if (parts.length === 0) return [];
 
   const crumbs = [home];
   let acc = '';
-  const skipSegments = new Set(['subjects']);
 
   parts.forEach((segment, index) => {
     acc += `/${segment}`;
     const isLast = index === parts.length - 1;
-    const isIdLike = /^\d+$/.test(segment) || /^[0-9a-f-]{8,}$/i.test(segment);
-
-    if (!isLast && skipSegments.has(segment)) return;
-
-    let label = SEGMENT_LABELS[segment];
-    if (!label) {
-      if (isIdLike) {
-        const parent = parts[index - 1];
-        if (parent === 'schedules') label = 'Schedule';
-        else if (parent === 'question-bank') label = 'Bank';
-        else if (parent === 'subjects') label = 'Category';
-        else if (parent === 'users') label = 'User';
-        else if (parent === 'test-items') label = 'Item';
-        else label = 'Details';
-      } else {
-        label = segment
-          .split('-')
-          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(' ');
-      }
-    }
+    const label = segment
+      .split('-')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
 
     crumbs.push(isLast ? { label } : { label, to: acc });
   });

@@ -1,0 +1,605 @@
+@import '../../styles/design-tokens.css';
+
+/* Passkeys Monitoring Page Scaffolding */
+.passkeys-page {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-base, 16px);
+  padding: 0 4px;
+}
+
+.passkeys-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-muted, #64748b);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  width: fit-content;
+}
+
+.passkeys-back-link:hover {
+  color: var(--color-primary, #7b1020);
+}
+
+/* Header Banner */
+.passkeys-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--color-surface-card, #ffffff);
+  border: 1px solid var(--color-hairline, #e2e8f0);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.passkeys-header__content {
+  flex: 1;
+  min-width: 260px;
+}
+
+.passkeys-header__eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary, #7b1020);
+  margin: 0 0 4px;
+}
+
+.passkeys-header__title {
+  font-size: 1.45rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--color-ink, #0f172a);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.passkeys-header__lede {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-muted, #64748b);
+  margin: 6px 0 0;
+  max-width: 650px;
+}
+
+.passkeys-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.passkeys-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--color-primary, #7b1020);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(123, 16, 32, 0.18);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.passkeys-btn-primary:hover:not(:disabled) {
+  background: #640d1a;
+  box-shadow: 0 4px 6px rgba(123, 16, 32, 0.25);
+  transform: translateY(-1px);
+}
+
+.passkeys-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Summary Quick Stats */
+.passkeys-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.passkeys-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--color-surface-card, #ffffff);
+  border: 1px solid var(--color-hairline, #e2e8f0);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.passkeys-stat-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.passkeys-stat-card__icon--primary {
+  background: rgba(123, 16, 32, 0.08);
+  color: var(--color-primary, #7b1020);
+}
+
+.passkeys-stat-card__icon--success {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+}
+
+.passkeys-stat-card__icon--warning {
+  background: rgba(217, 119, 6, 0.1);
+  color: #d97706;
+}
+
+.passkeys-stat-card__icon--info {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.passkeys-stat-card__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.passkeys-stat-card__value {
+  font-size: 1.25rem;
+  font-weight: 750;
+  color: var(--color-ink, #0f172a);
+  line-height: 1.2;
+}
+
+.passkeys-stat-card__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-muted, #64748b);
+  margin-top: 2px;
+}
+
+/* Main Panel */
+.passkeys-panel {
+  background: var(--color-surface-card, #ffffff);
+  border: 1px solid var(--color-hairline, #e2e8f0);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Panel Header & Controls */
+.passkeys-panel__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-hairline-soft, #f1f5f9);
+}
+
+.passkeys-panel__title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.passkeys-panel__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-ink, #0f172a);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.passkeys-panel__count-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-canvas-soft, #f1f5f9);
+  color: var(--color-muted, #475569);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.passkeys-panel__top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Toolbar Filters Area */
+.passkeys-toolbar-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--color-canvas-soft, #f8fafc);
+  border: 1px solid var(--color-hairline, #e2e8f0);
+  border-radius: 10px;
+}
+
+.passkeys-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.passkeys-search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.passkeys-search-field {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.passkeys-search-field__icon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-muted, #94a3b8);
+  pointer-events: none;
+}
+
+.passkeys-search-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 34px 0 36px;
+  font-size: 13px;
+  border: 1px solid var(--color-hairline, #cbd5e1);
+  border-radius: 8px;
+  background: var(--color-surface-card, #ffffff);
+  color: var(--color-ink, #0f172a);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.passkeys-search-input:focus {
+  border-color: var(--color-primary, #7b1020);
+  box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.1);
+}
+
+.passkeys-search-clear {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  padding: 4px;
+  color: var(--color-muted, #94a3b8);
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passkeys-search-clear:hover {
+  color: var(--color-ink, #0f172a);
+}
+
+.passkeys-filter-selects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.passkeys-select {
+  height: 38px;
+  padding: 0 32px 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--color-hairline, #cbd5e1);
+  border-radius: 8px;
+  background-color: var(--color-surface-card, #ffffff);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  appearance: none;
+  color: var(--color-ink, #0f172a);
+  outline: none;
+  cursor: pointer;
+  min-width: 150px;
+  transition: border-color 0.15s ease;
+}
+
+.passkeys-select:focus {
+  border-color: var(--color-primary, #7b1020);
+}
+
+.passkeys-btn-action {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid var(--color-hairline, #cbd5e1);
+  background: var(--color-surface-card, #ffffff);
+  color: var(--color-ink, #0f172a);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.passkeys-btn-action:hover {
+  background: var(--color-canvas-soft, #f1f5f9);
+  border-color: var(--color-muted, #94a3b8);
+}
+
+.passkeys-btn-action--primary {
+  background: var(--color-primary, #7b1020);
+  border-color: var(--color-primary, #7b1020);
+  color: #ffffff;
+}
+
+.passkeys-btn-action--primary:hover {
+  background: #640d1a;
+}
+
+/* Active filter badges / reset row */
+.passkeys-active-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-muted, #64748b);
+  padding-top: 4px;
+}
+
+.passkeys-reset-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary, #7b1020);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.passkeys-reset-btn:hover {
+  text-decoration: underline;
+}
+
+/* Data Table */
+.passkeys-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--color-hairline, #e2e8f0);
+  border-radius: 10px;
+  background: var(--color-surface-card, #ffffff);
+}
+
+.passkeys-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.passkeys-table thead {
+  background: var(--color-canvas-soft, #f8fafc);
+  border-bottom: 1px solid var(--color-hairline, #e2e8f0);
+}
+
+.passkeys-table th {
+  padding: 12px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted, #64748b);
+  white-space: nowrap;
+}
+
+.passkeys-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-hairline-soft, #f1f5f9);
+  color: var(--color-ink, #1e293b);
+  vertical-align: middle;
+}
+
+.passkeys-table tbody tr {
+  transition: background-color 0.1s ease;
+}
+
+.passkeys-table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.015);
+}
+
+.passkeys-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Examinee Cell */
+.passkeys-examinee-name {
+  font-weight: 600;
+  color: var(--color-ink, #0f172a);
+  line-height: 1.3;
+}
+
+.passkeys-examinee-code {
+  font-size: 11px;
+  color: var(--color-muted, #64748b);
+  margin-top: 2px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Gmail Cell */
+.passkeys-gmail {
+  color: var(--color-ink, #334155);
+  font-size: 12.5px;
+}
+
+.passkeys-gmail--empty {
+  color: var(--color-muted, #94a3b8);
+}
+
+/* Slot Cell */
+.passkeys-slot-time {
+  font-weight: 500;
+  color: var(--color-ink, #0f172a);
+}
+
+.passkeys-slot-batch {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--color-muted, #64748b);
+  margin-top: 2px;
+}
+
+/* Passkey Code Chip */
+.passkeys-code-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--color-canvas-soft, #f1f5f9);
+  border: 1px solid var(--color-hairline, #e2e8f0);
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  color: var(--color-ink, #0f172a);
+  user-select: all;
+}
+
+.passkeys-copy-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--color-muted, #94a3b8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.passkeys-copy-btn:hover {
+  color: var(--color-primary, #7b1020);
+}
+
+.passkeys-copy-btn--copied {
+  color: #16a34a !important;
+}
+
+/* Resend Action Button */
+.passkeys-resend-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid var(--color-hairline, #cbd5e1);
+  background: var(--color-surface-card, #ffffff);
+  color: var(--color-ink, #334155);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.passkeys-resend-btn:hover:not(:disabled) {
+  background: rgba(123, 16, 32, 0.06);
+  border-color: var(--color-primary, #7b1020);
+  color: var(--color-primary, #7b1020);
+}
+
+.passkeys-resend-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Empty State in table */
+.passkeys-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-muted, #64748b);
+}
+
+.passkeys-empty-state__icon {
+  margin-bottom: 8px;
+  color: var(--color-muted, #94a3b8);
+}
+
+.passkeys-empty-state__text {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.passkeys-empty-state__hint {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .passkeys-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .passkeys-header__actions {
+    width: 100%;
+  }
+
+  .passkeys-btn-primary {
+    width: 100%;
+  }
+
+  .passkeys-toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .passkeys-filter-selects {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .passkeys-select {
+    width: 100%;
+  }
+}
+
