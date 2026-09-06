@@ -562,8 +562,7 @@ export default function QuestionBankSubjectPage() {
           </p>
           <h1 className="mp-header__title">{bank.title}</h1>
           <p className="mp-header__lede">
-            Manage exam categories for this bank. Open a category to add or import questions.
-            Manage exam categories for this bank. Add single or multiple categories, or upload question files.
+            Organize the subjects used by this exam. Open a category to review, add, or import questions.
           </p>
           <p className="mp-hierarchy-crumb">
             <FolderOpen size={14} aria-hidden="true" />
@@ -634,10 +633,12 @@ export default function QuestionBankSubjectPage() {
       <section className="mp-panel">
         <div className="mp-panel__head">
           <div>
-            <h2 className="mp-panel__title"><Layers size={16} /> Categories</h2>
+            <div className="mp-panel__title-row">
+              <h2 className="mp-panel__title"><Layers size={16} /> Categories</h2>
+              <span className="mp-panel__count">{formatNumber(subjects.length)} {subjects.length === 1 ? 'category' : 'categories'}</span>
+            </div>
             <p className="mp-panel__hint">
-              Open a category to import questions (Excel, Word, or PDF) or add them manually.
-              Manage category subjects or upload question files (Excel, Word, PDF, Text) into specific categories.
+              Each category has its own question pool and exam selection limit. Use the actions on a card to manage it.
             </p>
           </div>
         </div>
@@ -648,16 +649,20 @@ export default function QuestionBankSubjectPage() {
               <p className="mp-panel__hint">No categories yet. Add single or multiple categories to get started.</p>
             </>
           ) : subjects.map((subject) => (
-            <Link
+            <article
               key={subject.id}
-              to={`/management/question-bank/${bank.id}/subjects/${subject.id}`}
-              className="mp-cat-card mp-cat-card--link"
+              className="mp-cat-card"
             >
               <div className="mp-cat-card__top">
                 <BookOpen size={18} aria-hidden="true" />
                 <span className="mp-cat-card__code">{subject.code || 'SUB'}</span>
               </div>
-              <h2 className="mp-cat-card__subject">{subject.name}</h2>
+              <Link
+                to={`/management/question-bank/${bank.id}/subjects/${subject.id}`}
+                className="mp-cat-card__subject-link"
+              >
+                <h2 className="mp-cat-card__subject">{subject.name}</h2>
+              </Link>
               <p className="mp-cat-card__desc">{subject.description || 'Entrance exam category'}</p>
               <div className="mp-cat-card__count">
                 {formatNumber(subject.questions_count)}
@@ -677,7 +682,7 @@ export default function QuestionBankSubjectPage() {
                   <Trash2 size={14} aria-hidden="true" /> Delete
                 </ManagementButton>
               </div>
-            </Link>
+            </article>
           ))}
         </div>
       </section>

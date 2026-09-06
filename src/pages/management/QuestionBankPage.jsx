@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  BookOpen,
   CheckCircle2,
   FolderOpen,
-  Layers,
   Pencil,
   Plus,
   Trash2,
@@ -179,16 +177,6 @@ export default function QuestionBankPage() {
               <h1 className="mp-header__title">Question Bank</h1>
               <p className="mp-header__lede">
                 Question Bank → Categories → Questions. Create a school-year bank, add categories, then import or write questions.
-              </p>
-              <p className="mp-hierarchy-crumb">
-                <FolderOpen size={14} aria-hidden="true" />
-                <strong>Bank</strong>
-                <span aria-hidden="true">→</span>
-                <Layers size={14} aria-hidden="true" />
-                Categories
-                <span aria-hidden="true">→</span>
-                <BookOpen size={14} aria-hidden="true" />
-                Questions
               </p>
             </div>
             <div className="mp-header__actions">

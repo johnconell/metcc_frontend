@@ -10,6 +10,7 @@ import {
   Pencil,
   Upload,
   Users,
+  X,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { applicantApi } from '../../api/applicantApi';
@@ -553,15 +554,19 @@ export default function StudentsPage() {
                   <p className="mp-modal__subtitle">{selectedStudent.name || 'Applicant'}</p>
                 </div>
                 <button type="button" className="mp-modal__close" onClick={closeStudentModal} aria-label="Close student details">
-                  ×
+                  <X size={18} aria-hidden="true" />
                 </button>
               </div>
 
               {studentError && <div className="mp-alert mp-alert--error" role="alert">{studentError}</div>}
 
               {searchParams.get('view') ? (
-                <div className="mp-form">
-                  <div className="mp-dl">
+                <div className="mp-form mp-student-details">
+                  <div className="mp-student-details__intro">
+                    <span className="mp-student-details__eyebrow">Applicant record</span>
+                    <strong>{selectedStudent.applicant_code || selectedStudent.id}</strong>
+                  </div>
+                  <dl className="mp-dl mp-student-details__list">
                     <div>
                       <dt>Applicant ID</dt>
                       <dd>{selectedStudent.applicant_code || selectedStudent.id}</dd>
@@ -576,7 +581,11 @@ export default function StudentsPage() {
                     </div>
                     <div>
                       <dt>Status</dt>
-                      <dd>{selectedStudent.status || '—'}</dd>
+                      <dd>
+                        <StatusBadge variant={statusVariant(selectedStudent.status)}>
+                          {selectedStudent.status || 'Unknown'}
+                        </StatusBadge>
+                      </dd>
                     </div>
                     <div>
                       <dt>Exam date</dt>
@@ -586,7 +595,7 @@ export default function StudentsPage() {
                       <dt>Time</dt>
                       <dd>{selectedStudent.examination_time || selectedStudent.preferred_exam_time || '—'}</dd>
                     </div>
-                  </div>
+                  </dl>
                   <div className="mp-modal__actions">
                     <ManagementButton type="button" variant="secondary" onClick={closeStudentModal}>Close</ManagementButton>
                     <ManagementButton
