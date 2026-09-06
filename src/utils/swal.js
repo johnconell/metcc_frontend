@@ -33,13 +33,12 @@ const base = {
 
 /**
  * Success toast — brief, non-blocking, auto-vanishes (~1.2s).
- * Resolves immediately so page flow is not held open while the toast fades.
  * @param {string} message Body text (e.g. "User Created Successfully")
  * @param {string} [detail] Optional secondary text
  */
 export function toastSuccess(message = 'Completed successfully.', detail = '') {
   const text = [message, detail].filter(Boolean).join(' — ') || undefined;
-  void Swal.fire({
+  return Swal.fire({
     ...base,
     toast: true,
     position: 'top-end',
@@ -64,7 +63,6 @@ export function toastSuccess(message = 'Completed successfully.', detail = '') {
       htmlContainer: 'metcc-swal-toast-text',
     },
   });
-  return Promise.resolve();
 }
 
 export function toastError(title = 'Error', text = '') {

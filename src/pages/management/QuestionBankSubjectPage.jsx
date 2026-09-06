@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { questionBankApi } from '../../api/questionBankApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
-import { FileTypeIcon, getFileTypePreset } from '../../components/ui/FileTypeIcon';
+import { FileTypeIcon } from '../../components/ui/FileTypeIcon';
 import { Skeleton, SkeletonCardGrid, SkeletonPageHeader, SkeletonStats } from '../../components/ui/Skeleton';
 import {
   alertFromApiError,
@@ -241,6 +241,20 @@ export default function QuestionBankSubjectPage() {
     return preset;
   }, [bank, editing]);
 
+  const existingCategoryCodes = useMemo(
+    () => new Set((bank?.subjects || []).map((subject) => (subject.code || '').toUpperCase()).filter(Boolean)),
+    [bank]
+  );
+
+  const availableBulkCategories = useMemo(
+    () => DEFAULT_CATEGORIES.filter((category, index, categories) => (
+      category.code !== 'OTHERS'
+      && !existingCategoryCodes.has(category.code)
+      && !categories.slice(0, index).some((previous) => previous.code === category.code)
+    )),
+    [existingCategoryCodes]
+  );
+
   const openCreate = () => {
     setEditing(null);
     setForm({ ...EMPTY_FORM, categoryKey: '' });
@@ -327,8 +341,7 @@ export default function QuestionBankSubjectPage() {
     };
   };
 
-  const submit = async (event) => {
-    event.preventDefault();
+  const submitSingleCategory = async () => {
     const resolved = resolveCategoryPayload();
     if (resolved.error) {
       setFormError(resolved.error);
@@ -374,9 +387,18 @@ export default function QuestionBankSubjectPage() {
   };
 
   const submitMultipleCategories = async () => {
-    const selectedCodes = form.selectedPresetCodes || [];
+    const availableCodes = new Set(availableBulkCategories.map((category) => category.code));
+    const selectedCodes = (form.selectedPresetCodes || []).filter((code) => availableCodes.has(code));
     const includeCustom = form.includeCustomInMultiple && form.customMultipleName.trim();
     const customName = form.customMultipleName.trim();
+    const customCode = codeFromName(customName) || 'CUSTOM';
+
+    if (includeCustom && existingCategoryCodes.has(customCode)) {
+      const message = `The code ${customCode} is already used. Choose a different custom category name.`;
+      setFormError(message);
+      await toastWarning('Code already used', message);
+      return;
+    }
 
     if (selectedCodes.length === 0 && !includeCustom) {
       setFormError('Select at least one category to add.');
@@ -410,7 +432,7 @@ export default function QuestionBankSubjectPage() {
       if (includeCustom && customName) {
         itemsToCreate.push({
           name: customName,
-          code: codeFromName(customName) || 'CUSTOM',
+          code: customCode,
           description: form.description.trim() || `Exam category for ${customName}`,
           selection_limit: Math.max(0, Number(form.selection_limit) || 5),
         });
@@ -742,16 +764,6 @@ export default function QuestionBankSubjectPage() {
                 </>
               )}
 
-              <label className="mp-field">
-                <span className="mp-field__label">Description</span>
-                <textarea
-                  className="mp-field__input mp-field__textarea"
-                  rows={3}
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="What this category covers"
-                />
-              </label>
               {/* Multiple Categories Form */}
               {!editing && form.addMode === 'multiple' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -762,7 +774,7 @@ export default function QuestionBankSubjectPage() {
                         type="button"
                         style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontSize: '12px' }}
                         onClick={() => {
-                          const allCodes = DEFAULT_CATEGORIES.map((c) => c.code).filter((c) => c !== 'OTHERS');
+                          const allCodes = availableBulkCategories.map((category) => category.code);
                           setForm({ ...form, selectedPresetCodes: allCodes, includeCustomInMultiple: true });
                         }}
                       >
@@ -779,9 +791,10 @@ export default function QuestionBankSubjectPage() {
                   </div>
 
               <div className="mp-field">
-                <span className="mp-field__label">Exam selection limit</span>
+                <span className="mp-field__label">Available categories and codes</span>
+                  <p className="mp-field__hint">Only categories not already in this question bank can be selected.</p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', padding: '10px', borderRadius: '8px', background: 'var(--color-canvas-soft)' }}>
-                    {DEFAULT_CATEGORIES.filter((c) => c.code !== 'OTHERS').map((cat) => {
+                    {availableBulkCategories.map((cat) => {
                       const checked = form.selectedPresetCodes.includes(cat.code);
                       return (
                         <label key={cat.code} className="mp-check" style={{ fontSize: '13px' }}>
@@ -795,11 +808,17 @@ export default function QuestionBankSubjectPage() {
                               setForm({ ...form, selectedPresetCodes: next });
                             }}
                           />
-                          {cat.name}
+                          <span>{cat.name} <small>({cat.code})</small></span>
                         </label>
                       );
                     })}
                   </div>
+                  {availableBulkCategories.length === 0 && (
+                    <p className="mp-field__hint">All preset category codes have already been added.</p>
+                  )}
+                  {existingCategoryCodes.size > 0 && (
+                    <p className="mp-field__hint">Already used codes: {Array.from(existingCategoryCodes).join(', ')}</p>
+                  )}
                 </div>
 
                   <label className="mp-field mp-field--check">
@@ -849,8 +868,13 @@ export default function QuestionBankSubjectPage() {
                   Cancel
                 </ManagementButton>
                 <ManagementButton type="submit" variant="primary" disabled={saving}>
-                  {saving ? 'Saving...' : editing ? 'Save changes' : 'Create category'}
-                  {saving ? 'Saving...' : editing ? 'Save changes' : form.addMode === 'multiple' ? 'Add Selected Categories' : 'Create category'}
+                  {saving
+                    ? 'Saving...'
+                    : editing
+                      ? 'Save changes'
+                      : form.addMode === 'multiple'
+                        ? 'Add Selected Categories'
+                        : 'Create category'}
                 </ManagementButton>
               </div>
             </form>
