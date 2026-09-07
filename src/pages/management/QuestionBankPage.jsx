@@ -176,7 +176,7 @@ export default function QuestionBankPage() {
               <p className="mp-header__eyebrow">Management</p>
               <h1 className="mp-header__title">Question Bank</h1>
               <p className="mp-header__lede">
-                Question Bank → Categories → Questions. Create a school-year bank, add categories, then import or write questions.
+                Organize exam questions by school year and category.
               </p>
             </div>
             <div className="mp-header__actions">

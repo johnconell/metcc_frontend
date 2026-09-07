@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Building2, ClipboardList, Loader2, Mail, Plus, Save, Shield, Trash2, Users } from 'lucide-react';
+import { Building2, ClipboardList, Loader2, Mail, Plus, Save, Settings2, Shield, Trash2, Users } from 'lucide-react';
 import { examinationSettingsApi } from '../../api/examinationSettingsApi';
 import { gradingApi } from '../../api/gradingApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
@@ -214,12 +214,15 @@ export default function SettingsPage() {
   return (
     <div className="mp-page">
       <header className="mp-header">
-        <div>
+        <div className="sp-page-heading">
+          <span className="sp-page-heading__icon" aria-hidden="true"><Settings2 size={20} /></span>
+          <div>
           <p className="mp-header__eyebrow">System</p>
           <h1 className="mp-header__title">Settings</h1>
           <p className="mp-header__lede">
-            Configure school information, examination rules, user preferences, email, and security.
+            Configure school, examination, account, and security settings.
           </p>
+          </div>
         </div>
       </header>
 

@@ -1,5 +1,13 @@
 .app-breadcrumbs {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   margin: 0 0 16px;
+  padding: 10px 14px;
+  background: var(--cream, var(--color-surface-card, #ffffff));
+  border: 1px solid var(--border, var(--color-hairline, #e6e5e0));
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(34, 34, 34, 0.05);
 }
 
 .app-breadcrumbs__list {

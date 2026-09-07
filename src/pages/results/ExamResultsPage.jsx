@@ -210,8 +210,7 @@ export default function ExamResultsPage() {
           <p className="mp-header__eyebrow">Results</p>
           <h1 className="mp-header__title">Examination Results</h1>
           <p className="mp-header__lede">
-            Browse by date, then batch, then the students who completed that exam. Scores show as
-            points based on total exam items (e.g. 45/50 when the bank has 50 selected questions).
+            Review exam scores by date, batch, and student.
           </p>
         </div>
         <div className="mp-header__actions">

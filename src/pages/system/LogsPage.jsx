@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText } from 'lucide-react';
+import { Activity, FileText, History, ShieldCheck, Users } from 'lucide-react';
 import { ManagementToolbar } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
 import { FilterDropdown } from '../../components/management/FilterDropdown';
@@ -7,6 +7,7 @@ import { Pagination } from '../../components/management/Pagination';
 import { useTableState } from '../management/useTableState';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
+import './system-pages.css';
 
 const ACTIVITY_LOGS = [
   { id: 1, user: 'Kent Russel Casino', action: 'Published examination lobby', dateTime: 'Jun 1, 2025 08:30 AM' },
@@ -50,29 +51,36 @@ export default function LogsPage() {
   return (
     <div className="mp-page">
       <header className="mp-header">
-        <div>
+        <div className="sp-page-heading">
+          <span className="sp-page-heading__icon" aria-hidden="true"><Activity size={20} /></span>
+          <div>
           <p className="mp-header__eyebrow">System</p>
           <h1 className="mp-header__title">Activity Logs</h1>
           <p className="mp-header__lede">
-            {ACTIVITY_LOGS.length} recorded activities — search and filter by user, action, or date.
+            Search and filter recent system activity. {ACTIVITY_LOGS.length} entries recorded.
           </p>
+          </div>
         </div>
       </header>
 
       <div className="mp-stats" aria-label="Log summary">
         <div className="mp-stats__item">
+          <span className="sp-stat-icon sp-stat-icon--accent" aria-hidden="true"><History size={17} /></span>
           <div className="mp-stats__value">{ACTIVITY_LOGS.length}</div>
           <div className="mp-stats__label">Total entries</div>
         </div>
         <div className="mp-stats__item">
+          <span className="sp-stat-icon sp-stat-icon--success" aria-hidden="true"><Users size={17} /></span>
           <div className="mp-stats__value">{USERS.length}</div>
           <div className="mp-stats__label">Active users</div>
         </div>
         <div className="mp-stats__item">
+          <span className="sp-stat-icon sp-stat-icon--warning" aria-hidden="true"><Activity size={17} /></span>
           <div className="mp-stats__value">Today</div>
           <div className="mp-stats__label">Latest activity</div>
         </div>
         <div className="mp-stats__item">
+          <span className="sp-stat-icon sp-stat-icon--neutral" aria-hidden="true"><ShieldCheck size={17} /></span>
           <div className="mp-stats__value">Jun 1</div>
           <div className="mp-stats__label">Last entry date</div>
         </div>

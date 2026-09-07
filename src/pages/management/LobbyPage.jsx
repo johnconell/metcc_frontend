@@ -239,8 +239,7 @@ export default function LobbyPage() {
           <p className="mp-header__eyebrow">Management</p>
           <h1 className="mp-header__title">Examination Lobby</h1>
           <p className="mp-header__lede">
-            Create and manage examination rooms for each time slot. Rooms sync to the mobile
-            proctor app for QR codes and lobbies.
+            Prepare examination rooms and proctor access for each time slot.
           </p>
         </div>
         <div className="mp-header__actions">

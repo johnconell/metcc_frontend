@@ -179,7 +179,7 @@ export default function ScheduleDetailPage() {
           <h1 className="mp-header__title">{data.batch_label || `${data.date_label}, ${data.batch_code}`}</h1>
           <p className="mp-header__lede">
             {data.title} · {data.time_slot} · General entrance examination (not course-specific).
-            Students are assigned by time slot and may use any available classroom.
+            Manage this examination batch.
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>

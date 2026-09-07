@@ -437,7 +437,7 @@ export default function StudentsPage() {
       <header className="students-header-bar">
         <div>
           <h1 className="students-header-bar__title">Student List</h1>
-          <p className="students-header-bar__meta">{total} applicants</p>
+          <p className="students-header-bar__meta">Review applicants, import records, and manage examination assignments. {total} applicants.</p>
         </div>
         <div className="students-header-bar__actions">
           <ManagementButton type="button" variant="secondary" size="sm" onClick={downloadTemplate}>

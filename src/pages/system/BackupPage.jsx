@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Clock, Database, Download, HardDrive, RotateCcw } from 'lucide-react';
+import { Clock, Database, Download, HardDrive, History, RotateCcw, Settings2, Zap } from 'lucide-react';
 import { ManagementToolbar, ManagementButton } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
 import { StatusBadge } from '../../components/management/StatusBadge';
@@ -86,12 +86,15 @@ export default function BackupPage() {
   return (
     <div className="mp-page">
       <header className="mp-header">
-        <div>
+        <div className="sp-page-heading">
+          <span className="sp-page-heading__icon" aria-hidden="true"><HardDrive size={20} /></span>
+          <div>
           <p className="mp-header__eyebrow">System</p>
           <h1 className="mp-header__title">Backup</h1>
           <p className="mp-header__lede">
-            Create, restore, and download system backups. {completedCount} successful backups on record.
+            Create and restore system backups. {completedCount} completed backups.
           </p>
+          </div>
         </div>
         <div className="mp-header__actions">
           <ManagementButton variant="primary" onClick={handleCreateBackup}>
@@ -102,7 +105,7 @@ export default function BackupPage() {
 
       <div className="mp-split">
         <section className="mp-panel" aria-label="Automatic backup settings">
-          <h2 className="mp-panel__title">Automatic Backup</h2>
+          <h2 className="mp-panel__title"><Settings2 size={17} aria-hidden="true" /> Automatic Backup</h2>
           <div className="sp-form">
             <label className="sp-form__toggle">
               <input
@@ -141,7 +144,7 @@ export default function BackupPage() {
         </section>
 
         <section className="mp-panel" aria-label="Quick actions">
-          <h2 className="mp-panel__title">Quick Actions</h2>
+          <h2 className="mp-panel__title"><Zap size={17} aria-hidden="true" /> Quick Actions</h2>
           <div className="mp-panel__body">
             <ManagementButton variant="primary" className="sp-action-btn" onClick={handleCreateBackup}>
               <Database size={16} aria-hidden="true" /> Create Backup
@@ -157,7 +160,7 @@ export default function BackupPage() {
       </div>
 
       <section className="mp-panel" aria-label="Backup history">
-        <h2 className="mp-panel__title">Backup History</h2>
+        <h2 className="mp-panel__title"><History size={17} aria-hidden="true" /> Backup History</h2>
         <ManagementToolbar
           searchId="backup-search"
           searchValue={table.search}

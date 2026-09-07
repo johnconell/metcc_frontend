@@ -32,6 +32,10 @@ html[data-theme='dark'] .profile-page {
 
 html[data-theme='dark'] .dashboard-app {
   --cream: #1c1a19;
+  --sidebar-bg: #111111;
+  --sidebar-text: #f5f5f5;
+  --sidebar-muted: #a7a7a7;
+  --sidebar-border: #2b2b2b;
   --bg: #121110;
   --border: #3a3532;
   --text: #ffffff;
@@ -52,7 +56,7 @@ html[data-theme='dark'] .dashboard-header__profile,
 html[data-theme='dark'] .dashboard-header__notify,
 html[data-theme='dark'] .dashboard-header__search,
 html[data-theme='dark'] .dashboard-header__search-input {
-  background: #1c1a19 !important;
+  background: #111111 !important;
   color: #ffffff !important;
   border-color: #3a3532 !important;
 }

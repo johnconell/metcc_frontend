@@ -292,10 +292,7 @@ export default function DashboardPage() {
       <header className="dashboard-page-header">
         <h1>Dashboard</h1>
         <p>
-          Welcome back, {firstName}. Each batch is a time slot (for example{' '}
-          <strong>09:30–10:30</strong>) with about <strong>400–500 examinees/day</strong>,{' '}
-          <strong>3–5 open classrooms</strong>, and a <strong>different proctor per room</strong>.
-          Students are not fixed to one room — they only have a schedule time.
+          Welcome back, {firstName}. Monitor examinations, applicants, schedules, and key activity in one place.
         </p>
       </header>
 

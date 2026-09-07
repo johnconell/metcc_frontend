@@ -453,7 +453,7 @@ export default function UsersPage() {
         <div>
           <h1 className="mp-users-topbar__title">User Management</h1>
           <p className="mp-users-topbar__subtitle">
-            Manage admin accounts and create proctor accounts for the mobile app.
+            Create accounts, assign roles, and manage access for administrators and proctors.
           </p>
         </div>
         <div className="mp-users-topbar__actions">

@@ -1,5 +1,71 @@
 @import '../../styles/design-tokens.css';
 
+.sp-page-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.sp-page-heading__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  margin-top: 2px;
+  border: 1px solid rgba(123, 16, 32, 0.14);
+  border-radius: 12px;
+  background: rgba(123, 16, 32, 0.08);
+  color: var(--color-primary, #7b1020);
+}
+
+.mp-page .mp-panel__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.mp-page .mp-panel__title svg {
+  color: var(--color-primary, #7b1020);
+  flex-shrink: 0;
+}
+
+.mp-page .mp-panel {
+  border-color: var(--color-hairline);
+  box-shadow: 0 8px 24px rgba(38, 37, 30, 0.04);
+}
+
+.sp-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+}
+
+.sp-stat-icon--accent {
+  color: var(--color-primary, #7b1020);
+  background: rgba(123, 16, 32, 0.1);
+}
+
+.sp-stat-icon--success {
+  color: var(--color-semantic-success, #1f8a65);
+  background: rgba(31, 138, 101, 0.1);
+}
+
+.sp-stat-icon--warning {
+  color: #b7791f;
+  background: rgba(183, 121, 31, 0.12);
+}
+
+.sp-stat-icon--neutral {
+  color: var(--color-muted, #807d72);
+  background: var(--color-canvas-soft, #fafaf7);
+}
+
 .sp-settings-layout {
   display: grid;
   grid-template-columns: minmax(0, 2.4fr) minmax(220px, 0.75fr);
@@ -63,9 +129,10 @@
   background: var(--color-canvas-soft);
 }
 
-.sp-settings-nav__item--active {
+.sp-settings-nav__item.is-active {
   background: var(--color-surface-strong);
   color: var(--color-ink);
+  box-shadow: inset 3px 0 0 var(--color-primary, #7b1020);
 }
 
 .sp-form {
@@ -222,6 +289,11 @@
   transition: border-color var(--transition-base);
 }
 
+.sp-upload__zone:focus-within {
+  border-color: var(--color-primary, #7b1020);
+  box-shadow: 0 0 0 4px rgba(123, 16, 32, 0.1);
+}
+
 .sp-upload__zone:hover {
   border-color: var(--color-ink);
 }
@@ -239,6 +311,10 @@
   color: var(--color-muted-soft);
 }
 
+.sp-upload__zone svg {
+  color: var(--color-primary, #7b1020);
+}
+
 .sp-upload__input {
   display: none;
 }
@@ -251,4 +327,20 @@
 
 .mp-cat-card--active {
   border-color: var(--color-ink);
+}
+
+@media (max-width: 640px) {
+  .sp-page-heading__icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .sp-settings-nav {
+    order: -1;
+  }
+
+  .sp-stat-icon {
+    margin-bottom: 4px;
+  }
 }

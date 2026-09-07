@@ -157,8 +157,7 @@ export default function SchedulesPage() {
           <p className="mp-header__eyebrow">Management</p>
           <h1 className="mp-header__title">Examination / Schedules</h1>
           <p className="mp-header__lede">
-            Schedules appear from student import (application date + time). Send examination keys by
-            exam day — all time slots that day. Proctors must re-download the offline pack after imports.
+            View exam dates, time slots, and examination key status.
           </p>
         </div>
       </header>
@@ -267,11 +266,11 @@ export default function SchedulesPage() {
                   </ManagementButton>
                   <Link
                     to={`/management/schedules/by-date/${group.date}/passkeys`}
-                    className="mp-link-back"
-                    style={{ margin: 0 }}
+                    className="mp-monitor-link"
+                    aria-label={`Monitor examination keys for ${formatDateLabel(group.date)}`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <KeyRound size={14} /> Monitor keys
+                    <KeyRound size={14} aria-hidden="true" /> <span>Monitor keys</span>
                   </Link>
                 </div>
               </div>
@@ -297,8 +296,12 @@ export default function SchedulesPage() {
                 {sendingDate === selectedDate ? <Loader2 size={14} className="spin" /> : <Mail size={14} />}
                 {sendingDate === selectedDate ? 'Sending…' : 'Send Keys (this day)'}
               </ManagementButton>
-              <Link to={`/management/schedules/by-date/${selectedDate}/passkeys`} className="mp-link-back" style={{ margin: 0 }}>
-                <KeyRound size={14} /> Monitor keys
+              <Link
+                to={`/management/schedules/by-date/${selectedDate}/passkeys`}
+                className="mp-monitor-link"
+                aria-label={`Monitor examination keys for ${formatDateLabel(selectedDate)}`}
+              >
+                <KeyRound size={14} aria-hidden="true" /> <span>Monitor keys</span>
               </Link>
               <ManagementButton type="button" variant="secondary" size="sm" onClick={() => setSelectedDate(null)}>
                 <ArrowLeft size={14} /> All dates

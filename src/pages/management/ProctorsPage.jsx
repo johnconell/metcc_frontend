@@ -208,7 +208,7 @@ export default function ProctorsPage() {
           <p className="mp-header__eyebrow">Management</p>
           <h1 className="mp-header__title">Proctors</h1>
           <p className="mp-header__lede">
-            Assign proctors to examination batches and keep an eye on who is free, on duty, or off-roster.
+            Assign proctors and monitor their availability.
           </p>
         </div>
         <div className="mp-header__actions">

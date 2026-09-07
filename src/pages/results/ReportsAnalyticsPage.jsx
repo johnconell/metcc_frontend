@@ -122,7 +122,7 @@ export default function ReportsAnalyticsPage() {
           <p className="mp-header__eyebrow">Results &amp; Reports</p>
           <h1 className="mp-header__title">Reports &amp; Analytics</h1>
           <p className="mp-header__lede">
-            Dashboard charts, performance metrics, and exportable reports for examination cycles.
+            Track performance trends and export examination reports.
           </p>
         </div>
         <div className="mp-header__actions">

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Calendar, Eye, Upload, UserPlus, Users } from 'lucide-react';
+import { BookOpen, Calendar, ClipboardCheck, Eye, FileSpreadsheet, Layers3, Upload, UserPlus, Users } from 'lucide-react';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
 import { confirmAction, showLoading, closeLoading, toastSuccess } from '../../utils/swal';
@@ -104,22 +104,25 @@ export default function ImportPage() {
   return (
     <div className="mp-page">
       <header className="mp-header">
-        <div>
+        <div className="sp-page-heading">
+          <span className="sp-page-heading__icon" aria-hidden="true"><Layers3 size={20} /></span>
+          <div>
           <p className="mp-header__eyebrow">System</p>
           <h1 className="mp-header__title">Import</h1>
           <p className="mp-header__lede">
-            Import students, questions, or schedules from CSV or Excel files with preview before confirming.
+            Import students, questions, or schedules with a preview.
           </p>
+          </div>
         </div>
         <div className="mp-header__actions">
-          <ManagementButton variant="primary" disabled={!hasPreview}>
+          <ManagementButton variant="primary" disabled={!hasPreview} onClick={handleImport}>
             <UserPlus size={16} aria-hidden="true" /> Import
           </ManagementButton>
         </div>
       </header>
 
       <section className="mp-panel" aria-label="Import type selection">
-        <h2 className="mp-panel__title">Select Import Type</h2>
+        <h2 className="mp-panel__title"><Layers3 size={17} aria-hidden="true" /> Select Import Type</h2>
         <div className="mp-cat-grid">
           {IMPORT_TYPES.map(({ key, label, icon: Icon, description }) => (
             <button
@@ -144,7 +147,7 @@ export default function ImportPage() {
 
       <div className="mp-split">
         <section className="mp-panel" aria-label="File upload">
-          <h2 className="mp-panel__title">File Upload</h2>
+          <h2 className="mp-panel__title"><FileSpreadsheet size={17} aria-hidden="true" /> File Upload</h2>
           <p className="sp-upload__hint">
             {activeImport?.label} — accepted formats: .csv, .xlsx, .xls
           </p>
@@ -165,7 +168,7 @@ export default function ImportPage() {
         </section>
 
         <section className="mp-panel" aria-label="Import summary">
-          <h2 className="mp-panel__title">Import Summary</h2>
+          <h2 className="mp-panel__title"><ClipboardCheck size={17} aria-hidden="true" /> Import Summary</h2>
           <div className="mp-kv">
             <div className="mp-kv__row">
               <span className="mp-kv__key">Import type</span>
@@ -197,7 +200,7 @@ export default function ImportPage() {
 
       {hasPreview && (
         <section className="mp-panel" aria-label="Preview data">
-          <h2 className="mp-panel__title">Preview Data</h2>
+          <h2 className="mp-panel__title"><Eye size={17} aria-hidden="true" /> Preview Data</h2>
           <p className="sp-upload__hint">
             Showing {preview.rows.length} records from {fileName}
           </p>
