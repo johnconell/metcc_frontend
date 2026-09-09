@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  BookOpen,
   CheckCircle2,
   FolderOpen,
+  Layers3,
   Pencil,
   Plus,
   Trash2,
@@ -188,71 +190,111 @@ export default function QuestionBankPage() {
 
           <div className="mp-stats" aria-label="Question bank summary">
             <div className="mp-stats__item">
+              <span className="mp-stats__icon" aria-hidden="true">
+                <FolderOpen size={18} />
+              </span>
               <div className="mp-stats__value">{formatNumber(totals.banks)}</div>
               <div className="mp-stats__label">Question Banks</div>
             </div>
             <div className="mp-stats__item">
+              <span className="mp-stats__icon" aria-hidden="true">
+                <CheckCircle2 size={18} />
+              </span>
               <div className="mp-stats__value mp-stats__value--active">{totals.active}</div>
               <div className="mp-stats__label">Active Bank</div>
             </div>
             <div className="mp-stats__item">
+              <span className="mp-stats__icon" aria-hidden="true">
+                <Layers3 size={18} />
+              </span>
               <div className="mp-stats__value">{formatNumber(totals.subjects)}</div>
               <div className="mp-stats__label">Categories</div>
             </div>
             <div className="mp-stats__item">
+              <span className="mp-stats__icon" aria-hidden="true">
+                <BookOpen size={18} />
+              </span>
               <div className="mp-stats__value">{formatNumber(totals.questions)}</div>
               <div className="mp-stats__label">Total Questions</div>
             </div>
           </div>
 
           <section aria-label="Question banks list">
-            <div className="mp-cat-grid">
+            <div className="mp-info-grid">
               {banks.length === 0 ? (
                 <p className="mp-panel__hint">No question banks yet. Create a school-year bank to begin.</p>
               ) : banks.map((bank) => (
-                <Link
+                <article
                   key={bank.id}
-                  to={`/management/question-bank/${bank.id}`}
-                  className={`mp-cat-card mp-cat-card--link${bank.is_active ? ' mp-cat-card--active' : ''}`}
+                  className={`mp-info-card${bank.is_active ? ' mp-info-card--active' : ''}`}
                 >
-                  <div className="mp-cat-card__top">
-                    <FolderOpen size={18} aria-hidden="true" />
-                    {bank.is_active && (
-                      <span className="mp-active-badge">
-                        <CheckCircle2 size={14} aria-hidden="true" />
-                        Active
+                  <Link
+                    to={`/management/question-bank/${bank.id}`}
+                    className="mp-info-card__click"
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <div className="mp-info-card__header">
+                      <span className="mp-info-card__icon mp-info-card__icon--maroon" aria-hidden="true">
+                        <FolderOpen size={18} />
                       </span>
-                    )}
-                    <span className="mp-cat-card__code">{bank.school_year}</span>
+                      <div className="mp-info-card__identity">
+                        <h3 className="mp-info-card__title">{bank.title}</h3>
+                        <p className="mp-info-card__subtitle">School year {bank.school_year}</p>
+                      </div>
+                      <span className="mp-info-card__badge">
+                        {bank.is_active ? (
+                          <span className="mp-active-badge">
+                            <CheckCircle2 size={14} aria-hidden="true" />
+                            Active
+                          </span>
+                        ) : (
+                          <span className="mp-cat-card__code">{bank.school_year}</span>
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="mp-info-card__section">
+                      <div className="mp-info-card__row">
+                        <Layers3 className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                        <span className="mp-info-card__row-label">Categories:</span>
+                        <span className="mp-info-card__row-value">{formatNumber(bank.subjects_count)}</span>
+                      </div>
+                      <div className="mp-info-card__row">
+                        <BookOpen className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                        <span className="mp-info-card__row-label">Questions:</span>
+                        <span className="mp-info-card__row-value">{formatNumber(bank.questions_count)}</span>
+                      </div>
+                      <div className="mp-info-card__row">
+                        <CheckCircle2 className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                        <span className="mp-info-card__row-label">Status:</span>
+                        <span className="mp-info-card__row-value">
+                          {bank.is_active ? 'Used for exams' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+
+                  <div className="mp-info-card__actions" onClick={(e) => e.preventDefault()}>
+                    <div className="mp-info-card__actions-row">
+                      <ManagementButton
+                        type="button"
+                        variant={bank.is_active ? 'primary' : 'secondary'}
+                        size="sm"
+                        disabled={busyId === bank.id || bank.is_active}
+                        onClick={(e) => handleActivate(bank, e)}
+                      >
+                        <CheckCircle2 size={14} aria-hidden="true" />
+                        {bank.is_active ? 'Active' : busyId === bank.id ? 'Activating...' : 'Set Active'}
+                      </ManagementButton>
+                      <ManagementButton type="button" variant="tertiary" size="sm" onClick={(e) => openEdit(bank, e)}>
+                        <Pencil size={14} aria-hidden="true" /> Edit
+                      </ManagementButton>
+                      <ManagementButton type="button" variant="tertiary" size="sm" onClick={(e) => handleDelete(bank, e)}>
+                        <Trash2 size={14} aria-hidden="true" /> Delete
+                      </ManagementButton>
+                    </div>
                   </div>
-                  <h2 className="mp-cat-card__subject">{bank.title}</h2>
-                  <p className="mp-cat-card__desc">
-                    {formatNumber(bank.subjects_count)} Categories
-                    <br />
-                    {formatNumber(bank.questions_count)} Questions
-                  </p>
-                  <div className="mp-cat-card__meta">
-                    {bank.is_active ? 'Currently used for examinations' : 'Open bank to manage categories →'}
-                  </div>
-                  <div className="mp-cat-card__actions" onClick={(e) => e.preventDefault()}>
-                    <ManagementButton
-                      type="button"
-                      variant={bank.is_active ? 'primary' : 'secondary'}
-                      size="sm"
-                      disabled={busyId === bank.id || bank.is_active}
-                      onClick={(e) => handleActivate(bank, e)}
-                    >
-                      <CheckCircle2 size={14} aria-hidden="true" />
-                      {bank.is_active ? 'Active' : busyId === bank.id ? 'Activating...' : 'Set Active'}
-                    </ManagementButton>
-                    <ManagementButton type="button" variant="tertiary" size="sm" onClick={(e) => openEdit(bank, e)}>
-                      <Pencil size={14} aria-hidden="true" /> Edit
-                    </ManagementButton>
-                    <ManagementButton type="button" variant="tertiary" size="sm" onClick={(e) => handleDelete(bank, e)}>
-                      <Trash2 size={14} aria-hidden="true" /> Delete
-                    </ManagementButton>
-                  </div>
-                </Link>
+                </article>
               ))}
             </div>
           </section>

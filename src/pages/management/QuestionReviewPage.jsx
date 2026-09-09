@@ -359,44 +359,73 @@ export default function QuestionReviewPage() {
           <SkeletonTable rows={8} cols={6} />
         ) : (
           <>
-            <DataTable
-              columns={columns}
-              rows={rows}
-              selectable
-              selectedKeys={selectedKeys}
-              onSelectionChange={setSelectedKeys}
-              emptyTitle="No questions found"
-              emptyDescription="Adjust filters or add questions in the question bank."
-              renderActions={(row) => (
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <ManagementButton type="button" size="sm" variant="secondary" onClick={() => setViewRow(row)}>
-                    <Eye size={14} /> View
-                  </ManagementButton>
-                  {row.question_bank_id && row.exam_subject_id ? (
-                    <ManagementButton
-                      as={Link}
-                      size="sm"
-                      variant="secondary"
-                      to={`/management/question-bank/${row.question_bank_id}/subjects/${row.exam_subject_id}`}
+            <div className="mp-list-table-wrap">
+              <DataTable
+                columns={columns}
+                rows={rows}
+                selectable
+                selectedKeys={selectedKeys}
+                onSelectionChange={setSelectedKeys}
+                emptyTitle="No questions found"
+                emptyDescription="Adjust filters or add questions in the question bank."
+                renderActions={(row) => (
+                  <div className="mp-users-actions">
+                    <button
+                      type="button"
+                      className="mp-users-action-btn mp-users-action-btn--enable"
+                      title="View"
+                      aria-label={`View question ${row.id}`}
+                      onClick={() => setViewRow(row)}
                     >
-                      <Pencil size={14} /> Edit
-                    </ManagementButton>
-                  ) : null}
-                  {row.status !== 'active' ? (
-                    <ManagementButton type="button" size="sm" variant="primary" disabled={busy} onClick={() => setStatus(row, 'active')}>
-                      <CheckCircle2 size={14} /> Activate
-                    </ManagementButton>
-                  ) : (
-                    <ManagementButton type="button" size="sm" variant="secondary" disabled={busy} onClick={() => setStatus(row, 'archived')}>
-                      Deactivate
-                    </ManagementButton>
-                  )}
-                  <ManagementButton type="button" size="sm" variant="secondary" disabled={busy} onClick={() => removeOne(row)}>
-                    <Trash2 size={14} />
-                  </ManagementButton>
-                </div>
-              )}
-            />
+                      <Eye size={15} aria-hidden="true" />
+                    </button>
+                    {row.question_bank_id && row.exam_subject_id ? (
+                      <Link
+                        className="mp-users-action-btn mp-users-action-btn--edit"
+                        title="Edit"
+                        aria-label={`Edit question ${row.id}`}
+                        to={`/management/question-bank/${row.question_bank_id}/subjects/${row.exam_subject_id}`}
+                      >
+                        <Pencil size={15} aria-hidden="true" />
+                      </Link>
+                    ) : null}
+                    {row.status !== 'active' ? (
+                      <button
+                        type="button"
+                        className="mp-users-action-btn mp-users-action-btn--edit"
+                        title="Activate"
+                        aria-label={`Activate question ${row.id}`}
+                        disabled={busy}
+                        onClick={() => setStatus(row, 'active')}
+                      >
+                        <CheckCircle2 size={15} aria-hidden="true" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="mp-users-action-btn mp-users-action-btn--disable"
+                        title="Deactivate"
+                        aria-label={`Deactivate question ${row.id}`}
+                        disabled={busy}
+                        onClick={() => setStatus(row, 'archived')}
+                      >
+                        <PowerOff size={15} aria-hidden="true" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="mp-users-action-btn mp-users-action-btn--disable"
+                      title="Delete"
+                      aria-label={`Delete question ${row.id}`}
+                      disabled={busy}
+                      onClick={() => removeOne(row)}
+                    >
+                      <Trash2 size={15} aria-hidden="true" />
+                    </button>
+                  </div>
+                )}
+              />
+            </div>
             <Pagination
               page={meta.current_page}
               pageSize={meta.per_page}
@@ -414,17 +443,19 @@ export default function QuestionReviewPage() {
               <h2 className="mp-modal__title">Question #{viewRow.id}</h2>
               <button type="button" className="mp-modal__close" onClick={() => setViewRow(null)} aria-label="Close">×</button>
             </div>
-            <p><span className="mgmt-badge mgmt-badge--info">{viewRow.category}</span></p>
-            <p style={{ fontWeight: 600, marginTop: 12 }}>{viewRow.stem}</p>
-            <ul style={{ marginTop: 12, lineHeight: 1.7 }}>
-              <li>A. {viewRow.option_a}</li>
-              <li>B. {viewRow.option_b}</li>
-              <li>C. {viewRow.option_c}</li>
-              <li>D. {viewRow.option_d}</li>
-            </ul>
-            <p>Correct: <strong>{viewRow.correct_answer}</strong> · Difficulty: {viewRow.difficulty || '—'} · Status: {viewRow.status}</p>
-            <div className="mp-modal__actions">
-              <ManagementButton type="button" variant="secondary" onClick={() => setViewRow(null)}>Close</ManagementButton>
+            <div className="mp-form" style={{ paddingBottom: 8 }}>
+              <p><span className="mgmt-badge mgmt-badge--info">{viewRow.category}</span></p>
+              <p style={{ fontWeight: 600, marginTop: 12 }}>{viewRow.stem}</p>
+              <ul style={{ marginTop: 12, lineHeight: 1.7 }}>
+                <li>A. {viewRow.option_a}</li>
+                <li>B. {viewRow.option_b}</li>
+                <li>C. {viewRow.option_c}</li>
+                <li>D. {viewRow.option_d}</li>
+              </ul>
+              <p>Correct: <strong>{viewRow.correct_answer}</strong> · Difficulty: {viewRow.difficulty || '—'} · Status: {viewRow.status}</p>
+              <div className="mp-modal__actions">
+                <ManagementButton type="button" variant="secondary" onClick={() => setViewRow(null)}>Close</ManagementButton>
+              </div>
             </div>
           </div>
         </div>

@@ -2,17 +2,20 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
+  Building2,
   CalendarClock,
   CalendarDays,
   Clock3,
   KeyRound,
   Mail,
   Shield,
+  UserRound,
   Users,
   X,
 } from 'lucide-react';
 import { scheduleApi } from '../../api/scheduleApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
+import { Pagination } from '../../components/management/Pagination';
 import { StatusBadge } from '../../components/management/StatusBadge';
 import { SkeletonPageHeader, SkeletonStats, SkeletonTable } from '../../components/ui/Skeleton';
 import { statusVariant } from './useTableState';
@@ -52,6 +55,8 @@ export default function ScheduleDetailPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [studentSearch, setStudentSearch] = useState('');
+  const [studentPage, setStudentPage] = useState(1);
+  const studentPageSize = 10;
 
   const [rescheduleStudent, setRescheduleStudent] = useState(null);
   const [targetScheduleId, setTargetScheduleId] = useState('');
@@ -87,6 +92,21 @@ export default function ScheduleDetailPage() {
         .some((value) => String(value).toLowerCase().includes(q)),
     );
   }, [data, studentSearch]);
+
+  const studentTotalPages = Math.max(1, Math.ceil(filteredStudents.length / studentPageSize));
+
+  const pagedStudents = useMemo(() => {
+    const start = (studentPage - 1) * studentPageSize;
+    return filteredStudents.slice(start, start + studentPageSize);
+  }, [filteredStudents, studentPage, studentPageSize]);
+
+  useEffect(() => {
+    setStudentPage(1);
+  }, [studentSearch, id]);
+
+  useEffect(() => {
+    if (studentPage > studentTotalPages) setStudentPage(studentTotalPages);
+  }, [studentPage, studentTotalPages]);
 
   const openReschedule = (student) => {
     setRescheduleStudent(student);
@@ -233,18 +253,30 @@ export default function ScheduleDetailPage() {
 
       <div className="mp-stats">
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true">
+            <Users size={18} />
+          </span>
           <div className="mp-stats__value">{formatNumber(data.registered_count)}</div>
           <div className="mp-stats__label">Students in this time slot</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true">
+            <CalendarClock size={18} />
+          </span>
           <div className="mp-stats__value">{formatNumber(data.expected_examinees)}</div>
           <div className="mp-stats__label">Expected examinees</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true">
+            <Building2 size={18} />
+          </span>
           <div className="mp-stats__value">{formatNumber(data.room_count)}</div>
           <div className="mp-stats__label">Available classrooms</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true">
+            <ArrowLeft size={18} />
+          </span>
           <div className="mp-stats__value">{formatNumber(movedAway.length)}</div>
           <div className="mp-stats__label">Rescheduled away</div>
         </div>
@@ -255,7 +287,7 @@ export default function ScheduleDetailPage() {
       </p>
 
       <div className="mp-split">
-        <section className="mp-panel" aria-labelledby="students-title">
+        <section className="mp-panel mp-panel--students" aria-labelledby="students-title">
           <div className="mp-panel__head">
             <div>
               <h2 id="students-title" className="mp-panel__title">
@@ -266,11 +298,14 @@ export default function ScheduleDetailPage() {
               </p>
             </div>
             <input
-              className="mp-field__input mp-field__input--sm"
+              className="mp-field__input mp-field__input--sm mp-students-search"
               type="search"
               placeholder="Search student..."
               value={studentSearch}
-              onChange={(e) => setStudentSearch(e.target.value)}
+              onChange={(e) => {
+                setStudentSearch(e.target.value);
+                setStudentPage(1);
+              }}
               aria-label="Search students"
             />
           </div>
@@ -290,11 +325,11 @@ export default function ScheduleDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.length === 0 ? (
+                {pagedStudents.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="mp-table__empty">No students in this batch time slot.</td>
                   </tr>
-                ) : filteredStudents.map((student) => (
+                ) : pagedStudents.map((student) => (
                   <tr key={student.registration_id}>
                     <td>{student.applicant_code}</td>
                     <td>{student.name}</td>
@@ -342,6 +377,13 @@ export default function ScheduleDetailPage() {
             </table>
           </div>
 
+          <Pagination
+            page={studentPage}
+            pageSize={studentPageSize}
+            total={filteredStudents.length}
+            onPageChange={setStudentPage}
+          />
+
           {movedAway.length > 0 && (
             <div className="mp-moved-away">
               <h3 className="mp-moved-away__title">Moved to another day / batch</h3>
@@ -384,58 +426,123 @@ export default function ScheduleDetailPage() {
         </section>
 
         <aside className="mp-side-stack">
-          <section className="mp-panel" aria-labelledby="slot-title">
-            <h2 id="slot-title" className="mp-panel__title"><Clock3 size={16} /> Time Slot</h2>
-            <dl className="mp-dl">
-              <div><dt>Date</dt><dd>{data.date_label}</dd></div>
-              <div><dt>Batch</dt><dd>{data.batch_code}</dd></div>
-              <div><dt>Time</dt><dd>{data.time_slot}</dd></div>
-              <div><dt>Exam type</dt><dd>General Entrance Examination</dd></div>
-            </dl>
-          </section>
-
-          <section className="mp-panel" aria-labelledby="rooms-title">
-            <h2 id="rooms-title" className="mp-panel__title"><CalendarDays size={16} /> Available Classrooms</h2>
-            <p className="mp-panel__hint">
-              Managed in Examination Lobby. Students can use any room in this time slot.
-            </p>
-            <ul className="mp-simple-list">
-              {(data.available_rooms || []).length === 0 ? (
-                <li>
-                  <strong>No rooms configured</strong>
-                  <span>
-                    <Link to="/management/lobby" className="mp-batch-link">Open Examination Lobby</Link>
-                    {' '}to add rooms for mobile proctors.
-                  </span>
-                </li>
-              ) : (
-                (data.available_rooms || []).map((room) => (
-                  <li key={room.id}>
-                    <strong>{room.room_name}</strong>
-                    <span>
-                      Capacity {room.capacity}
-                      {room.proctor?.name ? ` · ${room.proctor.name}` : ''}
-                    </span>
-                  </li>
-                ))
-              )}
-            </ul>
-            <div style={{ marginTop: 12 }}>
-              <Link to="/management/lobby" className="mp-batch-link">Manage rooms in Examination Lobby →</Link>
+          <section className="mp-info-card mp-detail-card" aria-labelledby="slot-title">
+            <div className="mp-info-card__header">
+              <span className="mp-info-card__icon mp-info-card__icon--maroon" aria-hidden="true">
+                <Clock3 size={18} />
+              </span>
+              <div className="mp-info-card__identity">
+                <h2 id="slot-title" className="mp-info-card__title">Time Slot</h2>
+                <p className="mp-info-card__subtitle">Exam schedule details</p>
+              </div>
+              <span className="mp-info-card__badge">
+                <StatusBadge variant={statusVariant(data.status)}>{data.status}</StatusBadge>
+              </span>
+            </div>
+            <div className="mp-info-card__section">
+              <div className="mp-info-card__row">
+                <CalendarDays className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                <span className="mp-info-card__row-label">Date:</span>
+                <span className="mp-info-card__row-value">{data.date_label}</span>
+              </div>
+              <div className="mp-info-card__row">
+                <Users className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                <span className="mp-info-card__row-label">Batch:</span>
+                <span className="mp-info-card__row-value">{data.batch_code}</span>
+              </div>
+              <div className="mp-info-card__row">
+                <Clock3 className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                <span className="mp-info-card__row-label">Time:</span>
+                <span className="mp-info-card__row-value">{data.time_slot}</span>
+              </div>
+              <div className="mp-info-card__row">
+                <Building2 className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                <span className="mp-info-card__row-label">Exam type:</span>
+                <span className="mp-info-card__row-value">General Entrance</span>
+              </div>
             </div>
           </section>
 
-          <section className="mp-panel" aria-labelledby="proctors-title">
-            <h2 id="proctors-title" className="mp-panel__title"><Shield size={16} /> Proctors Available</h2>
-            <p className="mp-panel__hint">One distinct proctor per open classroom for this time slot.</p>
-            <ul className="mp-simple-list">
-              {(data.available_rooms || []).map((room) => (
-                <li key={`proctor-${room.id}`}>
-                  <strong>{room.proctor?.name || 'Unassigned'}</strong>
-                  <span>{room.room_name}</span>
-                </li>
-              ))}
-            </ul>
+          <section className="mp-info-card mp-detail-card" aria-labelledby="rooms-title">
+            <div className="mp-info-card__header">
+              <span className="mp-info-card__icon mp-info-card__icon--gold" aria-hidden="true">
+                <Building2 size={18} />
+              </span>
+              <div className="mp-info-card__identity">
+                <h2 id="rooms-title" className="mp-info-card__title">Available Classrooms</h2>
+                <p className="mp-info-card__subtitle">
+                  {(data.available_rooms || []).length} room{(data.available_rooms || []).length === 1 ? '' : 's'} in this slot
+                </p>
+              </div>
+            </div>
+
+            {(data.available_rooms || []).length === 0 ? (
+              <div className="mp-info-card__section">
+                <p className="mp-panel__hint" style={{ margin: 0 }}>
+                  No rooms configured. Open Examination Lobby to add rooms for mobile proctors.
+                </p>
+              </div>
+            ) : (
+              <div className="mp-detail-list">
+                {(data.available_rooms || []).map((room) => (
+                  <div key={room.id} className="mp-detail-list__item">
+                    <span className="mp-detail-list__icon" aria-hidden="true">
+                      <Building2 size={16} />
+                    </span>
+                    <div className="mp-detail-list__copy">
+                      <strong>{room.room_name}</strong>
+                      <small>{room.proctor?.name ? `Proctor: ${room.proctor.name}` : 'No proctor assigned'}</small>
+                    </div>
+                    <span className="mp-detail-list__meta">
+                      <StatusBadge variant="muted">Cap. {room.capacity}</StatusBadge>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="mp-info-card__actions">
+              <Link to="/management/lobby" className="mp-info-card__link">
+                Manage rooms in Examination Lobby →
+              </Link>
+            </div>
+          </section>
+
+          <section className="mp-info-card mp-detail-card" aria-labelledby="proctors-title">
+            <div className="mp-info-card__header">
+              <span className="mp-info-card__icon mp-info-card__icon--green" aria-hidden="true">
+                <Shield size={18} />
+              </span>
+              <div className="mp-info-card__identity">
+                <h2 id="proctors-title" className="mp-info-card__title">Proctors Available</h2>
+                <p className="mp-info-card__subtitle">One proctor per open classroom</p>
+              </div>
+            </div>
+
+            {(data.available_rooms || []).length === 0 ? (
+              <div className="mp-info-card__section">
+                <p className="mp-panel__hint" style={{ margin: 0 }}>No classrooms to assign proctors yet.</p>
+              </div>
+            ) : (
+              <div className="mp-detail-list">
+                {(data.available_rooms || []).map((room) => (
+                  <div key={`proctor-${room.id}`} className="mp-detail-list__item">
+                    <span className={`mp-detail-list__avatar${room.proctor?.name ? '' : ' is-empty'}`} aria-hidden="true">
+                      <UserRound size={16} />
+                    </span>
+                    <div className="mp-detail-list__copy">
+                      <strong>{room.proctor?.name || 'Unassigned'}</strong>
+                      <small>{room.room_name}</small>
+                    </div>
+                    <span className="mp-detail-list__meta">
+                      <StatusBadge variant={room.proctor?.name ? 'success' : 'warning'}>
+                        {room.proctor?.name ? 'Assigned' : 'Open'}
+                      </StatusBadge>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         </aside>
       </div>

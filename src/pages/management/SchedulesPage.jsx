@@ -7,6 +7,7 @@ import {
   KeyRound,
   Loader2,
   Mail,
+  Users,
 } from 'lucide-react';
 import { scheduleApi, SCHEDULES_CHANGED_EVENT } from '../../api/scheduleApi';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
@@ -164,14 +165,23 @@ export default function SchedulesPage() {
 
       <div className="mp-stats">
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true">
+            <CalendarDays size={18} />
+          </span>
           <div className="mp-stats__value">{formatNumber(dateGroups.length)}</div>
           <div className="mp-stats__label">Exam days</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true">
+            <Clock3 size={18} />
+          </span>
           <div className="mp-stats__value">{formatNumber(schedules.length)}</div>
           <div className="mp-stats__label">Time slots / batches</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true">
+            <Users size={18} />
+          </span>
           <div className="mp-stats__value">{formatNumber(schedules.reduce((sum, row) => sum + (row.registered_count || 0), 0))}</div>
           <div className="mp-stats__label">Registered examinees</div>
         </div>
@@ -216,40 +226,64 @@ export default function SchedulesPage() {
               Refresh
             </ManagementButton>
           </div>
-          <div className="mp-date-grid">
+          <div className="mp-info-grid">
             {dateGroups.length === 0 ? (
               <p className="mp-panel__hint">No schedules yet. Import students to create date and time slots.</p>
             ) : dateGroups.map((group) => (
-              <div
+              <article
                 key={group.date}
-                className={`mp-date-card${group.keysFullySent ? ' mp-date-card--keys-sent' : ''}`}
-                style={{ display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'left' }}
+                className={`mp-info-card${group.keysFullySent ? ' mp-info-card--success' : ''}`}
               >
                 <button
                   type="button"
+                  className="mp-info-card__click"
                   onClick={() => setSelectedDate(group.date)}
-                  style={{ all: 'unset', cursor: 'pointer' }}
                 >
-                  <span className="mp-date-card__label">{group.label}</span>
-                  <span className="mp-date-card__meta" style={{ display: 'block', marginTop: 6 }}>
-                    {group.slots.length} time slot{group.slots.length === 1 ? '' : 's'} · {formatNumber(group.examinees)} examinees
-                  </span>
-                  <span className="mp-date-card__keys" style={{ display: 'block', marginTop: 8 }}>
-                    {group.keysFullySent ? (
-                      <StatusBadge variant="success">Keys sent · {formatNumber(group.keysSent)}</StatusBadge>
-                    ) : group.keysPartiallySent ? (
-                      <StatusBadge variant="warning">
-                        Keys {formatNumber(group.keysSent)}/{formatNumber(group.keysTotal)}
-                      </StatusBadge>
-                    ) : group.withGmail === 0 && group.keysTotal > 0 ? (
-                      <StatusBadge variant="error">No Gmail on file</StatusBadge>
-                    ) : (
-                      <StatusBadge variant="muted">Keys not sent</StatusBadge>
-                    )}
-                  </span>
-                  <span className="mp-date-card__cta">View times</span>
+                  <div className="mp-info-card__header">
+                    <span className="mp-info-card__icon mp-info-card__icon--maroon" aria-hidden="true">
+                      <CalendarDays size={18} />
+                    </span>
+                    <div className="mp-info-card__identity">
+                      <h3 className="mp-info-card__title">{group.label}</h3>
+                      <p className="mp-info-card__subtitle">
+                        {group.slots.length} time slot{group.slots.length === 1 ? '' : 's'}
+                      </p>
+                    </div>
+                    <span className="mp-info-card__badge">
+                      {group.keysFullySent ? (
+                        <StatusBadge variant="success">Keys sent</StatusBadge>
+                      ) : group.keysPartiallySent ? (
+                        <StatusBadge variant="warning">Partial</StatusBadge>
+                      ) : group.withGmail === 0 && group.keysTotal > 0 ? (
+                        <StatusBadge variant="error">No Gmail</StatusBadge>
+                      ) : (
+                        <StatusBadge variant="muted">Not sent</StatusBadge>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="mp-info-card__section">
+                    <div className="mp-info-card__row">
+                      <Users className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                      <span className="mp-info-card__row-label">Examinees:</span>
+                      <span className="mp-info-card__row-value">{formatNumber(group.examinees)}</span>
+                    </div>
+                    <div className="mp-info-card__row">
+                      <Clock3 className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                      <span className="mp-info-card__row-label">Time slots:</span>
+                      <span className="mp-info-card__row-value">{group.slots.length}</span>
+                    </div>
+                    <div className="mp-info-card__row">
+                      <KeyRound className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                      <span className="mp-info-card__row-label">Keys:</span>
+                      <span className="mp-info-card__row-value">
+                        {formatNumber(group.keysSent)}/{formatNumber(group.keysTotal)}
+                      </span>
+                    </div>
+                  </div>
                 </button>
-                <div className="mp-date-card__actions">
+
+                <div className="mp-info-card__actions">
                   <ManagementButton
                     type="button"
                     size="sm"
@@ -264,16 +298,25 @@ export default function SchedulesPage() {
                         ? 'Resend Examination Keys'
                         : 'Send Examination Keys'}
                   </ManagementButton>
-                  <Link
-                    to={`/management/schedules/by-date/${group.date}/passkeys`}
-                    className="mp-monitor-link"
-                    aria-label={`Monitor examination keys for ${formatDateLabel(group.date)}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <KeyRound size={14} aria-hidden="true" /> <span>Monitor keys</span>
-                  </Link>
+                  <div className="mp-info-card__actions-row">
+                    <button
+                      type="button"
+                      className="mp-info-card__link"
+                      onClick={() => setSelectedDate(group.date)}
+                    >
+                      View times →
+                    </button>
+                    <Link
+                      to={`/management/schedules/by-date/${group.date}/passkeys`}
+                      className="mp-info-card__link"
+                      aria-label={`Monitor examination keys for ${formatDateLabel(group.date)}`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <KeyRound size={14} aria-hidden="true" /> Monitor keys
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         </section>
@@ -308,29 +351,48 @@ export default function SchedulesPage() {
               </ManagementButton>
             </div>
           </div>
-          <div className="mp-bank-grid">
+          <div className="mp-info-grid">
             {timeSlots.map((slot) => (
               <button
                 key={slot.id}
                 type="button"
-                className="mp-bank-card"
+                className="mp-info-card"
                 onClick={() => navigate(`/management/schedules/${slot.id}`)}
               >
-                <div className="mp-bank-card__icon"><Clock3 size={20} /></div>
-                <div className="mp-bank-card__body">
-                  <h3 className="mp-bank-card__title">{slot.batch_code} · {slot.time_slot}</h3>
-                  <p className="mp-bank-card__desc">{slot.title || 'Entrance Examination'}</p>
-                  <div className="mp-bank-card__meta">
-                    <span>{formatNumber(slot.registered_count)} students</span>
-                    <span>{slot.room_count} rooms</span>
+                <div className="mp-info-card__header">
+                  <span className="mp-info-card__icon mp-info-card__icon--gold" aria-hidden="true">
+                    <Clock3 size={18} />
+                  </span>
+                  <div className="mp-info-card__identity">
+                    <h3 className="mp-info-card__title">{slot.batch_code} · {slot.time_slot}</h3>
+                    <p className="mp-info-card__subtitle">{slot.title || 'Entrance Examination'}</p>
+                  </div>
+                  <span className="mp-info-card__badge">
                     <StatusBadge variant={statusVariant(slot.status)}>{slot.status}</StatusBadge>
-                    {slot.passkeys_fully_sent ? (
-                      <StatusBadge variant="success">Keys sent</StatusBadge>
-                    ) : Number(slot.passkey_sent) > 0 ? (
-                      <StatusBadge variant="warning">
-                        Keys {formatNumber(slot.passkey_sent)}/{formatNumber(slot.passkey_total)}
-                      </StatusBadge>
-                    ) : null}
+                  </span>
+                </div>
+
+                <div className="mp-info-card__section">
+                  <div className="mp-info-card__row">
+                    <Users className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                    <span className="mp-info-card__row-label">Students:</span>
+                    <span className="mp-info-card__row-value">{formatNumber(slot.registered_count)}</span>
+                  </div>
+                  <div className="mp-info-card__row">
+                    <CalendarDays className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                    <span className="mp-info-card__row-label">Rooms:</span>
+                    <span className="mp-info-card__row-value">{slot.room_count}</span>
+                  </div>
+                  <div className="mp-info-card__row">
+                    <KeyRound className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                    <span className="mp-info-card__row-label">Keys:</span>
+                    <span className="mp-info-card__row-value">
+                      {slot.passkeys_fully_sent
+                        ? 'Sent'
+                        : Number(slot.passkey_sent) > 0
+                          ? `${formatNumber(slot.passkey_sent)}/${formatNumber(slot.passkey_total)}`
+                          : 'Not sent'}
+                    </span>
                   </div>
                 </div>
               </button>

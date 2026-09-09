@@ -13,21 +13,40 @@
   margin: 0;
 }
 
+/* Results pages inherit polished panels from management-pages;
+   keep local table/filter refinements aligned. */
+.results-batch__table .mp-table th {
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  color: #6d6865;
+  background: #f3f1ef;
+}
+
+.results-batch__table .mp-table td {
+  border-bottom-color: #f0ece8;
+}
+
+.mp-result-filters .mp-field__input {
+  border-radius: 12px;
+}
+
 .rp-chart__subtitle {
   font-family: var(--font-sans);
-  font-size: var(--text-caption-size);
-  color: var(--color-muted);
-  margin: 0 0 var(--space-base);
+  font-size: 12.5px;
+  color: #6d6865;
+  margin: 0 0 14px;
 }
 
 .rp-chart {
-  padding: var(--space-base) 0;
+  padding: 8px 0;
 }
 
 .rp-chart__bars {
   display: flex;
   align-items: flex-end;
-  gap: var(--space-sm);
+  gap: 12px;
   height: 180px;
 }
 
@@ -36,7 +55,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 8px;
   min-width: 0;
 }
 
@@ -51,46 +70,50 @@
 .rp-chart__bar {
   width: 100%;
   max-width: 48px;
-  background: var(--color-ink);
-  border-radius: var(--rounded-sm) var(--rounded-sm) 0 0;
+  background: #7b1020;
+  border-radius: 4px 4px 0 0;
   min-height: 4px;
-  transition: opacity var(--transition-base);
+  transition: opacity 180ms ease, background 180ms ease;
+}
+
+.rp-chart__bar:hover {
+  background: #e11d48;
 }
 
 .rp-chart__label {
   font-family: var(--font-sans);
-  font-size: var(--text-caption-size);
-  color: var(--color-muted);
+  font-size: 11.5px;
+  color: #8b8580;
   text-align: center;
 }
 
 .rp-chart__legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-base);
-  margin-top: var(--space-base);
-  padding-top: var(--space-base);
-  border-top: 1px solid var(--color-hairline-soft);
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #efeae5;
   font-family: var(--font-sans);
-  font-size: var(--text-caption-size);
-  color: var(--color-muted);
+  font-size: 12px;
+  color: #6d6865;
 }
 
 .rp-chart__legend-item {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 8px;
 }
 
 .rp-chart__legend-item--muted {
-  color: var(--color-muted-soft);
+  color: #8b8580;
 }
 
 .rp-chart__legend-swatch {
   width: 12px;
   height: 12px;
-  background: var(--color-ink);
-  border-radius: var(--rounded-xs);
+  background: #7b1020;
+  border-radius: 3px;
 }
 
 .mp-cat-card--action {

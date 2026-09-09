@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Clock, Database, Download, HardDrive, History, RotateCcw, Settings2, Zap } from 'lucide-react';
+import { ChevronRight, Clock, Database, Download, HardDrive, History, RotateCcw, Settings2, Zap } from 'lucide-react';
 import { ManagementToolbar, ManagementButton } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
 import { StatusBadge } from '../../components/management/StatusBadge';
@@ -28,6 +28,7 @@ export default function BackupPage() {
   });
 
   const completedCount = BACKUP_HISTORY.filter((b) => b.status === 'Completed').length;
+  const failedCount = BACKUP_HISTORY.filter((b) => b.status === 'Failed').length;
 
   const handleCreateBackup = async () => {
     const ok = await confirmAction({
@@ -84,28 +85,54 @@ export default function BackupPage() {
   ];
 
   return (
-    <div className="mp-page">
-      <header className="mp-header">
-        <div className="sp-page-heading">
-          <span className="sp-page-heading__icon" aria-hidden="true"><HardDrive size={20} /></span>
-          <div>
-          <p className="mp-header__eyebrow">System</p>
-          <h1 className="mp-header__title">Backup</h1>
-          <p className="mp-header__lede">
-            Create and restore system backups. {completedCount} completed backups.
+    <div className="mp-page sp-page">
+      <header className="sp-page-header">
+        <div className="sp-page-header__copy">
+          <h1>Backup</h1>
+          <p>
+            Create, schedule, and restore system backups. {completedCount} completed backups on file.
           </p>
-          </div>
         </div>
-        <div className="mp-header__actions">
+        <div className="sp-page-header__actions">
           <ManagementButton variant="primary" onClick={handleCreateBackup}>
             <Database size={16} aria-hidden="true" /> Create Backup
           </ManagementButton>
         </div>
       </header>
 
+      <section className="sp-stats" aria-label="Backup summary">
+        <article className="sp-stat-card sp-stat-card--green">
+          <span className="sp-stat-card__icon" aria-hidden="true"><HardDrive size={18} /></span>
+          <span className="sp-stat-card__label">Completed</span>
+          <div className="sp-stat-card__value">{completedCount}</div>
+          <div className="sp-stat-card__hint">▲ Ready to restore</div>
+        </article>
+        <article className="sp-stat-card sp-stat-card--orange">
+          <span className="sp-stat-card__icon" aria-hidden="true"><History size={18} /></span>
+          <span className="sp-stat-card__label">Total backups</span>
+          <div className="sp-stat-card__value">{BACKUP_HISTORY.length}</div>
+          <div className="sp-stat-card__hint">▲ History entries</div>
+        </article>
+        <article className="sp-stat-card sp-stat-card--amber">
+          <span className="sp-stat-card__icon" aria-hidden="true"><Clock size={18} /></span>
+          <span className="sp-stat-card__label">Auto backup</span>
+          <div className="sp-stat-card__value">{autoBackup ? 'On' : 'Off'}</div>
+          <div className="sp-stat-card__hint">{autoBackup ? '● Daily at 2:00 AM' : '● Currently disabled'}</div>
+        </article>
+        <article className="sp-stat-card sp-stat-card--purple">
+          <span className="sp-stat-card__icon" aria-hidden="true"><Database size={18} /></span>
+          <span className="sp-stat-card__label">Failed</span>
+          <div className="sp-stat-card__value">{failedCount}</div>
+          <div className="sp-stat-card__hint">● Needs attention</div>
+        </article>
+      </section>
+
       <div className="mp-split">
         <section className="mp-panel" aria-label="Automatic backup settings">
-          <h2 className="mp-panel__title"><Settings2 size={17} aria-hidden="true" /> Automatic Backup</h2>
+          <div className="sp-card-title">
+            <span className="sp-card-title__icon" aria-hidden="true"><Settings2 size={17} /></span>
+            <h2 className="sp-card-title__text">Automatic Backup</h2>
+          </div>
           <div className="sp-form">
             <label className="sp-form__toggle">
               <input
@@ -129,7 +156,7 @@ export default function BackupPage() {
             <label className="sp-form__label" htmlFor="backup-location">Backup Location</label>
             <input id="backup-location" type="text" className="sp-form__input" defaultValue="/storage/backups/" readOnly />
           </div>
-          <div className="mp-highlight" role="note" style={{ marginTop: 'var(--space-base)' }}>
+          <div className="mp-highlight" role="note">
             <span className="mp-highlight__icon">
               <Clock size={18} aria-hidden="true" />
             </span>
@@ -144,23 +171,51 @@ export default function BackupPage() {
         </section>
 
         <section className="mp-panel" aria-label="Quick actions">
-          <h2 className="mp-panel__title"><Zap size={17} aria-hidden="true" /> Quick Actions</h2>
-          <div className="mp-panel__body">
-            <ManagementButton variant="primary" className="sp-action-btn" onClick={handleCreateBackup}>
-              <Database size={16} aria-hidden="true" /> Create Backup
-            </ManagementButton>
-            <ManagementButton variant="secondary" className="sp-action-btn" onClick={() => handleRestore()}>
-              <RotateCcw size={16} aria-hidden="true" /> Restore Backup
-            </ManagementButton>
-            <ManagementButton variant="secondary" className="sp-action-btn" onClick={() => handleDownload()}>
-              <Download size={16} aria-hidden="true" /> Download Latest Backup
-            </ManagementButton>
+          <div className="sp-card-title">
+            <span className="sp-card-title__icon sp-card-title__icon--gold" aria-hidden="true"><Zap size={17} /></span>
+            <h2 className="sp-card-title__text">Quick Actions</h2>
+          </div>
+          <div className="sp-action-list">
+            <button type="button" className="sp-quick-action" onClick={handleCreateBackup}>
+              <span className="sp-quick-action__icon sp-quick-action__icon--maroon" aria-hidden="true">
+                <Database size={18} />
+              </span>
+              <span className="sp-quick-action__text">
+                <span className="sp-quick-action__title">Create Backup</span>
+                <span className="sp-quick-action__subtitle">Run a full database snapshot now</span>
+              </span>
+              <ChevronRight className="sp-quick-action__chevron" aria-hidden="true" />
+            </button>
+            <button type="button" className="sp-quick-action" onClick={() => handleRestore()}>
+              <span className="sp-quick-action__icon sp-quick-action__icon--gold" aria-hidden="true">
+                <RotateCcw size={18} />
+              </span>
+              <span className="sp-quick-action__text">
+                <span className="sp-quick-action__title">Restore Backup</span>
+                <span className="sp-quick-action__subtitle">Roll back to a previous snapshot</span>
+              </span>
+              <ChevronRight className="sp-quick-action__chevron" aria-hidden="true" />
+            </button>
+            <button type="button" className="sp-quick-action" onClick={() => handleDownload()}>
+              <span className="sp-quick-action__icon sp-quick-action__icon--maroon" aria-hidden="true">
+                <Download size={18} />
+              </span>
+              <span className="sp-quick-action__text">
+                <span className="sp-quick-action__title">Download Latest</span>
+                <span className="sp-quick-action__subtitle">Save the newest backup file locally</span>
+              </span>
+              <ChevronRight className="sp-quick-action__chevron" aria-hidden="true" />
+            </button>
           </div>
         </section>
       </div>
 
       <section className="mp-panel" aria-label="Backup history">
-        <h2 className="mp-panel__title"><History size={17} aria-hidden="true" /> Backup History</h2>
+        <div className="sp-card-title">
+          <span className="sp-card-title__icon" aria-hidden="true"><History size={17} /></span>
+          <h2 className="sp-card-title__text">Backup History</h2>
+          <span className="sp-card-title__meta">{table.total} entries</span>
+        </div>
         <ManagementToolbar
           searchId="backup-search"
           searchValue={table.search}
@@ -168,17 +223,19 @@ export default function BackupPage() {
           searchPlaceholder="Search backup history"
         />
         <div style={{ height: 'var(--space-base)' }} aria-hidden="true" />
-        <DataTable
-          columns={columns}
-          rows={table.rows}
-          rowKey="id"
-          sortKey={table.sortKey}
-          sortDir={table.sortDir}
-          onSort={table.onSort}
-          emptyTitle="No backups found"
-          emptyDescription="Create your first backup to get started."
-          emptyIcon={HardDrive}
-        />
+        <div className="mp-list-table-wrap">
+          <DataTable
+            columns={columns}
+            rows={table.rows}
+            rowKey="id"
+            sortKey={table.sortKey}
+            sortDir={table.sortDir}
+            onSort={table.onSort}
+            emptyTitle="No backups found"
+            emptyDescription="Create your first backup to get started."
+            emptyIcon={HardDrive}
+          />
+        </div>
         <Pagination page={table.page} pageSize={table.pageSize} total={table.total} onPageChange={table.setPage} />
       </section>
     </div>

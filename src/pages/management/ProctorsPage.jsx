@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarPlus, Eye, Pencil, Plus, RefreshCw, Shield, UserX, X } from 'lucide-react';
+import { CalendarDays, CalendarPlus, Eye, Mail, Pencil, Plus, RefreshCw, Shield, UserCheck, UserX, Users, X } from 'lucide-react';
 import { userApi } from '../../api/userApi';
 import { scheduleApi } from '../../api/scheduleApi';
 import { roomApi } from '../../api/roomApi';
@@ -223,18 +223,22 @@ export default function ProctorsPage() {
 
       <div className="mp-stats" aria-label="Proctor availability summary">
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><Users size={18} /></span>
           <div className="mp-stats__value">{proctors.length}</div>
           <div className="mp-stats__label">On the roster</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><UserCheck size={18} /></span>
           <div className="mp-stats__value">{availableNow}</div>
           <div className="mp-stats__label">Available now</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><Shield size={18} /></span>
           <div className="mp-stats__value">{onDuty}</div>
           <div className="mp-stats__label">Currently on duty</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><CalendarDays size={18} /></span>
           <div className="mp-stats__value">{new Set(proctors.flatMap((proctor) => proctor.batch === '—' ? [] : proctor.batch.split(', '))).size}</div>
           <div className="mp-stats__label">Batches covered</div>
         </div>
@@ -250,11 +254,11 @@ export default function ProctorsPage() {
         />
         <div style={{ height: 'var(--space-base)' }} aria-hidden="true" />
         {loading ? <p className="mp-panel__hint">Loading proctors...</p> : table.rows.length === 0 ? <p className="mp-panel__hint">No proctors found.</p> : (
-          <div className="mp-bank-grid" aria-label="Proctor cards">
+          <div className="mp-info-grid" aria-label="Proctor cards">
             {table.rows.map((row) => (
               <article
                 key={row.id}
-                className="mp-bank-card"
+                className="mp-info-card"
                 role="link"
                 tabIndex={0}
                 onClick={() => navigate(`/management/proctors/${row.id}`)}
@@ -265,25 +269,49 @@ export default function ProctorsPage() {
                   }
                 }}
               >
-                <div className="mp-bank-card__icon"><Shield size={20} /></div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <h3 className="mp-bank-card__title">{row.name}</h3>
-                  <p className="mp-bank-card__desc">{row.email}</p>
-                  <div className="mp-bank-card__meta">
-                    <StatusBadge variant={availabilityVariant(row.availability)}>{row.availability}</StatusBadge>
-                    <span>{row.batch}</span>
+                <div className="mp-info-card__header">
+                  <span className="mp-info-card__icon mp-info-card__icon--maroon" aria-hidden="true">
+                    <Shield size={18} />
+                  </span>
+                  <div className="mp-info-card__identity">
+                    <h3 className="mp-info-card__title">{row.name}</h3>
+                    <p className="mp-info-card__subtitle">{row.email}</p>
                   </div>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
-                    <ManagementButton variant="primary" size="sm" onClick={(event) => { event.stopPropagation(); navigate(`/management/proctors/${row.id}`); }}>
-                      <Eye size={14} aria-hidden="true" /> View assignments
+                  <span className="mp-info-card__badge">
+                    <StatusBadge variant={availabilityVariant(row.availability)}>{row.availability}</StatusBadge>
+                  </span>
+                </div>
+
+                <div className="mp-info-card__section">
+                  <div className="mp-info-card__row">
+                    <Users className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                    <span className="mp-info-card__row-label">Proctor ID:</span>
+                    <span className="mp-info-card__row-value">{row.proctorId}</span>
+                  </div>
+                  <div className="mp-info-card__row">
+                    <CalendarDays className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                    <span className="mp-info-card__row-label">Batch:</span>
+                    <span className="mp-info-card__row-value">{row.batch || '—'}</span>
+                  </div>
+                  <div className="mp-info-card__row">
+                    <Mail className="mp-info-card__row-icon" size={15} aria-hidden="true" />
+                    <span className="mp-info-card__row-label">Status:</span>
+                    <span className="mp-info-card__row-value">{row.status}</span>
+                  </div>
+                </div>
+
+                <div className="mp-info-card__actions" onClick={(event) => event.stopPropagation()}>
+                  <div className="mp-info-card__actions-row">
+                    <ManagementButton variant="primary" size="sm" onClick={() => navigate(`/management/proctors/${row.id}`)}>
+                      <Eye size={14} aria-hidden="true" /> View
                     </ManagementButton>
-                    <ManagementButton variant="tertiary" size="sm" onClick={(event) => { event.stopPropagation(); openAssign(row); }} disabled={busy}>
+                    <ManagementButton variant="tertiary" size="sm" onClick={() => openAssign(row)} disabled={busy}>
                       <CalendarPlus size={14} aria-hidden="true" /> Assign
                     </ManagementButton>
-                    <ManagementButton variant="tertiary" size="sm" onClick={(event) => { event.stopPropagation(); openEdit(row); }} disabled={busy}>
+                    <ManagementButton variant="tertiary" size="sm" onClick={() => openEdit(row)} disabled={busy}>
                       <Pencil size={14} aria-hidden="true" /> Edit
                     </ManagementButton>
-                    <ManagementButton variant="tertiary" size="sm" onClick={(event) => { event.stopPropagation(); toggleStatus(row); }} disabled={busy}>
+                    <ManagementButton variant="tertiary" size="sm" onClick={() => toggleStatus(row)} disabled={busy}>
                       <UserX size={14} aria-hidden="true" /> {row.status === 'Active' ? 'Deactivate' : 'Activate'}
                     </ManagementButton>
                   </div>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BarChart3, Download, FileSpreadsheet, FileText, Trophy } from 'lucide-react';
+import { BarChart3, Download, FileSpreadsheet, FileText, Trophy, Users } from 'lucide-react';
 import { ManagementToolbar, ManagementButton } from '../../components/management/ManagementToolbar';
 import api from '../../api/axios';
 import { DataTable } from '../../components/management/DataTable';
@@ -142,18 +142,22 @@ export default function ReportsAnalyticsPage() {
 
       <div className="mp-stats" aria-label="Analytics summary">
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><Users size={18} /></span>
           <div className="mp-stats__value">{totalExaminees.toLocaleString()}</div>
           <div className="mp-stats__label">Total examinees</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><FileText size={18} /></span>
           <div className="mp-stats__value">{completedExams.toLocaleString()}</div>
           <div className="mp-stats__label">Completed exams</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><Trophy size={18} /></span>
           <div className="mp-stats__value">{passRate}%</div>
           <div className="mp-stats__label">Pass rate</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><BarChart3 size={18} /></span>
           <div className="mp-stats__value">{averageScore}%</div>
           <div className="mp-stats__label">Average score</div>
         </div>
@@ -192,17 +196,19 @@ export default function ReportsAnalyticsPage() {
             <Trophy size={18} aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: 6 }} />
             Top Performers
           </h2>
-          <DataTable
-            columns={columns}
-            rows={table.rows}
-            rowKey="id"
-            sortKey={table.sortKey}
-            sortDir={table.sortDir}
-            onSort={table.onSort}
-            emptyTitle="No performers listed"
-            emptyDescription="Results will appear once exams are completed."
-            emptyIcon={Trophy}
-          />
+          <div className="mp-list-table-wrap">
+            <DataTable
+              columns={columns}
+              rows={table.rows}
+              rowKey="id"
+              sortKey={table.sortKey}
+              sortDir={table.sortDir}
+              onSort={table.onSort}
+              emptyTitle="No performers listed"
+              emptyDescription="Results will appear once exams are completed."
+              emptyIcon={Trophy}
+            />
+          </div>
         </section>
       </div>
 

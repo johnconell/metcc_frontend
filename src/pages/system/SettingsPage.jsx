@@ -17,11 +17,11 @@ import '../management/management-pages.css';
 import './system-pages.css';
 
 const SETTINGS_SECTIONS = [
-  { key: 'school', label: 'School Information', icon: Building2 },
-  { key: 'examination', label: 'Examination Settings', icon: ClipboardList },
-  { key: 'user', label: 'User Settings', icon: Users },
-  { key: 'email', label: 'Email Settings', icon: Mail },
-  { key: 'security', label: 'Security Settings', icon: Shield },
+  { key: 'school', label: 'School Information', hint: 'Name, address & contact', icon: Building2 },
+  { key: 'examination', label: 'Examination Settings', hint: 'Duration, shuffle & grades', icon: ClipboardList },
+  { key: 'user', label: 'User Settings', hint: 'Defaults for new accounts', icon: Users },
+  { key: 'email', label: 'Email Settings', hint: 'SMTP & notifications', icon: Mail },
+  { key: 'security', label: 'Security Settings', hint: 'Sessions & access', icon: Shield },
 ];
 
 export default function SettingsPage() {
@@ -211,18 +211,15 @@ export default function SettingsPage() {
     }
   };
 
+  const activeMeta = SETTINGS_SECTIONS.find((s) => s.key === activeSection);
+  const ActiveIcon = activeMeta?.icon || Settings2;
+
   return (
-    <div className="mp-page">
-      <header className="mp-header">
-        <div className="sp-page-heading">
-          <span className="sp-page-heading__icon" aria-hidden="true"><Settings2 size={20} /></span>
-          <div>
-          <p className="mp-header__eyebrow">System</p>
-          <h1 className="mp-header__title">Settings</h1>
-          <p className="mp-header__lede">
-            Configure school, examination, account, and security settings.
-          </p>
-          </div>
+    <div className="mp-page sp-page">
+      <header className="sp-page-header">
+        <div className="sp-page-header__copy">
+          <h1>Settings</h1>
+          <p>Configure school, examination, account, and security settings for the examination portal.</p>
         </div>
       </header>
 
@@ -230,7 +227,10 @@ export default function SettingsPage() {
         <section className="mp-panel sp-settings-content" aria-label="Settings form">
           {activeSection === 'school' && (
             <>
-              <h2 className="mp-panel__title">School Information</h2>
+              <div className="sp-card-title">
+                <span className="sp-card-title__icon" aria-hidden="true"><ActiveIcon size={17} /></span>
+                <h2 className="sp-card-title__text">School Information</h2>
+              </div>
               <div className="sp-form">
                 <label className="sp-form__label" htmlFor="school-name">School Name</label>
                 <input id="school-name" type="text" className="sp-form__input" defaultValue="Tagoloan Community College" />
@@ -246,7 +246,10 @@ export default function SettingsPage() {
 
           {activeSection === 'examination' && (
             <>
-              <h2 className="mp-panel__title">Examination Settings</h2>
+              <div className="sp-card-title">
+                <span className="sp-card-title__icon" aria-hidden="true"><ActiveIcon size={17} /></span>
+                <h2 className="sp-card-title__text">Examination Settings</h2>
+              </div>
               <p className="mp-panel__hint">
                 These settings control exam length and how questions are ordered for students on mobile.
               </p>
@@ -327,7 +330,10 @@ export default function SettingsPage() {
                 </div>
               </form>
 
-              <h2 className="mp-panel__title">Course passing grades</h2>
+              <div className="sp-card-title" style={{ marginTop: 8 }}>
+                <span className="sp-card-title__icon sp-card-title__icon--gold" aria-hidden="true"><ClipboardList size={17} /></span>
+                <h2 className="sp-card-title__text">Course passing grades</h2>
+              </div>
               <p className="mp-panel__hint">
                 Scores are shown as correct answers over total exam items (example: <strong>45/50</strong>).
                 Pass/fail still uses each course&apos;s passing percentage. A 5-point grade (1.00 best → 5.00 fail)
@@ -405,7 +411,10 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <h3 className="mp-panel__title" style={{ fontSize: 15 }}>Add course passing grade</h3>
+              <div className="sp-card-title" style={{ marginTop: 8 }}>
+                <span className="sp-card-title__icon sp-card-title__icon--gold" aria-hidden="true"><Plus size={17} /></span>
+                <h3 className="sp-card-title__text">Add course passing grade</h3>
+              </div>
               <form className="sp-form" onSubmit={createCourse}>
                 <label className="sp-form__label" htmlFor="new-course-name">Course name</label>
                 <input
@@ -443,7 +452,10 @@ export default function SettingsPage() {
 
           {activeSection === 'user' && (
             <>
-              <h2 className="mp-panel__title">User Settings</h2>
+              <div className="sp-card-title">
+                <span className="sp-card-title__icon" aria-hidden="true"><ActiveIcon size={17} /></span>
+                <h2 className="sp-card-title__text">User Settings</h2>
+              </div>
               <div className="sp-form">
                 <label className="sp-form__label" htmlFor="default-role">Default Role for New Users</label>
                 <select id="default-role" className="sp-form__input">
@@ -456,7 +468,10 @@ export default function SettingsPage() {
 
           {activeSection === 'email' && (
             <>
-              <h2 className="mp-panel__title">Email Settings</h2>
+              <div className="sp-card-title">
+                <span className="sp-card-title__icon" aria-hidden="true"><ActiveIcon size={17} /></span>
+                <h2 className="sp-card-title__text">Email Settings</h2>
+              </div>
               <div className="sp-form">
                 <label className="sp-form__label" htmlFor="smtp-host">SMTP Host</label>
                 <input id="smtp-host" type="text" className="sp-form__input" placeholder="smtp.example.com" />
@@ -466,7 +481,10 @@ export default function SettingsPage() {
 
           {activeSection === 'security' && (
             <>
-              <h2 className="mp-panel__title">Security Settings</h2>
+              <div className="sp-card-title">
+                <span className="sp-card-title__icon" aria-hidden="true"><ActiveIcon size={17} /></span>
+                <h2 className="sp-card-title__text">Security Settings</h2>
+              </div>
               <div className="sp-form">
                 <label className="sp-form__label" htmlFor="session-timeout">Session timeout (minutes)</label>
                 <input id="session-timeout" type="number" className="sp-form__input" defaultValue={60} />
@@ -476,6 +494,10 @@ export default function SettingsPage() {
         </section>
 
         <nav className="mp-panel sp-settings-nav" aria-label="Settings sections">
+          <div className="sp-card-title">
+            <span className="sp-card-title__icon sp-card-title__icon--gold" aria-hidden="true"><Settings2 size={17} /></span>
+            <h2 className="sp-card-title__text">Sections</h2>
+          </div>
           {SETTINGS_SECTIONS.map((section) => {
             const Icon = section.icon;
             return (
@@ -485,8 +507,11 @@ export default function SettingsPage() {
                 className={`sp-settings-nav__item${activeSection === section.key ? ' is-active' : ''}`}
                 onClick={() => setActiveSection(section.key)}
               >
-                <Icon size={16} />
-                {section.label}
+                <span className="sp-settings-nav__item-icon" aria-hidden="true"><Icon size={16} /></span>
+                <span className="sp-settings-nav__item-label">
+                  {section.label}
+                  <small>{section.hint}</small>
+                </span>
               </button>
             );
           })}

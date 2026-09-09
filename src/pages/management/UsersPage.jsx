@@ -423,25 +423,27 @@ export default function UsersPage() {
     { key: 'createdAt', label: 'Created', sortable: true },
     {
       key: 'actions',
-      label: 'Actions',
+      label: 'Activity',
       render: (row) => (
-        <div className="mgmt-table__actions">
-          <ManagementButton
-            variant="tertiary"
-            size="sm"
+        <div className="mp-users-actions">
+          <button
+            type="button"
+            className="mp-users-action-btn mp-users-action-btn--edit"
             aria-label={`Edit ${row.user}`}
+            title="Edit"
             onClick={() => openEditForm(row)}
           >
-            <Pencil size={14} aria-hidden="true" />
-          </ManagementButton>
-          <ManagementButton
-            variant="tertiary"
-            size="sm"
+            <Pencil size={15} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={`mp-users-action-btn ${row.statusRaw === 'active' ? 'mp-users-action-btn--disable' : 'mp-users-action-btn--enable'}`}
             aria-label={row.statusRaw === 'active' ? `Disable ${row.user}` : `Activate ${row.user}`}
+            title={row.statusRaw === 'active' ? 'Disable' : 'Activate'}
             onClick={() => handleToggleStatus(row)}
           >
-            <UserX size={14} aria-hidden="true" />
-          </ManagementButton>
+            <UserX size={15} aria-hidden="true" />
+          </button>
         </div>
       ),
     },
@@ -475,11 +477,11 @@ export default function UsersPage() {
       <PageAlert type="error" message={error} onClose={() => setError('')} />
 
       <div className="mp-users-chips" aria-label="Account summary">
-        <span className="mp-users-chip"><strong>{stats.total}</strong> Total</span>
+        <span className="mp-users-chip mp-users-chip--total"><strong>{stats.total}</strong> Total</span>
         <span className="mp-users-chip mp-users-chip--success"><strong>{stats.activeCount}</strong> Active</span>
         <span className="mp-users-chip mp-users-chip--muted"><strong>{stats.disabledCount}</strong> Disabled</span>
-        <span className="mp-users-chip"><strong>{stats.adminCount}</strong> Admins</span>
-        <span className="mp-users-chip"><strong>{stats.proctorCount}</strong> Proctors</span>
+        <span className="mp-users-chip mp-users-chip--admin"><strong>{stats.adminCount}</strong> Admins</span>
+        <span className="mp-users-chip mp-users-chip--proctor"><strong>{stats.proctorCount}</strong> Proctors</span>
       </div>
 
       <section className="mp-panel mp-users-panel" aria-label="User accounts">
@@ -525,17 +527,19 @@ export default function UsersPage() {
           <SkeletonTable rows={8} cols={5} />
         ) : (
           <>
-            <DataTable
-              columns={columns}
-              rows={table.rows}
-              rowKey="id"
-              sortKey={table.sortKey}
-              sortDir={table.sortDir}
-              onSort={table.onSort}
-              emptyTitle="No users found"
-              emptyDescription="Adjust your search or add a new user."
-              emptyIcon={Users}
-            />
+            <div className="mp-users-table-wrap">
+              <DataTable
+                columns={columns}
+                rows={table.rows}
+                rowKey="id"
+                sortKey={table.sortKey}
+                sortDir={table.sortDir}
+                onSort={table.onSort}
+                emptyTitle="No users found"
+                emptyDescription="Adjust your search or add a new user."
+                emptyIcon={Users}
+              />
+            </div>
             <Pagination
               page={table.page}
               pageSize={table.pageSize}

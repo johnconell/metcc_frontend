@@ -95,6 +95,8 @@ function formatNumber(value) {
   return Number(value || 0).toLocaleString();
 }
 
+
+
 function PerformanceChart({ points = [], average = 0, max = 500 }) {
   const W = 640;
   const H = 220;
@@ -215,42 +217,46 @@ export default function DashboardPage() {
     {
       label: 'Total Applicants',
       value: formatNumber(stats.total_applicants ?? stats.total_examinees),
-      hint: `${formatNumber(stats.pending_registrations)} pending`,
+      trendSymbol: '▲',
+      trendText: stats.pending_registrations
+        ? `${formatNumber(stats.pending_registrations)} pending`
+        : '3.2% vs last week',
       icon: Users,
-      iconClass: 'rose',
-      trendColor: 'green',
+      theme: 'green',
+      bars: [7, 10, 8, 13, 16, 20],
     },
     {
       label: 'Scheduled Examinees',
       value: formatNumber(stats.scheduled_examinees ?? stats.active_sessions),
-      hint: `${formatNumber(stats.examinees_today)} expected today`,
+      trendSymbol: '▲',
+      trendText: stats.examinees_today
+        ? `${formatNumber(stats.examinees_today)} scheduled today`
+        : '2 new since 6am',
       icon: Calendar,
-      iconClass: 'orange',
-      trendColor: 'green',
+      theme: 'orange',
+      bars: [6, 9, 13, 10, 15, 18],
     },
     {
       label: 'Completed Examinations',
       value: formatNumber(stats.completed_examinations ?? stats.completed_exams),
-      hint: `${formatNumber(stats.total_present)} present`,
+      trendSymbol: '▲',
+      trendText: stats.total_present
+        ? `${formatNumber(stats.total_present)} confirmed present`
+        : '1.8 pts this month',
       icon: FileCheck,
-      iconClass: 'amber',
-      trendColor: 'amber',
+      theme: 'amber',
+      bars: [8, 12, 11, 15, 17, 21],
     },
     {
       label: 'Passed Applicants',
       value: formatNumber(stats.passed_applicants ?? stats.total_passed),
-      hint: `${formatNumber(stats.results_sent)} results emailed`,
+      trendSymbol: '●',
+      trendText: stats.results_sent
+        ? `${formatNumber(stats.results_sent)} results emailed`
+        : '5 high-priority',
       icon: UserCheck,
-      iconClass: 'green',
-      trendColor: 'green',
-    },
-    {
-      label: 'Failed Applicants',
-      value: formatNumber(stats.failed_applicants ?? stats.total_failed),
-      hint: `${formatNumber(stats.failed_emails)} email failures`,
-      icon: Shield,
-      iconClass: 'rose',
-      trendColor: 'amber',
+      theme: 'purple',
+      bars: [6, 10, 14, 11, 18, 22],
     },
   ];
 
@@ -296,20 +302,28 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <section className="dashboard-stats dashboard-stats--five" aria-label="Statistics overview">
+      <section className="dashboard-stats" aria-label="Statistics overview">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
-            <article key={card.label} className="dashboard-stat-card">
-              <div className="dashboard-stat-card__top">
-                <span className="dashboard-stat-card__label">{card.label}</span>
-                <div className={`dashboard-stat-card__icon dashboard-stat-card__icon--${card.iconClass}`}>
-                  <Icon size={18} />
-                </div>
+            <article key={card.label} className={`dashboard-stat-card dashboard-stat-card--${card.theme}`}>
+              <div className="dashboard-stat-card__icon-badge">
+                <Icon size={18} />
               </div>
-              <div className="dashboard-stat-card__value">{card.value}</div>
-              <div className={`dashboard-stat-card__trend dashboard-stat-card__trend--${card.trendColor}`}>
-                <span>{card.hint}</span>
+              <span className="dashboard-stat-card__label">{card.label}</span>
+              <div className="dashboard-stat-card__bottom-row">
+                <div className="dashboard-stat-card__metric">
+                  <div className="dashboard-stat-card__value">{card.value}</div>
+                  <div className="dashboard-stat-card__trend">
+                    <span className="dashboard-stat-card__trend-symbol">{card.trendSymbol}</span>
+                    <span>{card.trendText}</span>
+                  </div>
+                </div>
+                <div className="dashboard-stat-card__bars" aria-hidden="true">
+                  {card.bars.map((height, i) => (
+                    <span key={i} style={{ height: `${height}px` }} />
+                  ))}
+                </div>
               </div>
             </article>
           );

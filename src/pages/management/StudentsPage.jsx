@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarPlus,
-  ChevronDown,
   Download,
   Eye,
   FileCheck,
   Loader2,
   MoreHorizontal,
   Pencil,
-  Upload,
   Users,
   X,
 } from 'lucide-react';
@@ -63,69 +61,61 @@ function RowActionsMenu({ row }) {
     };
   }, [open]);
 
-  const items = [
-    {
-      key: 'view',
-      label: 'View',
-      icon: Eye,
-      onClick: () => navigate(`/management/students?view=${row.id}`),
-    },
-    {
-      key: 'edit',
-      label: 'Edit',
-      icon: Pencil,
-      onClick: () => navigate(`/management/students?edit=${row.id}`),
-    },
-    {
-      key: 'schedule',
-      label: 'Schedule',
-      icon: CalendarPlus,
-      disabled: !row.schedule_id,
-      onClick: () => row.schedule_id && navigate(`/management/schedules/${row.schedule_id}`),
-    },
-    {
-      key: 'result',
-      label: 'View Result',
-      icon: FileCheck,
-      onClick: () => navigate('/results/exam-results'),
-    },
-  ];
-
   return (
     <div className={`students-action-menu${open ? ' is-open' : ''}`} ref={ref}>
       <button
         type="button"
-        className="students-action-menu__trigger"
+        className="students-action-btn students-action-btn--view"
+        aria-label={`View ${row.name}`}
+        title="View"
+        onClick={() => navigate(`/management/students?view=${row.id}`)}
+      >
+        <Eye size={15} aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        className="students-action-btn students-action-btn--edit"
+        aria-label={`Edit ${row.name}`}
+        title="Edit"
+        onClick={() => navigate(`/management/students?edit=${row.id}`)}
+      >
+        <Pencil size={15} aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        className="students-action-btn students-action-btn--schedule"
+        aria-label={`Schedule ${row.name}`}
+        title="Schedule"
+        disabled={!row.schedule_id}
+        onClick={() => row.schedule_id && navigate(`/management/schedules/${row.schedule_id}`)}
+      >
+        <CalendarPlus size={15} aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        className="students-action-btn students-action-btn--more"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`Actions for ${row.name}`}
+        aria-label={`More actions for ${row.name}`}
+        title="More"
         onClick={() => setOpen((v) => !v)}
       >
         <MoreHorizontal size={15} aria-hidden="true" />
-        <span>Actions</span>
-        <ChevronDown size={13} aria-hidden="true" />
       </button>
       {open && (
         <div className="students-action-menu__panel" role="menu">
-          {items.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.key}
-                type="button"
-                role="menuitem"
-                className="students-action-menu__item"
-                disabled={item.disabled}
-                onClick={() => {
-                  setOpen(false);
-                  item.onClick?.();
-                }}
-              >
-                <Icon size={14} aria-hidden="true" />
-                {item.label}
-              </button>
-            );
-          })}
+          <button
+            type="button"
+            role="menuitem"
+            className="students-action-menu__item"
+            onClick={() => {
+              setOpen(false);
+              navigate('/results/exam-results');
+            }}
+          >
+            <FileCheck size={14} aria-hidden="true" />
+            View Result
+          </button>
         </div>
       )}
     </div>
@@ -425,7 +415,7 @@ export default function StudentsPage() {
       },
       {
         key: 'actions',
-        label: 'Action',
+        label: 'Activity',
         render: (row) => <RowActionsMenu row={row} />,
       },
     ],

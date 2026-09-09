@@ -1,0 +1,58 @@
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(123, 16, 32, 0.08), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 90%, rgba(201, 138, 24, 0.1), transparent 50%),
+    #faf9f7;
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+.auth-shell__card {
+  width: 100%;
+  max-width: 420px;
+  padding: 28px 28px 24px;
+  background: #fff;
+  border: 1px solid #e9e3de;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(34, 34, 34, 0.08);
+}
+
+.auth-shell__card h1,
+.auth-shell__card h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #222;
+}
+
+.auth-shell__card p {
+  color: #6d6865;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+html[data-theme='dark'] .auth-shell {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(225, 29, 72, 0.12), transparent 55%),
+    #111111;
+}
+
+html[data-theme='dark'] .auth-shell__card {
+  background: #1c1a19;
+  border-color: #2f2c2a;
+  color: #f3efe9;
+}
+
+html[data-theme='dark'] .auth-shell__card h1,
+html[data-theme='dark'] .auth-shell__card h2 {
+  color: #f3efe9;
+}
+
+html[data-theme='dark'] .auth-shell__card p {
+  color: #a39e98;
+}

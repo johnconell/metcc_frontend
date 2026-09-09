@@ -6,6 +6,8 @@ import {
   Menu,
   Search,
   Bell,
+  Moon,
+  Sun,
   User,
   LogOut,
   FolderKanban,
@@ -79,11 +81,12 @@ function submenuClass(isActive) {
 
 export function DashboardLayout() {
   const { user, isAdmin, logout } = useAuth();
-  const { t } = usePreferences();
+  const { t, resolvedTheme, setTheme } = usePreferences();
   const location = useLocation();
   const navigate = useNavigate();
   const notifyWrapRef = useRef(null);
   const searchWrapRef = useRef(null);
+  const profileWrapRef = useRef(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => preferenceStorage.getSidebarCollapsed());
   const initialSections = useMemo(() => preferenceStorage.getSidebarSections(), []);
@@ -95,6 +98,7 @@ export function DashboardLayout() {
   const [notifications, setNotifications] = useState(() => getNotifications());
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const displayName = user?.name || 'Administrator';
   const displayRole = user?.role?.name || 'Administrator';
@@ -150,30 +154,40 @@ export function DashboardLayout() {
   }, [location.pathname]);
 
   useEffect(() => {
+    if (!notifyOpen && !searchOpen && !profileOpen) return undefined;
+
     const onPointerDown = (event) => {
-      if (notifyWrapRef.current && !notifyWrapRef.current.contains(event.target)) {
+      if (notifyOpen && notifyWrapRef.current && !notifyWrapRef.current.contains(event.target)) {
         setNotifyOpen(false);
       }
-
-      if (searchWrapRef.current && !searchWrapRef.current.contains(event.target)) {
+      if (searchOpen && searchWrapRef.current && !searchWrapRef.current.contains(event.target)) {
         setSearchOpen(false);
       }
+      if (profileOpen && profileWrapRef.current && !profileWrapRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
     };
+
     document.addEventListener('mousedown', onPointerDown);
     return () => document.removeEventListener('mousedown', onPointerDown);
-  }, []);
+  }, [notifyOpen, searchOpen, profileOpen]);
 
   useEffect(() => {
     const onKeyDown = (event) => {
       if (event.key === 'Escape') {
-        setSearchOpen(false);
+        if (searchOpen) setSearchOpen(false);
+        if (notifyOpen) setNotifyOpen(false);
+        if (profileOpen) setProfileOpen(false);
       }
     };
+
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [searchOpen, notifyOpen, profileOpen]);
 
-  const closeSidebar = () => setSidebarOpen(false);
+  const closeSidebar = () => {
+    if (sidebarOpen) setSidebarOpen(false);
+  };
   const toggleSidebar = () => {
     if (window.innerWidth <= 768) {
       setSidebarCollapsed(false);
@@ -216,6 +230,10 @@ export function DashboardLayout() {
     event.preventDefault();
     if (searchResults.length === 0) return;
     handleSearchNavigate(searchResults[0].path);
+  };
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
   const handleLogout = async () => {
@@ -466,6 +484,16 @@ export function DashboardLayout() {
           </div>
 
           <div className="dashboard-header__actions">
+            <button
+              type="button"
+              className="dashboard-header__theme-toggle"
+              onClick={toggleTheme}
+              aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
             <div className="dashboard-header__notify-wrap" ref={notifyWrapRef}>
               <button
                 type="button"
@@ -517,27 +545,36 @@ export function DashboardLayout() {
               )}
             </div>
 
-            <Link to="/profile" className="dashboard-header__profile">
-              <span className="dashboard-header__profile-avatar">
-                {user?.profile_photo_url ? (
-                  <img src={user.profile_photo_url} alt="" />
-                ) : (
-                  <User size={16} />
-                )}
-              </span>
-              <span>{t('profileSettings')}</span>
-              <ChevronDown className="dashboard-header__profile-chevron" />
-            </Link>
+            <div className="dashboard-header__profile-wrap" ref={profileWrapRef}>
+              <button
+                type="button"
+                className={`dashboard-header__profile${profileOpen ? ' dashboard-header__profile--open' : ''}`}
+                onClick={() => setProfileOpen((open) => !open)}
+                aria-expanded={profileOpen}
+                aria-haspopup="menu"
+              >
+                <span className="dashboard-header__profile-avatar">
+                  {user?.profile_photo_url ? <img src={user.profile_photo_url} alt="" /> : <User size={16} />}
+                </span>
+                <span>{t('profileSettings')}</span>
+                <ChevronDown className="dashboard-header__profile-chevron" />
+              </button>
 
-            <button
-              type="button"
-              className="dashboard-header__logout"
-              onClick={handleLogout}
-              disabled={loggingOut}
-            >
-              <LogOut size={16} aria-hidden="true" />
-              <span>{loggingOut ? t('loggingOut') : t('logout')}</span>
-            </button>
+              {profileOpen && (
+                <div className="dashboard-header__profile-menu" role="menu" aria-label="Profile menu">
+                  <div className="dashboard-header__profile-menu-user">
+                    <span className="dashboard-header__profile-menu-avatar">{initials}</span>
+                    <span><strong>{displayName}</strong><small>{displayRole}</small></span>
+                  </div>
+                  <Link to="/profile" role="menuitem" onClick={() => setProfileOpen(false)}>Profile Settings</Link>
+                  <Link to="/system/settings" role="menuitem" onClick={() => setProfileOpen(false)}>Settings &amp; privacy</Link>
+                  <button type="button" role="menuitem" onClick={handleLogout} disabled={loggingOut}>
+                    <LogOut size={16} /> {loggingOut ? t('loggingOut') : t('logout')}
+                  </button>
+                </div>
+              )}
+            </div>
+
           </div>
         </header>
 

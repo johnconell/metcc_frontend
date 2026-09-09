@@ -1,6 +1,17 @@
 @import "tailwindcss";
 @import "./styles/design-tokens.css";
 
+html,
+body,
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   margin: 0;
   background: var(--color-canvas);
@@ -10,20 +21,32 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Instant tactile click feedback — zero sluggishness */
+button:active,
+a:active,
+.mgmt-btn:active,
+.students-action-btn:active,
+.dashboard-header__profile:active,
+.dashboard-header__notify:active,
+.dashboard-header__theme-toggle:active {
+  transform: scale(0.985);
+  transition: transform 0.04s ease-out !important;
+}
+
 [data-theme='dark'] {
   --color-ink: #ffffff;
-  --color-body: #f0ebe4;
+  --color-body: #f8fafc;
   --color-body-strong: #ffffff;
-  --color-muted: #d6d0c8;
-  --color-muted-soft: #bdb6ad;
-  --color-hairline: #3a3532;
-  --color-hairline-soft: #2f2b28;
-  --color-hairline-strong: #524c47;
-  --color-canvas: #121110;
-  --color-canvas-soft: #1a1715;
-  --color-surface-card: #1c1a19;
-  --color-surface-strong: #2a2624;
-  --color-surface: #1c1a19;
+  --color-muted: #94a3b8;
+  --color-muted-soft: #64748b;
+  --color-hairline: #26272e;
+  --color-hairline-soft: #1e2025;
+  --color-hairline-strong: #333338;
+  --color-canvas: #0b0c0e;
+  --color-canvas-soft: #121215;
+  --color-surface-card: #111215;
+  --color-surface-strong: #18191e;
+  --color-surface: #111215;
 }
 
 [data-theme='dark'] body {
@@ -32,11 +55,11 @@ body {
 }
 
 [data-theme='dark'] .dashboard-app {
-  --cream: #1c1a19;
-  --bg: #121110;
-  --border: #3a3532;
+  --cream: #141518;
+  --bg: #0b0c0e;
+  --border: #26272e;
   --text: #ffffff;
-  --text-muted: #d6d0c8;
+  --text-muted: #94a3b8;
   --maroon: #ff8a9a;
   --maroon-dark: #ffb0bc;
 }
@@ -48,14 +71,14 @@ body {
 [data-theme='dark'] .dashboard-header__search-input,
 [data-theme='dark'] .dashboard-header__profile,
 [data-theme='dark'] .dashboard-header__notify {
-  background: #1c1a19;
+  background: #111111;
   color: #ffffff;
-  border-color: #3a3532;
+  border-color: #26272e;
 }
 
 [data-theme='dark'] .dashboard-header__search {
-  background: #151312;
-  border-color: #3a3532;
+  background: #16171b;
+  border-color: #26272e;
 }
 
 [data-theme='dark'] .dashboard-content,
@@ -129,14 +152,18 @@ body {
 }
 
 [data-theme='dark'] .mp-panel,
+[data-theme='dark'] .mp-stats__item,
 [data-theme='dark'] .mp-stats--cards .mp-stats__item,
+[data-theme='dark'] .passkeys-stat-card,
+[data-theme='dark'] .sp-stat-card,
+[data-theme='dark'] .dashboard-stat-card,
 [data-theme='dark'] .mp-date-card,
 [data-theme='dark'] .mp-view-toggle,
 [data-theme='dark'] .profile-section,
 [data-theme='dark'] .profile-choice {
-  background: #1c1a19;
-  border-color: #3a3532;
-  color: #ffffff;
+  background: #111215;
+  border-color: #26272e;
+  color: #f8fafc;
 }
 
 [data-theme='dark'] .mp-field__input,
@@ -147,15 +174,15 @@ body {
 [data-theme='dark'] .profile-field__input,
 [data-theme='dark'] .mgmt-search__input,
 [data-theme='dark'] .dashboard-header__search-input {
-  background: #151312;
-  border-color: #3a3532;
+  background: #16171b;
+  border-color: #26272e;
   color: #ffffff;
 }
 
 [data-theme='dark'] .mp-field__input::placeholder,
 [data-theme='dark'] .mgmt-search__input::placeholder,
 [data-theme='dark'] .dashboard-header__search-input::placeholder {
-  color: #bdb6ad;
+  color: #94a3b8;
 }
 
 [data-theme='dark'] .mp-view-toggle__btn {
@@ -165,20 +192,22 @@ body {
 [data-theme='dark'] .mp-view-toggle__btn.is-active,
 [data-theme='dark'] .mp-batch-pill.is-active,
 [data-theme='dark'] .profile-choice--active {
-  background: #2a2624;
+  background: #24252c;
   color: #ffffff;
-  border-color: #524c47;
+  border-color: #3b3d47;
 }
 
 [data-theme='dark'] .mp-batch-pill,
 [data-theme='dark'] .mp-result-crumb__link {
-  background: #151312;
+  background: #16171b;
   color: #ffffff;
-  border-color: #3a3532;
+  border-color: #26272e;
 }
 
 [data-theme='dark'] .mp-table th {
-  background: #151312;
+  background: #15161a;
+  color: #94a3b8;
+  border-bottom: 1px solid #26272e;
 }
 
 [data-theme='dark'] .mgmt-btn,

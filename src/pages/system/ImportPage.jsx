@@ -102,19 +102,13 @@ export default function ImportPage() {
   };
 
   return (
-    <div className="mp-page">
-      <header className="mp-header">
-        <div className="sp-page-heading">
-          <span className="sp-page-heading__icon" aria-hidden="true"><Layers3 size={20} /></span>
-          <div>
-          <p className="mp-header__eyebrow">System</p>
-          <h1 className="mp-header__title">Import</h1>
-          <p className="mp-header__lede">
-            Import students, questions, or schedules with a preview.
-          </p>
-          </div>
+    <div className="mp-page sp-page">
+      <header className="sp-page-header">
+        <div className="sp-page-header__copy">
+          <h1>Import</h1>
+          <p>Import students, questions, or schedules with a live preview before committing changes.</p>
         </div>
-        <div className="mp-header__actions">
+        <div className="sp-page-header__actions">
           <ManagementButton variant="primary" disabled={!hasPreview} onClick={handleImport}>
             <UserPlus size={16} aria-hidden="true" /> Import
           </ManagementButton>
@@ -122,24 +116,25 @@ export default function ImportPage() {
       </header>
 
       <section className="mp-panel" aria-label="Import type selection">
-        <h2 className="mp-panel__title"><Layers3 size={17} aria-hidden="true" /> Select Import Type</h2>
-        <div className="mp-cat-grid">
+        <div className="sp-card-title">
+          <span className="sp-card-title__icon" aria-hidden="true"><Layers3 size={17} /></span>
+          <h2 className="sp-card-title__text">Select Import Type</h2>
+        </div>
+        <div className="sp-import-grid">
           {IMPORT_TYPES.map(({ key, label, icon: Icon, description }) => (
             <button
               key={key}
               type="button"
-              className={`mp-cat-card mp-cat-card--action${activeType === key ? ' mp-cat-card--active' : ''}`}
+              className={`sp-import-card${activeType === key ? ' is-active' : ''}`}
               onClick={() => {
                 setActiveType(key);
                 setFileName('');
                 setHasPreview(false);
               }}
             >
-              <div className="mp-cat-card__subject">
-                <Icon size={16} aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: 6 }} />
-                {label}
-              </div>
-              <p className="mp-cat-card__meta">{description}</p>
+              <span className="sp-import-card__icon" aria-hidden="true"><Icon size={18} /></span>
+              <span className="sp-import-card__title">{label}</span>
+              <p className="sp-import-card__desc">{description}</p>
             </button>
           ))}
         </div>
@@ -147,16 +142,23 @@ export default function ImportPage() {
 
       <div className="mp-split">
         <section className="mp-panel" aria-label="File upload">
-          <h2 className="mp-panel__title"><FileSpreadsheet size={17} aria-hidden="true" /> File Upload</h2>
+          <div className="sp-card-title">
+            <span className="sp-card-title__icon" aria-hidden="true"><FileSpreadsheet size={17} /></span>
+            <h2 className="sp-card-title__text">File Upload</h2>
+          </div>
           <p className="sp-upload__hint">
             {activeImport?.label} — accepted formats: .csv, .xlsx, .xls
           </p>
-          <label className="sp-upload__zone" htmlFor="import-file">
-            <Upload size={32} aria-hidden="true" />
+          <label className={`sp-upload__zone${hasPreview ? ' sp-upload__zone--filled' : ''}`} htmlFor="import-file">
+            <span className="sp-upload__zone-icon" aria-hidden="true">
+              <Upload size={22} />
+            </span>
             <span className="sp-upload__label">
               {fileName || 'Drag and drop a file here, or click to browse'}
             </span>
-            <span className="sp-upload__meta">Maximum file size: 10 MB</span>
+            <span className="sp-upload__meta">
+              {hasPreview ? 'File ready for preview' : 'Maximum file size: 10 MB'}
+            </span>
             <input
               id="import-file"
               type="file"
@@ -168,7 +170,10 @@ export default function ImportPage() {
         </section>
 
         <section className="mp-panel" aria-label="Import summary">
-          <h2 className="mp-panel__title"><ClipboardCheck size={17} aria-hidden="true" /> Import Summary</h2>
+          <div className="sp-card-title">
+            <span className="sp-card-title__icon sp-card-title__icon--gold" aria-hidden="true"><ClipboardCheck size={17} /></span>
+            <h2 className="sp-card-title__text">Import Summary</h2>
+          </div>
           <div className="mp-kv">
             <div className="mp-kv__row">
               <span className="mp-kv__key">Import type</span>
@@ -200,20 +205,26 @@ export default function ImportPage() {
 
       {hasPreview && (
         <section className="mp-panel" aria-label="Preview data">
-          <h2 className="mp-panel__title"><Eye size={17} aria-hidden="true" /> Preview Data</h2>
+          <div className="sp-card-title">
+            <span className="sp-card-title__icon" aria-hidden="true"><Eye size={17} /></span>
+            <h2 className="sp-card-title__text">Preview Data</h2>
+            <span className="sp-card-title__meta">{preview.rows.length} records</span>
+          </div>
           <p className="sp-upload__hint">
             Showing {preview.rows.length} records from {fileName}
           </p>
-          <DataTable
-            columns={preview.columns}
-            rows={preview.rows}
-            rowKey="id"
-            emptyTitle="No data to preview"
-            emptyDescription="Upload a file to see a preview of the records."
-            emptyIcon={preview.emptyIcon}
-          />
+          <div className="mp-list-table-wrap">
+            <DataTable
+              columns={preview.columns}
+              rows={preview.rows}
+              rowKey="id"
+              emptyTitle="No data to preview"
+              emptyDescription="Upload a file to see a preview of the records."
+              emptyIcon={preview.emptyIcon}
+            />
+          </div>
           <div className="sp-form__actions" style={{ marginTop: 'var(--space-base)' }}>
-            <ManagementButton variant="primary">
+            <ManagementButton variant="primary" onClick={handleImport}>
               <Upload size={16} aria-hidden="true" /> Import {preview.rows.length} Records
             </ManagementButton>
           </div>

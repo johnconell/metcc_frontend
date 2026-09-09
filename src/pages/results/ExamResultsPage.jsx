@@ -244,22 +244,27 @@ export default function ExamResultsPage() {
 
       <div className="mp-stats">
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><CalendarDays size={18} /></span>
           <div className="mp-stats__value">{formatNumber(dateGroups.length)}</div>
           <div className="mp-stats__label">Exam days</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><ScrollText size={18} /></span>
           <div className="mp-stats__value">{formatNumber(batches.length)}</div>
           <div className="mp-stats__label">Batches with results</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><Users size={18} /></span>
           <div className="mp-stats__value">{formatNumber(summary.total)}</div>
           <div className="mp-stats__label">Completed examinees</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><CheckCircle2 size={18} /></span>
           <div className="mp-stats__value">{formatNumber(summary.passed)}</div>
           <div className="mp-stats__label">Passed</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true"><XCircle size={18} /></span>
           <div className="mp-stats__value">{formatNumber(summary.failed)}</div>
           <div className="mp-stats__label">Failed</div>
         </div>

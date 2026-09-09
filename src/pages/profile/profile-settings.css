@@ -19,17 +19,19 @@
 .profile-page__header h1 {
   margin: 0;
   font-family: var(--font-sans);
-  font-size: var(--text-display-sm-size);
+  font-size: 26px;
   font-weight: 700;
   color: var(--profile-ink);
-  letter-spacing: var(--text-display-sm-tracking);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .profile-page__header p {
   margin: 6px 0 0;
   color: var(--profile-muted);
-  font-size: var(--text-body-sm-size);
-  line-height: var(--text-body-sm-line);
+  font-size: 13.5px;
+  line-height: 1.55;
+  max-width: 640px;
 }
 
 .profile-alert {
@@ -65,16 +67,17 @@
 }
 
 .profile-section {
-  background: var(--profile-surface);
-  border: 1px solid var(--profile-border);
-  border-radius: var(--rounded-lg);
-  padding: var(--space-lg);
+  background: #fff;
+  border: 1px solid #e9e3de;
+  border-radius: 7px;
+  box-shadow: 0 1px 3px rgba(34, 34, 34, 0.06);
+  padding: 18px 18px 16px;
 }
 
 .profile-section__title {
   margin: 0;
-  font-size: var(--text-title-sm-size);
-  font-weight: var(--text-title-sm-weight);
+  font-size: 15px;
+  font-weight: 700;
   color: var(--profile-ink);
 }
 

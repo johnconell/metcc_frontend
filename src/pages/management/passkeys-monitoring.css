@@ -26,18 +26,18 @@
   color: var(--color-primary, #7b1020);
 }
 
-/* Header Banner */
+/* Header Banner — dashboard-aligned clean header */
 .passkeys-header {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 24px;
-  background: var(--color-surface-card, #ffffff);
-  border: 1px solid var(--color-hairline, #e2e8f0);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .passkeys-header__content {
@@ -50,23 +50,23 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-primary, #7b1020);
-  margin: 0 0 4px;
+  color: #e11d48;
+  margin: 0 0 6px;
 }
 
 .passkeys-header__title {
-  font-size: 1.45rem;
-  font-weight: 750;
+  font-size: 26px;
+  font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--color-ink, #0f172a);
+  color: #222222;
   margin: 0;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .passkeys-header__lede {
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--color-muted, #64748b);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #6d6865;
   margin: 6px 0 0;
   max-width: 650px;
 }
@@ -86,11 +86,12 @@
   color: #ffffff;
   font-size: 13px;
   font-weight: 600;
-  padding: 9px 18px;
-  border-radius: 8px;
+  padding: 0 18px;
+  height: 40px;
+  border-radius: 999px;
   border: 1px solid transparent;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(123, 16, 32, 0.18);
+  box-shadow: 0 6px 16px rgba(123, 16, 32, 0.28);
   transition: all 0.15s ease;
   white-space: nowrap;
 }
@@ -107,80 +108,119 @@
   transform: none;
 }
 
-/* Summary Quick Stats */
+/* Summary Quick Stats — white metric tiles with image background */
 .passkeys-stats-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
 }
 
 .passkeys-stat-card {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  background: var(--color-surface-card, #ffffff);
-  border: 1px solid var(--color-hairline, #e2e8f0);
-  border-radius: 10px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding: 16px 18px 14px;
+  overflow: hidden;
+  background-color: #ffffff;
+  background-image: url('../../assets/image.png');
+  background-size: cover;
+  background-position: right bottom;
+  background-repeat: no-repeat;
+  border: 1px solid #e9e3de;
+  border-bottom: 2.5px solid var(--pk-stat-accent, #16a34a);
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(34, 34, 34, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
+.passkeys-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(34, 34, 34, 0.1);
+  border-color: #d5cdc6;
+}
+
+.passkeys-stat-card:nth-child(4n + 1) { --pk-stat-accent: #16a34a; --pk-stat-icon-bg: rgba(22, 163, 74, 0.12); --pk-stat-icon-color: #16a34a; }
+.passkeys-stat-card:nth-child(4n + 2) { --pk-stat-accent: #ea580c; --pk-stat-icon-bg: rgba(234, 88, 12, 0.12); --pk-stat-icon-color: #ea580c; }
+.passkeys-stat-card:nth-child(4n + 3) { --pk-stat-accent: #d97706; --pk-stat-icon-bg: rgba(217, 119, 6, 0.12); --pk-stat-icon-color: #d97706; }
+.passkeys-stat-card:nth-child(4n + 4) { --pk-stat-accent: #9333ea; --pk-stat-icon-bg: rgba(147, 51, 234, 0.12); --pk-stat-icon-color: #9333ea; }
+
 .passkeys-stat-card__icon {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-bottom: 10px;
+  background: var(--pk-stat-icon-bg, rgba(22, 163, 74, 0.12));
+  color: var(--pk-stat-icon-color, #16a34a);
 }
 
-.passkeys-stat-card__icon--primary {
-  background: rgba(123, 16, 32, 0.08);
-  color: var(--color-primary, #7b1020);
-}
-
-.passkeys-stat-card__icon--success {
-  background: rgba(22, 163, 74, 0.1);
-  color: #16a34a;
-}
-
-.passkeys-stat-card__icon--warning {
-  background: rgba(217, 119, 6, 0.1);
-  color: #d97706;
-}
-
+.passkeys-stat-card__icon--primary,
+.passkeys-stat-card__icon--success,
+.passkeys-stat-card__icon--warning,
 .passkeys-stat-card__icon--info {
-  background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  background: var(--pk-stat-icon-bg, rgba(22, 163, 74, 0.12));
+  color: var(--pk-stat-icon-color, #16a34a);
 }
 
 .passkeys-stat-card__content {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .passkeys-stat-card__value {
-  font-size: 1.25rem;
-  font-weight: 750;
-  color: var(--color-ink, #0f172a);
-  line-height: 1.2;
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #222222;
+  line-height: 1.1;
 }
 
 .passkeys-stat-card__label {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
-  color: var(--color-muted, #64748b);
-  margin-top: 2px;
+  color: #6d6865;
+  margin-top: 0;
+  margin-bottom: 4px;
+  order: -1;
 }
+
+[data-theme='dark'] .passkeys-stat-card {
+  background-color: #111215;
+  background-image: none;
+  border-color: #26272e;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .passkeys-stat-card__value {
+  color: #ffffff;
+}
+
+[data-theme='dark'] .passkeys-stat-card__label {
+  color: #9ca3af;
+}
+
+[data-theme='dark'] .passkeys-stat-card__icon {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='dark'] .passkeys-stat-card:nth-child(4n + 1) { --pk-stat-accent: #34d399; --pk-stat-icon-bg: rgba(52, 211, 153, 0.16); --pk-stat-icon-color: #34d399; }
+[data-theme='dark'] .passkeys-stat-card:nth-child(4n + 2) { --pk-stat-accent: #ff6b4a; --pk-stat-icon-bg: rgba(255, 107, 74, 0.16); --pk-stat-icon-color: #ff7555; }
+[data-theme='dark'] .passkeys-stat-card:nth-child(4n + 3) { --pk-stat-accent: #fbbf24; --pk-stat-icon-bg: rgba(251, 191, 36, 0.16); --pk-stat-icon-color: #fbbf24; }
+[data-theme='dark'] .passkeys-stat-card:nth-child(4n + 4) { --pk-stat-accent: #c084fc; --pk-stat-icon-bg: rgba(192, 132, 252, 0.16); --pk-stat-icon-color: #c084fc; }
 
 /* Main Panel */
 .passkeys-panel {
-  background: var(--color-surface-card, #ffffff);
-  border: 1px solid var(--color-hairline, #e2e8f0);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid #ebe6e1;
+  border-radius: 18px;
+  box-shadow: 0 8px 28px rgba(34, 34, 34, 0.05);
+  padding: 18px 18px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -272,20 +312,21 @@
 
 .passkeys-search-input {
   width: 100%;
-  height: 38px;
-  padding: 0 34px 0 36px;
+  height: 40px;
+  padding: 0 34px 0 38px;
   font-size: 13px;
-  border: 1px solid var(--color-hairline, #cbd5e1);
-  border-radius: 8px;
-  background: var(--color-surface-card, #ffffff);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #f6f4f2;
   color: var(--color-ink, #0f172a);
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
 .passkeys-search-input:focus {
-  border-color: var(--color-primary, #7b1020);
-  box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.1);
+  background: #fff;
+  border-color: #ddd7d1;
+  box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.08);
 }
 
 .passkeys-search-clear {
@@ -337,17 +378,17 @@
 }
 
 .passkeys-btn-action {
-  height: 38px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 0 14px;
+  padding: 0 16px;
   font-size: 13px;
-  font-weight: 500;
-  border-radius: 8px;
-  border: 1px solid var(--color-hairline, #cbd5e1);
-  background: var(--color-surface-card, #ffffff);
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid #e5e1dc;
+  background: #fff;
   color: var(--color-ink, #0f172a);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -355,14 +396,15 @@
 }
 
 .passkeys-btn-action:hover {
-  background: var(--color-canvas-soft, #f1f5f9);
-  border-color: var(--color-muted, #94a3b8);
+  background: #f5f3f1;
+  border-color: #d5cdc6;
 }
 
 .passkeys-btn-action--primary {
   background: var(--color-primary, #7b1020);
   border-color: var(--color-primary, #7b1020);
   color: #ffffff;
+  box-shadow: 0 6px 16px rgba(123, 16, 32, 0.28);
 }
 
 .passkeys-btn-action--primary:hover {
@@ -401,36 +443,48 @@
 /* Data Table */
 .passkeys-table-container {
   overflow-x: auto;
-  border: 1px solid var(--color-hairline, #e2e8f0);
-  border-radius: 10px;
-  background: var(--color-surface-card, #ffffff);
+  border: none;
+  border-radius: 14px;
+  background: transparent;
 }
 
 .passkeys-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 13px;
   text-align: left;
 }
 
 .passkeys-table thead {
-  background: var(--color-canvas-soft, #f8fafc);
-  border-bottom: 1px solid var(--color-hairline, #e2e8f0);
+  background: transparent;
+  border-bottom: none;
 }
 
 .passkeys-table th {
   padding: 12px 14px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-muted, #64748b);
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  color: #6d6865;
   white-space: nowrap;
+  background: #f3f1ef;
+}
+
+.passkeys-table th:first-child {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.passkeys-table th:last-child {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
 .passkeys-table td {
   padding: 12px 14px;
-  border-bottom: 1px solid var(--color-hairline-soft, #f1f5f9);
+  border-bottom: 1px solid #f0ece8;
   color: var(--color-ink, #1e293b);
   vertical-align: middle;
 }
@@ -440,7 +494,7 @@
 }
 
 .passkeys-table tbody tr:hover {
-  background-color: rgba(0, 0, 0, 0.015);
+  background-color: #faf8f6;
 }
 
 .passkeys-table tbody tr:last-child td {

@@ -5,8 +5,6 @@ import {
   BookOpen,
   CheckSquare,
   FileUp,
-  FolderOpen,
-  Layers,
   Pencil,
   Plus,
   Square,
@@ -575,16 +573,6 @@ export default function QuestionBankDetailPage() {
           <p className="mp-header__lede">
             {subject.description || 'Add questions manually or import from Excel, Word, or PDF.'}
           </p>
-          <p className="mp-hierarchy-crumb">
-            <FolderOpen size={14} aria-hidden="true" />
-            <Link to="/management/question-bank">Banks</Link>
-            <span aria-hidden="true">→</span>
-            <Layers size={14} aria-hidden="true" />
-            <Link to={backTo}>Categories</Link>
-            <span aria-hidden="true">→</span>
-            <BookOpen size={14} aria-hidden="true" />
-            <strong>Questions</strong>
-          </p>
         </div>
         <div className="mp-header__actions">
           <ManagementButton variant="secondary" onClick={openLimitForm}>
@@ -601,16 +589,25 @@ export default function QuestionBankDetailPage() {
 
       <div className="mp-stats">
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true">
+            <BookOpen size={18} />
+          </span>
           <div className="mp-stats__value">{formatNumber(subject.questions_count)}</div>
           <div className="mp-stats__label">Questions in bank</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true">
+            <CheckSquare size={18} />
+          </span>
           <div className="mp-stats__value">
             {formatNumber(selectedCount)} / {formatNumber(selectionLimit)}
           </div>
           <div className="mp-stats__label">Selected / Limit</div>
         </div>
         <div className="mp-stats__item">
+          <span className="mp-stats__icon" aria-hidden="true">
+            <FileCheck size={18} />
+          </span>
           <div className="mp-stats__value">
             {formatNumber(Math.max(0, selectionLimit - selectedCount))}
           </div>
@@ -653,16 +650,18 @@ export default function QuestionBankDetailPage() {
           <SkeletonTable rows={5} cols={5} />
         ) : (
           <>
-            <DataTable
-              columns={columns}
-              rows={table.allRows}
-              rowKey="id"
-              sortKey={table.sortKey}
-              sortDir={table.sortDir}
-              onSort={table.onSort}
-              emptyTitle="No questions yet"
-              emptyDescription="Import a file or add your first question to this category."
-            />
+            <div className="mp-list-table-wrap">
+              <DataTable
+                columns={columns}
+                rows={table.allRows}
+                rowKey="id"
+                sortKey={table.sortKey}
+                sortDir={table.sortDir}
+                onSort={table.onSort}
+                emptyTitle="No questions yet"
+                emptyDescription="Import a file or add your first question to this category."
+              />
+            </div>
           </>
         )}
       </section>

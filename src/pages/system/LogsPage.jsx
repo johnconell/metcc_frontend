@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Activity, FileText, History, ShieldCheck, Users } from 'lucide-react';
+import { useState } from 'react';import { Activity, CalendarClock, FileText, ListChecks, UserRoundCheck } from 'lucide-react';
 import { ManagementToolbar } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
 import { FilterDropdown } from '../../components/management/FilterDropdown';
@@ -49,45 +48,49 @@ export default function LogsPage() {
   ];
 
   return (
-    <div className="mp-page">
-      <header className="mp-header">
-        <div className="sp-page-heading">
-          <span className="sp-page-heading__icon" aria-hidden="true"><Activity size={20} /></span>
-          <div>
-          <p className="mp-header__eyebrow">System</p>
-          <h1 className="mp-header__title">Activity Logs</h1>
-          <p className="mp-header__lede">
-            Search and filter recent system activity. {ACTIVITY_LOGS.length} entries recorded.
+    <div className="mp-page sp-page">
+      <header className="sp-page-header">
+        <div className="sp-page-header__copy">
+          <h1>Activity Logs</h1>
+          <p>
+            Search and filter recent system activity across users, schedules, and configuration changes.
           </p>
-          </div>
         </div>
       </header>
 
-      <div className="mp-stats" aria-label="Log summary">
-        <div className="mp-stats__item">
-          <span className="sp-stat-icon sp-stat-icon--accent" aria-hidden="true"><History size={17} /></span>
-          <div className="mp-stats__value">{ACTIVITY_LOGS.length}</div>
-          <div className="mp-stats__label">Total entries</div>
-        </div>
-        <div className="mp-stats__item">
-          <span className="sp-stat-icon sp-stat-icon--success" aria-hidden="true"><Users size={17} /></span>
-          <div className="mp-stats__value">{USERS.length}</div>
-          <div className="mp-stats__label">Active users</div>
-        </div>
-        <div className="mp-stats__item">
-          <span className="sp-stat-icon sp-stat-icon--warning" aria-hidden="true"><Activity size={17} /></span>
-          <div className="mp-stats__value">Today</div>
-          <div className="mp-stats__label">Latest activity</div>
-        </div>
-        <div className="mp-stats__item">
-          <span className="sp-stat-icon sp-stat-icon--neutral" aria-hidden="true"><ShieldCheck size={17} /></span>
-          <div className="mp-stats__value">Jun 1</div>
-          <div className="mp-stats__label">Last entry date</div>
-        </div>
-      </div>
+      <section className="sp-stats" aria-label="Log summary">
+        <article className="sp-stat-card sp-stat-card--green">
+          <span className="sp-stat-card__icon" aria-hidden="true"><ListChecks size={18} /></span>
+          <span className="sp-stat-card__label">Total entries</span>
+          <div className="sp-stat-card__value">{ACTIVITY_LOGS.length}</div>
+          <div className="sp-stat-card__hint">▲ All recorded events</div>
+        </article>
+        <article className="sp-stat-card sp-stat-card--orange">
+          <span className="sp-stat-card__icon" aria-hidden="true"><UserRoundCheck size={18} /></span>
+          <span className="sp-stat-card__label">Active users</span>
+          <div className="sp-stat-card__value">{USERS.length}</div>
+          <div className="sp-stat-card__hint">▲ Unique contributors</div>
+        </article>
+        <article className="sp-stat-card sp-stat-card--amber">
+          <span className="sp-stat-card__icon" aria-hidden="true"><Activity size={18} /></span>
+          <span className="sp-stat-card__label">Latest activity</span>
+          <div className="sp-stat-card__value">Today</div>
+          <div className="sp-stat-card__hint">● Live monitoring</div>
+        </article>
+        <article className="sp-stat-card sp-stat-card--purple">
+          <span className="sp-stat-card__icon" aria-hidden="true"><CalendarClock size={18} /></span>
+          <span className="sp-stat-card__label">Last entry date</span>
+          <div className="sp-stat-card__value">Jun 1</div>
+          <div className="sp-stat-card__hint">● Most recent log</div>
+        </article>
+      </section>
 
       <section className="mp-panel" aria-label="Activity logs">
-        <h2 className="mp-panel__title">Activity Logs</h2>
+        <div className="sp-card-title">
+          <span className="sp-card-title__icon" aria-hidden="true"><FileText size={17} /></span>
+          <h2 className="sp-card-title__text">Activity Logs</h2>
+          <span className="sp-card-title__meta">{table.total} matching</span>
+        </div>
         <ManagementToolbar
           searchId="logs-search"
           searchValue={table.search}
@@ -123,17 +126,19 @@ export default function LogsPage() {
           ]}
         />
         <div style={{ height: 'var(--space-base)' }} aria-hidden="true" />
-        <DataTable
-          columns={columns}
-          rows={table.rows}
-          rowKey="id"
-          sortKey={table.sortKey}
-          sortDir={table.sortDir}
-          onSort={table.onSort}
-          emptyTitle="No logs match"
-          emptyDescription="Try a different user, action, or search term."
-          emptyIcon={FileText}
-        />
+        <div className="mp-list-table-wrap">
+          <DataTable
+            columns={columns}
+            rows={table.rows}
+            rowKey="id"
+            sortKey={table.sortKey}
+            sortDir={table.sortDir}
+            onSort={table.onSort}
+            emptyTitle="No logs match"
+            emptyDescription="Try a different user, action, or search term."
+            emptyIcon={FileText}
+          />
+        </div>
         <Pagination page={table.page} pageSize={table.pageSize} total={table.total} onPageChange={table.setPage} />
       </section>
     </div>
