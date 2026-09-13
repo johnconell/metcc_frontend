@@ -361,8 +361,10 @@ export default function PasskeysMonitoringPage() {
             {/* Search Field */}
             <form className="passkeys-search-form" onSubmit={submitSearch} role="search">
               <div className="passkeys-search-field">
+                <label className="passkeys-search-field__label" htmlFor="passkeys-search">Search keys</label>
                 <Search size={15} className="passkeys-search-field__icon" />
                 <input
+                  id="passkeys-search"
                   className="passkeys-search-input"
                   type="search"
                   placeholder="Search name, Gmail, passkey, or batch time…"

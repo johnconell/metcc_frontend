@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { preferenceStorage } from './preferenceStorage';
 import { LANGUAGE_OPTIONS, translations } from './translations';
+import { tokenStorage } from '../auth/tokenStorage';
+import { profileApi } from '../api/profileApi';
 
 const PreferencesContext = createContext(null);
 
@@ -23,6 +25,11 @@ function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', resolved);
   document.documentElement.style.colorScheme = resolved;
 }
+
+// Immediately apply saved theme on initial script parse so there is 0 delay
+try {
+  applyTheme(preferenceStorage.getTheme());
+} catch {}
 
 function applyLocale(locale) {
   document.documentElement.setAttribute('lang', LOCALE_LANG[locale] || 'en');
@@ -58,16 +65,38 @@ export function PreferencesProvider({ children }) {
 
   const setTheme = useCallback((next) => {
     setThemeState(next);
+    preferenceStorage.setTheme(next);
+    applyTheme(next);
+
+    // Silently sync to backend user profile if authenticated
+    try {
+      if (tokenStorage.get()) {
+        profileApi.update({ theme: next }).catch(() => {});
+      }
+    } catch {}
   }, []);
 
   const setLocale = useCallback((next) => {
     setLocaleState(next);
+    preferenceStorage.setLocale(next);
+    applyLocale(next);
+
+    try {
+      if (tokenStorage.get()) {
+        profileApi.update({ language: next }).catch(() => {});
+      }
+    } catch {}
   }, []);
 
   const syncFromUser = useCallback((user) => {
     if (!user) return;
-    if (user.theme) setThemeState(user.theme);
-    if (user.locale && translations[user.locale]) setLocaleState(user.locale);
+    // Only inherit backend user.theme if user has NOT explicitly stored one locally
+    if (!preferenceStorage.hasExplicitTheme() && user.theme) {
+      setThemeState(user.theme);
+    }
+    if (!preferenceStorage.hasExplicitLocale() && user.locale && translations[user.locale]) {
+      setLocaleState(user.locale);
+    }
   }, []);
 
   const t = useCallback(

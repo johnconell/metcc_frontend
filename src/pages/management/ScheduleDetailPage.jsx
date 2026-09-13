@@ -8,6 +8,7 @@ import {
   Clock3,
   KeyRound,
   Mail,
+  Search,
   Shield,
   UserRound,
   Users,
@@ -297,17 +298,23 @@ export default function ScheduleDetailPage() {
                 Examinees for {data.time_slot}. Use Reschedule if someone cannot take the exam this day.
               </p>
             </div>
-            <input
-              className="mp-field__input mp-field__input--sm mp-students-search"
-              type="search"
-              placeholder="Search student..."
-              value={studentSearch}
-              onChange={(e) => {
-                setStudentSearch(e.target.value);
-                setStudentPage(1);
-              }}
-              aria-label="Search students"
-            />
+              <label className="mp-field__label" htmlFor="schedule-student-search">Search students</label>
+            <div style={{ position: 'relative' }}>
+              <Search size={15} aria-hidden="true" style={{ position: 'absolute', left: 10, top: '50%', zIndex: 1, color: '#9ca3af', pointerEvents: 'none', transform: 'translateY(-50%)' }} />
+              <input
+                id="schedule-student-search"
+                className="mp-field__input mp-field__input--sm mp-students-search"
+                type="search"
+                placeholder="Search student..."
+                value={studentSearch}
+                onChange={(e) => {
+                  setStudentSearch(e.target.value);
+                  setStudentPage(1);
+                }}
+                aria-label="Search students"
+                style={{ paddingLeft: 34 }}
+              />
+            </div>
           </div>
 
           <div className="mp-table-wrap">

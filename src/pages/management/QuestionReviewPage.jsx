@@ -283,14 +283,15 @@ export default function QuestionReviewPage() {
         <div className="mgmt-filters" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
           <label className="sp-form__label">
             Search
-            <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+            <div style={{ position: 'relative', marginTop: 4 }}>
               <input
                 className="mp-field__input"
+                style={{ paddingRight: 36 }}
                 value={search}
                 placeholder="Question, category…"
                 onChange={(e) => setParam('q', e.target.value)}
               />
-              <Search size={16} style={{ alignSelf: 'center', opacity: 0.5 }} />
+              <Search size={16} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.5, pointerEvents: 'none' }} />
             </div>
           </label>
           <label className="sp-form__label">

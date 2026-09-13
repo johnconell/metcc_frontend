@@ -23,8 +23,6 @@ import {
   alertFromApiError,
   confirmAction,
   confirmDelete,
-  showLoading,
-  closeLoading,
   toastError,
   toastSuccess,
   toastWarning,
@@ -99,6 +97,7 @@ export default function QuestionBankDetailPage() {
   const [replaceExisting, setReplaceExisting] = useState(true);
   const [selectionFilter, setSelectionFilter] = useState('all');
   const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
   const [importError, setImportError] = useState('');
   const [dragging, setDragging] = useState(false);
 
@@ -315,17 +314,23 @@ export default function QuestionBankDetailPage() {
     }
 
     setImporting(true);
+    setImportProgress(0);
     setImportError('');
-    showLoading('Importing Questions...');
     try {
       const formData = new FormData();
       formData.append('file', importFile);
       formData.append('file_type', importFileType);
       formData.append('exam_subject_id', subjectId);
       formData.append('replace_existing', replaceExisting ? '1' : '0');
-      const { data } = await questionBankApi.importQuestions(bankKey, formData);
+      const { data } = await questionBankApi.importQuestions(bankKey, formData, {
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            setImportProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
+          }
+        },
+      });
+      setImportProgress(100);
       const summary = data.data?.import_summary?.[0];
-      closeLoading();
       await toastSuccess(
         data.message || 'Questions Imported Successfully',
         summary ? `${summary.imported} question(s) imported.` : ''
@@ -334,7 +339,6 @@ export default function QuestionBankDetailPage() {
       setImportFile(null);
       await load();
     } catch (err) {
-      closeLoading();
       const first = err.response?.data?.errors
         ? Object.values(err.response.data.errors).flat()[0]
         : null;
@@ -343,6 +347,7 @@ export default function QuestionBankDetailPage() {
       await toastError('Import Failed', message);
     } finally {
       setImporting(false);
+      setImportProgress(0);
     }
   };
 
@@ -679,6 +684,17 @@ export default function QuestionBankDetailPage() {
               </button>
             </div>
             {importError && <div className="mp-alert mp-alert--error" role="alert">{importError}</div>}
+            {importing && (
+              <div className="mp-upload-progress" role="status" aria-live="polite">
+                <div className="mp-upload-progress__label">
+                  <strong>{importProgress < 100 ? 'Uploading questions...' : 'Processing questions...'}</strong>
+                  <span>{importProgress}%</span>
+                </div>
+                <div className="mp-upload-progress__track" aria-label={`Upload progress: ${importProgress}%`}>
+                  <div className="mp-upload-progress__bar" style={{ width: `${importProgress}%` }} />
+                </div>
+              </div>
+            )}
             <form className="mp-form" onSubmit={submitImport}>
               <div className="mp-field">
                 <span className="mp-field__label">File type</span>

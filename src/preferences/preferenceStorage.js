@@ -6,8 +6,10 @@ const SIDEBAR_SECTIONS_KEY = 'sidebar_sections';
 export const preferenceStorage = {
   getTheme: () => localStorage.getItem(THEME_KEY) || 'system',
   setTheme: (theme) => localStorage.setItem(THEME_KEY, theme),
+  hasExplicitTheme: () => Boolean(localStorage.getItem(THEME_KEY)),
   getLocale: () => localStorage.getItem(LOCALE_KEY) || 'en',
   setLocale: (locale) => localStorage.setItem(LOCALE_KEY, locale),
+  hasExplicitLocale: () => Boolean(localStorage.getItem(LOCALE_KEY)),
   getSidebarCollapsed: () => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true',
   setSidebarCollapsed: (collapsed) => localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed)),
   getSidebarSections: () => {

@@ -622,6 +622,25 @@
   flex: 1;
   max-width: 520px;
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-header__search-label {
+  display: block;
+  flex: 0 0 auto;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dashboard-header__search form {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .dashboard-header__search-icon {
@@ -966,8 +985,8 @@
 
 .dashboard-header__theme-toggle:hover,
 .dashboard-header__theme-toggle:focus-visible {
-  background: #dbeafe;
-  color: #2563eb;
+  background: #fce7ea;
+  color: #7b1020;
   outline: 0;
   transform: rotate(12deg);
 }

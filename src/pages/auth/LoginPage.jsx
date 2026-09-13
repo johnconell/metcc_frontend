@@ -99,7 +99,7 @@ export default function LoginPage() {
     '[&_input]:focus:border-[#7B1020] [&_input]:focus:ring-2 [&_input]:focus:ring-[#7B1020]/20';
 
   return (
-    <div className="flex min-h-screen bg-rose-50">
+    <div className="login-page flex min-h-screen bg-rose-50">
       {/* Left branding panel */}
       <aside
         className="relative hidden w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-center lg:px-14 lg:py-16 xl:px-20"
@@ -210,6 +210,7 @@ export default function LoginPage() {
                 label="Email"
                 id="email"
                 type="email"
+                placeholder="admin@example.com"
                 autoComplete="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -230,6 +231,7 @@ export default function LoginPage() {
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
                   autoComplete="current-password"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}

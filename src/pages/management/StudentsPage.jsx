@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarPlus,
   Download,
@@ -19,7 +19,7 @@ import { StatusBadge } from '../../components/management/StatusBadge';
 import { FilterDropdown } from '../../components/management/FilterDropdown';
 import { FileTypeIcon } from '../../components/ui/FileTypeIcon';
 import { SkeletonTable } from '../../components/ui/Skeleton';
-import { alertFromApiError, confirmAction, showLoading, closeLoading, toastSuccess, toastWarning } from '../../utils/swal';
+import { alertFromApiError, confirmAction, toastSuccess, toastWarning } from '../../utils/swal';
 import { statusVariant } from './useTableState';
 import '../../components/management/management.css';
 import './management-pages.css';
@@ -34,10 +34,10 @@ Maria Santos,BSED,2026-07-20,09:30-10:30,maria@gmail.com
 `;
 
 const IMPORT_STEPS = [
-  'Uploading spreadsheet…',
-  'Parsing rows…',
-  'Creating students & schedules…',
-  'Refreshing student list…',
+  'Uploading spreadsheet...',
+  'Parsing rows...',
+  'Creating students & schedules...',
+  'Refreshing student list...',
 ];
 
 function RowActionsMenu({ row }) {
@@ -138,6 +138,7 @@ export default function StudentsPage() {
   const [studentError, setStudentError] = useState('');
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
   const [importStep, setImportStep] = useState(0);
   const [importElapsed, setImportElapsed] = useState(0);
   const [notice, setNotice] = useState('');
@@ -310,14 +311,19 @@ export default function StudentsPage() {
     if (!ok) return;
 
     setImporting(true);
+    setImportProgress(0);
     setImportStep(0);
     setNotice('');
     setDuplicateNotice('');
     setError('');
-    showLoading('Importing Students...');
     try {
       setImportStep(1);
-      const { data } = await applicantApi.importFile(file);
+      const { data } = await applicantApi.importFile(file, {
+        onUploadProgress: (event) => {
+          if (event.total) setImportProgress(Math.round((event.loaded / event.total) * 100));
+        },
+      });
+      setImportProgress(100);
       setImportStep(2);
       const result = data.data || {};
       const dates = (result.dates_touched || []).join(', ');
@@ -352,16 +358,15 @@ export default function StudentsPage() {
         dates: result.dates_touched || [],
         schedules: result.schedules_touched || [],
       });
-      closeLoading();
       await toastSuccess(data.message || 'Student Imported Successfully');
       await load();
     } catch (err) {
-      closeLoading();
       const message = err.response?.data?.message || 'Import failed.';
       setError(message);
       await alertFromApiError(err, 'Import Failed');
     } finally {
       setImporting(false);
+      setImportProgress(0);
       setImportStep(0);
     }
   };
@@ -383,23 +388,23 @@ export default function StudentsPage() {
         key: 'desired_program',
         label: 'Program Desire',
         sortable: true,
-        render: (row) => row.desired_program || '—',
+        render: (row) => row.desired_program || '-',
       },
       {
         key: 'date_label',
         label: 'Application Date',
         render: (row) =>
-          row.examination_date_label || row.application_date_label || row.date_label || '—',
+          row.examination_date_label || row.application_date_label || row.date_label || '-',
       },
       {
         key: 'examination_time',
         label: 'Time',
-        render: (row) => row.examination_time || row.preferred_exam_time || '—',
+        render: (row) => row.examination_time || row.preferred_exam_time || '-',
       },
       {
         key: 'gmail',
         label: 'Gmail',
-        render: (row) => row.gmail || '—',
+        render: (row) => row.gmail || '-',
       },
       {
         key: 'status',
@@ -411,7 +416,7 @@ export default function StudentsPage() {
       {
         key: 'score',
         label: 'Score',
-        render: (row) => row.display_score || (row.score != null ? `${row.score}/100` : '—'),
+        render: (row) => row.display_score || (row.score != null ? `${row.score}/100` : '-'),
       },
       {
         key: 'actions',
@@ -424,10 +429,11 @@ export default function StudentsPage() {
 
   return (
     <div className="mp-page students-page students-page--compact">
-      <header className="students-header-bar">
+      <header className="mp-header students-header-bar">
         <div>
-          <h1 className="students-header-bar__title">Student List</h1>
-          <p className="students-header-bar__meta">Review applicants, import records, and manage examination assignments. {total} applicants.</p>
+          <p className="mp-header__eyebrow">Management</p>
+          <h1 className="mp-header__title students-header-bar__title">Student List</h1>
+          <p className="mp-header__lede students-header-bar__meta">Review applicants, import records, and manage examination assignments. {total} applicants.</p>
         </div>
         <div className="students-header-bar__actions">
           <ManagementButton type="button" variant="secondary" size="sm" onClick={downloadTemplate}>
@@ -445,7 +451,7 @@ export default function StudentsPage() {
             ) : (
               <FileTypeIcon type="excel" size={16} />
             )}
-            {importing ? 'Importing…' : 'Import Students'}
+            {importing ? 'Importing...' : 'Import Students'}
           </ManagementButton>
           <input
             ref={fileRef}
@@ -461,8 +467,12 @@ export default function StudentsPage() {
         <div className="mp-alert mp-alert--success" role="status" aria-live="polite">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
             <Loader2 size={18} className="spin" />
-            <strong>{IMPORT_STEPS[importStep] || 'Importing…'}</strong>
+            <strong>{importProgress < 100 ? 'Uploading spreadsheet...' : (IMPORT_STEPS[importStep] || 'Processing import...')}</strong>
+            <span className="mp-table__sub">{importProgress}%</span>
             <span className="mp-table__sub">({importElapsed}s)</span>
+          </div>
+          <div className="students-import-progress" aria-label={`Upload progress: ${importProgress}%`}>
+            <div className="students-import-progress__bar" style={{ width: `${importProgress}%` }} />
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {IMPORT_STEPS.map((label, index) => (
@@ -474,7 +484,7 @@ export default function StudentsPage() {
                   opacity: index <= importStep ? 1 : 0.45,
                 }}
               >
-                {index + 1}. {label.replace('…', '')}
+                {index + 1}. {label.replace('...', '')}
               </span>
             ))}
           </div>
@@ -500,7 +510,7 @@ export default function StudentsPage() {
           searchId="student-search"
           searchValue={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search name, ID…"
+          searchPlaceholder="Search name, ID..."
           filters={[
             <FilterDropdown
               key="program"
@@ -563,11 +573,11 @@ export default function StudentsPage() {
                     </div>
                     <div>
                       <dt>Program</dt>
-                      <dd>{selectedStudent.desired_program || '—'}</dd>
+                      <dd>{selectedStudent.desired_program || '-'}</dd>
                     </div>
                     <div>
                       <dt>Gmail</dt>
-                      <dd>{selectedStudent.gmail || '—'}</dd>
+                      <dd>{selectedStudent.gmail || '-'}</dd>
                     </div>
                     <div>
                       <dt>Status</dt>
@@ -579,11 +589,11 @@ export default function StudentsPage() {
                     </div>
                     <div>
                       <dt>Exam date</dt>
-                      <dd>{selectedStudent.examination_date_label || selectedStudent.application_date_label || '—'}</dd>
+                      <dd>{selectedStudent.examination_date_label || selectedStudent.application_date_label || '-'}</dd>
                     </div>
                     <div>
                       <dt>Time</dt>
-                      <dd>{selectedStudent.examination_time || selectedStudent.preferred_exam_time || '—'}</dd>
+                      <dd>{selectedStudent.examination_time || selectedStudent.preferred_exam_time || '-'}</dd>
                     </div>
                   </dl>
                   <div className="mp-modal__actions">

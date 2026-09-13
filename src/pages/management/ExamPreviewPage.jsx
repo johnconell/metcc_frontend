@@ -135,6 +135,7 @@ export default function ExamPreviewPage() {
 
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
             <label className="mgmt-search" style={{ flex: '1 1 240px', position: 'relative' }}>
+              <span className="mgmt-search__label">Search questions</span>
               <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.45 }} />
               <input
                 className="mp-field__input"

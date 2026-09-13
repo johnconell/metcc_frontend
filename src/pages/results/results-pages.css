@@ -1,5 +1,62 @@
 @import '../../styles/design-tokens.css';
 
+.rp-loading {
+  position: relative;
+}
+
+.rp-loading__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  margin-bottom: 4px;
+  color: #6d6865;
+  font-size: 12px;
+  font-weight: 600;
+  animation: rp-loading-status-in 240ms ease-out both;
+}
+
+.rp-loading__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d8901f;
+  box-shadow: 0 0 0 0 rgba(216, 144, 31, 0.35);
+  animation: rp-loading-pulse 1.4s ease-out infinite;
+}
+
+.rp-loading__stage {
+  animation: rp-loading-stage-in 360ms ease-out both;
+}
+
+.rp-loading__stage--header { animation-delay: 60ms; }
+.rp-loading__stage--stats { animation-delay: 140ms; }
+.rp-loading__stage--panels { animation-delay: 220ms; }
+.rp-loading__stage--table { animation-delay: 300ms; }
+
+@keyframes rp-loading-status-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rp-loading-stage-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rp-loading-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(216, 144, 31, 0.35); }
+  50% { box-shadow: 0 0 0 5px rgba(216, 144, 31, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rp-loading__status,
+  .rp-loading__stage,
+  .rp-loading__dot {
+    animation: none;
+  }
+}
+
 .mp-panel__title-row {
   display: flex;
   flex-wrap: wrap;

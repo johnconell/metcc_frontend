@@ -1,5 +1,36 @@
 @import '../../styles/design-tokens.css';
 
+.sp-import-progress {
+  margin-top: var(--space-base);
+  padding: 12px 14px;
+  border: 1px solid #d7eee5;
+  border-radius: 10px;
+  background: #f0fdf8;
+}
+
+.sp-import-progress__label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: #065f46;
+  font-size: 12px;
+}
+
+.sp-import-progress__track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(6, 95, 70, 0.14);
+}
+
+.sp-import-progress__bar {
+  height: 100%;
+  border-radius: inherit;
+  background: #059669;
+  transition: width 100ms ease-out;
+}
+
 /* ── System pages — dashboard-aligned shell ─────────────────────────────── */
 
 .sp-page {
@@ -20,7 +51,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 24px;
 }
 
 /* Page header — mirrors dashboard-page-header */
@@ -40,7 +71,7 @@
 
 .sp-page-header h1 {
   margin: 0 0 6px;
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--sp-text);
   letter-spacing: -0.02em;
@@ -49,8 +80,8 @@
 
 .sp-page-header p {
   margin: 0;
-  max-width: 640px;
-  font-size: 13.5px;
+  max-width: 680px;
+  font-size: 14px;
   color: var(--sp-muted);
   line-height: 1.55;
 }
@@ -60,6 +91,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  margin-left: auto;
   flex-shrink: 0;
 }
 
@@ -87,7 +119,7 @@
 .sp-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: 18px;
 }
 
 .sp-stat-card {
@@ -100,9 +132,9 @@
   background-repeat: no-repeat;
   border: 1px solid #e9e3de;
   border-bottom: 2.5px solid var(--sp-stat-accent, #16a34a);
-  border-radius: 20px;
-  padding: 16px 18px 14px;
-  min-height: 112px;
+  border-radius: 12px;
+  padding: 18px 20px 16px;
+  min-height: 124px;
   box-shadow: 0 1px 3px rgba(34, 34, 34, 0.06);
   display: flex;
   flex-direction: column;
@@ -153,8 +185,10 @@
 }
 
 .sp-stat-card__label {
-  font-size: 11.5px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: #6d6865;
   margin-top: 10px;
   margin-bottom: 2px;
@@ -162,7 +196,7 @@
 }
 
 .sp-stat-card__value {
-  font-size: 27px;
+  font-size: 30px;
   font-weight: 700;
   color: #222222;
   letter-spacing: -0.03em;
@@ -242,9 +276,9 @@
 .sp-page .mp-panel {
   background: #fff;
   border: 1px solid var(--sp-border);
-  border-radius: var(--sp-radius);
-  box-shadow: var(--sp-shadow);
-  padding: 18px 18px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(34, 34, 34, 0.045);
+  padding: 24px;
 }
 
 .sp-page .mp-panel__title {
@@ -264,14 +298,14 @@
 .sp-card-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
-  margin: 0 0 14px;
+  margin: 0 0 20px;
 }
 
 .sp-card-title__icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   display: grid;
   place-items: center;
@@ -287,15 +321,27 @@
 
 .sp-card-title__text {
   margin: 0;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--sp-text);
 }
 
 .sp-card-title__meta {
   margin-left: auto;
-  font-size: 12.5px;
+  padding: 5px 9px;
+  border: 1px solid var(--sp-border);
+  border-radius: 999px;
+  background: var(--sp-bg);
+  font-size: 11.5px;
+  font-weight: 600;
   color: var(--sp-muted);
+}
+
+.sp-page .mgmt-toolbar {
+  padding: 12px;
+  border: 1px solid var(--sp-border-soft);
+  border-radius: 10px;
+  background: var(--sp-bg);
 }
 
 .sp-page .mp-panel__hint {
@@ -415,6 +461,19 @@
   gap: 0;
 }
 
+.sp-form:not(.sp-settings-cards) {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.35fr) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 20px;
+  row-gap: 0;
+}
+
+.sp-form:not(.sp-settings-cards) > .sp-form__toggle,
+.sp-form:not(.sp-settings-cards) > .sp-form__actions {
+  grid-column: 1 / -1;
+}
+
 .sp-form__label {
   display: block;
   font-family: var(--font-sans);
@@ -424,6 +483,11 @@
   text-transform: uppercase;
   color: var(--sp-muted-soft);
   margin-bottom: 8px;
+}
+
+.sp-form:not(.sp-settings-cards) > .sp-form__label {
+  margin: 0;
+  align-self: center;
 }
 
 .sp-form__input {
@@ -438,6 +502,10 @@
   margin-bottom: 14px;
   height: 44px;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sp-form:not(.sp-settings-cards) > .sp-form__input {
+  margin-bottom: 12px;
 }
 
 .sp-form__input:hover {
@@ -668,6 +736,12 @@
   background: #fff;
 }
 
+.sp-upload__zone--dragging {
+  border-color: var(--sp-maroon);
+  background: #fff7f8;
+  box-shadow: 0 0 0 4px rgba(123, 16, 32, 0.1);
+}
+
 .sp-upload__zone:focus-within {
   border-color: var(--sp-maroon);
   background: #fff;
@@ -717,15 +791,15 @@
 
 .sp-import-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .sp-import-card {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 16px;
+  padding: 18px;
   border: 1px solid var(--sp-border);
   border-radius: 10px;
   background: var(--sp-bg);
@@ -882,7 +956,23 @@
   }
 
   .sp-page-header h1 {
-    font-size: 22px;
+    font-size: 24px;
+  }
+
+  .sp-page .mp-panel {
+    padding: 18px;
+  }
+
+  .sp-form:not(.sp-settings-cards) {
+    display: flex;
+  }
+
+  .sp-form:not(.sp-settings-cards) > .sp-form__label {
+    margin-bottom: 8px;
+  }
+
+  .sp-form:not(.sp-settings-cards) > .sp-form__input {
+    margin-bottom: 14px;
   }
 
   .sp-page-heading__icon {
@@ -968,5 +1058,61 @@
 [data-theme='dark'] .sp-page .mp-highlight {
   background: #16171b;
   border-color: #26272e;
+}
+
+/* Keep system controls consistent with the dark management tables. */
+[data-theme='dark'] .sp-page .mgmt-btn--secondary {
+  background: #18191e;
+  border-color: #2b2c32;
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .sp-page .mgmt-btn--secondary:hover:not(:disabled),
+[data-theme='dark'] .sp-page .mgmt-btn--tertiary:hover:not(:disabled) {
+  background: #24252c;
+  border-color: #3b3d45;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .sp-page .mgmt-btn--tertiary {
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .sp-page .mgmt-toolbar {
+  background: #15161a;
+  border-color: #26272e;
+}
+
+[data-theme='dark'] .sp-page .mgmt-search__input,
+[data-theme='dark'] .sp-page .mgmt-filter__select,
+[data-theme='dark'] .sp-page .mgmt-filter select,
+[data-theme='dark'] .sp-page .mp-select {
+  background: #111215;
+  border-color: #2b2c32;
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .sp-page .mgmt-search__input::placeholder {
+  color: #8b929f;
+}
+
+[data-theme='dark'] .sp-page .mgmt-table thead th {
+  background: #15161a;
+  color: #aeb4c0;
+  border-bottom-color: #26272e;
+}
+
+[data-theme='dark'] .sp-page .mgmt-table tbody td {
+  color: #f3f4f6;
+  border-bottom-color: #26272e;
+}
+
+[data-theme='dark'] .sp-page .mgmt-table tbody tr:hover td {
+  background: #1a1b20;
+}
+
+[data-theme='dark'] .sp-page .mgmt-pagination {
+  border-top-color: #26272e;
+  color: #aeb4c0;
 }
 

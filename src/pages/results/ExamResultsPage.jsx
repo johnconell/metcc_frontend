@@ -434,14 +434,18 @@ export default function ExamResultsPage() {
 
           <div className="mp-result-filters" style={{ marginBottom: 12 }}>
             <label className="mp-field mp-field--grow">
-              <span className="mp-field__label"><Search size={14} /> Search students</span>
-              <input
-                className="mp-field__input"
-                type="search"
-                value={studentSearch}
-                onChange={(e) => setStudentSearch(e.target.value)}
-                placeholder="Name, ID, or Gmail…"
-              />
+              <span className="mp-field__label">Search students</span>
+              <div style={{ position: 'relative' }}>
+                <Search size={15} aria-hidden="true" style={{ position: 'absolute', left: 10, top: '50%', zIndex: 1, color: '#9ca3af', pointerEvents: 'none', transform: 'translateY(-50%)' }} />
+                <input
+                  className="mp-field__input"
+                  type="search"
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  placeholder="Name, ID, or Gmail…"
+                  style={{ paddingLeft: 34 }}
+                />
+              </div>
             </label>
             <label className="mp-field">
               <span className="mp-field__label">Status</span>

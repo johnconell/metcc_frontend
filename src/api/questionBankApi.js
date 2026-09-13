@@ -6,9 +6,10 @@ export const questionBankApi = {
   getBank: (id) => api.get(`/question-banks/${id}`),
   updateBank: (id, payload) => api.patch(`/question-banks/${id}`, payload),
   activateBank: (id) => api.post(`/question-banks/${id}/activate`),
-  importQuestions: (id, formData) =>
+  importQuestions: (id, formData, config = {}) =>
     api.post(`/question-banks/${id}/import-questions`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      ...config,
     }),
   deleteBank: (id) => api.delete(`/question-banks/${id}`),
   examPreview: (bankId) => api.get(`/question-banks/${bankId}/exam-preview`),

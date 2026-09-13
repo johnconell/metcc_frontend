@@ -209,14 +209,17 @@ export default function LandingPage() {
           </label>
           <label className="landing-search__field landing-search__field--query">
             <span>Search query</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={PLACEHOLDERS[searchType] || PLACEHOLDERS.auto}
-              autoComplete="off"
-              enterKeyHint="search"
-            />
+            <div className="landing-search__input-wrap">
+              <Search size={16} aria-hidden="true" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={PLACEHOLDERS[searchType] || PLACEHOLDERS.auto}
+                autoComplete="off"
+                enterKeyHint="search"
+              />
+            </div>
           </label>
           <button type="submit" className="landing-btn landing-btn--primary" disabled={loading}>
             <Search size={16} aria-hidden="true" />

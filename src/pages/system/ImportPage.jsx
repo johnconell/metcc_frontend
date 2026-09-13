@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BookOpen, Calendar, ClipboardCheck, Eye, FileSpreadsheet, Layers3, Upload, UserPlus, Users } from 'lucide-react';
 import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
-import { confirmAction, showLoading, closeLoading, toastSuccess } from '../../utils/swal';
+import { confirmAction, toastSuccess } from '../../utils/swal';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
 import './system-pages.css';
@@ -69,18 +69,32 @@ const PREVIEW_DATA = {
 export default function ImportPage() {
   const [activeType, setActiveType] = useState('students');
   const [fileName, setFileName] = useState('');
+  const [fileSize, setFileSize] = useState(0);
   const [hasPreview, setHasPreview] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
+  const [dragging, setDragging] = useState(false);
+
+  useEffect(() => {
+    if (!importing) return undefined;
+    const timer = setInterval(() => {
+      setImportProgress((current) => Math.min(current + 10, 90));
+    }, 80);
+    return () => clearInterval(timer);
+  }, [importing]);
 
   const activeImport = IMPORT_TYPES.find((t) => t.key === activeType);
   const preview = PREVIEW_DATA[activeType];
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
+  const setSelectedFile = (file) => {
     if (file) {
       setFileName(file.name);
+      setFileSize(file.size);
       setHasPreview(true);
     }
   };
+
+  const handleFileChange = (e) => setSelectedFile(e.target.files?.[0]);
 
   const handleImport = async () => {
     if (!hasPreview) return;
@@ -89,9 +103,10 @@ export default function ImportPage() {
       text: `Import ${activeImport?.label?.toLowerCase() || 'records'} from "${fileName}"? This action cannot be undone.`,
     });
     if (!ok) return;
-    showLoading(`Importing ${activeImport?.label || 'Records'}...`);
+    setImporting(true);
+    setImportProgress(0);
     await new Promise((resolve) => setTimeout(resolve, 800));
-    closeLoading();
+    setImportProgress(100);
     await toastSuccess(
       activeType === 'students'
         ? 'Student Imported Successfully'
@@ -99,6 +114,8 @@ export default function ImportPage() {
           ? 'Questions Imported Successfully'
           : 'Schedule Imported Successfully'
     );
+    setImporting(false);
+    setImportProgress(0);
   };
 
   return (
@@ -109,7 +126,7 @@ export default function ImportPage() {
           <p>Import students, questions, or schedules with a live preview before committing changes.</p>
         </div>
         <div className="sp-page-header__actions">
-          <ManagementButton variant="primary" disabled={!hasPreview} onClick={handleImport}>
+          <ManagementButton variant="primary" disabled={!hasPreview || importing} onClick={handleImport}>
             <UserPlus size={16} aria-hidden="true" /> Import
           </ManagementButton>
         </div>
@@ -129,6 +146,7 @@ export default function ImportPage() {
               onClick={() => {
                 setActiveType(key);
                 setFileName('');
+                setFileSize(0);
                 setHasPreview(false);
               }}
             >
@@ -149,15 +167,30 @@ export default function ImportPage() {
           <p className="sp-upload__hint">
             {activeImport?.label} — accepted formats: .csv, .xlsx, .xls
           </p>
-          <label className={`sp-upload__zone${hasPreview ? ' sp-upload__zone--filled' : ''}`} htmlFor="import-file">
+          <label
+            className={`sp-upload__zone${hasPreview ? ' sp-upload__zone--filled' : ''}${dragging ? ' sp-upload__zone--dragging' : ''}`}
+            htmlFor="import-file"
+            onDragEnter={(e) => { e.preventDefault(); setDragging(true); }}
+            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={(e) => {
+              if (e.currentTarget === e.target) setDragging(false);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              setSelectedFile(e.dataTransfer.files?.[0]);
+            }}
+          >
             <span className="sp-upload__zone-icon" aria-hidden="true">
               <Upload size={22} />
             </span>
             <span className="sp-upload__label">
-              {fileName || 'Drag and drop a file here, or click to browse'}
+              {fileName ? `Received: ${fileName}` : 'Drag and drop a file here, or click to browse'}
             </span>
             <span className="sp-upload__meta">
-              {hasPreview ? 'File ready for preview' : 'Maximum file size: 10 MB'}
+              {hasPreview
+                ? `File received - ${(fileSize / 1024 / 1024).toFixed(2)} MB - Ready for preview`
+                : 'Maximum file size: 10 MB'}
             </span>
             <input
               id="import-file"
@@ -196,10 +229,21 @@ export default function ImportPage() {
             <ManagementButton variant="secondary" disabled={!hasPreview}>
               <Eye size={16} aria-hidden="true" /> Preview Data
             </ManagementButton>
-            <ManagementButton variant="primary" disabled={!hasPreview} onClick={handleImport}>
+            <ManagementButton variant="primary" disabled={!hasPreview || importing} onClick={handleImport}>
               <Upload size={16} aria-hidden="true" /> Import
             </ManagementButton>
           </div>
+          {importing && (
+            <div className="sp-import-progress" role="status" aria-live="polite">
+              <div className="sp-import-progress__label">
+                <strong>{importProgress < 100 ? 'Importing records...' : 'Import complete'}</strong>
+                <span>{importProgress}%</span>
+              </div>
+              <div className="sp-import-progress__track" aria-label={`Import progress: ${importProgress}%`}>
+                <div className="sp-import-progress__bar" style={{ width: `${importProgress}%` }} />
+              </div>
+            </div>
+          )}
         </section>
       </div>
 

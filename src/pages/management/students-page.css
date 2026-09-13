@@ -1,3 +1,17 @@
+.students-import-progress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(6, 95, 70, 0.14);
+}
+
+.students-import-progress__bar {
+  height: 100%;
+  border-radius: inherit;
+  background: #059669;
+  transition: width 180ms ease-out;
+}
+
 /* Student List — Award List–inspired design */
 
 .students-page--compact {
@@ -113,9 +127,26 @@
 }
 
 .students-page--compact .mgmt-toolbar__search {
-  flex: 0 1 220px;
-  min-width: 160px;
-  max-width: 240px;
+  flex: 1 1 280px;
+  min-width: 220px;
+  max-width: 320px;
+}
+
+.students-page--compact .mgmt-search {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.students-page--compact .mgmt-search__label {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.students-page--compact .mgmt-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .students-page--compact .mgmt-search__input {

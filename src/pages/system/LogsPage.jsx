@@ -1,8 +1,10 @@
-import { useState } from 'react';import { Activity, CalendarClock, FileText, ListChecks, UserRoundCheck } from 'lucide-react';
+import { useState } from 'react';import { Activity, CalendarClock, FileText, ListChecks, RefreshCw, UserRoundCheck } from 'lucide-react';
 import { ManagementToolbar } from '../../components/management/ManagementToolbar';
+import { ManagementButton } from '../../components/management/ManagementToolbar';
 import { DataTable } from '../../components/management/DataTable';
 import { FilterDropdown } from '../../components/management/FilterDropdown';
 import { Pagination } from '../../components/management/Pagination';
+import { SkeletonTable } from '../../components/ui/Skeleton';
 import { useTableState } from '../management/useTableState';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
@@ -27,6 +29,13 @@ const ACTIONS = ['Login', 'Export', 'Import', 'Update', 'Create', 'Send', 'Publi
 export default function LogsPage() {
   const [userFilter, setUserFilter] = useState('all');
   const [actionFilter, setActionFilter] = useState('all');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setRefreshing(false);
+  };
 
   const table = useTableState(ACTIVITY_LOGS, {
     searchKeys: ['user', 'action', 'dateTime'],
@@ -55,6 +64,12 @@ export default function LogsPage() {
           <p>
             Search and filter recent system activity across users, schedules, and configuration changes.
           </p>
+        </div>
+        <div className="sp-page-header__actions">
+          <ManagementButton variant="secondary" onClick={handleRefresh} disabled={refreshing}>
+            <RefreshCw size={16} className={refreshing ? 'mp-loading__icon' : undefined} aria-hidden="true" />
+            Refresh
+          </ManagementButton>
         </div>
       </header>
 
@@ -85,7 +100,7 @@ export default function LogsPage() {
         </article>
       </section>
 
-      <section className="mp-panel" aria-label="Activity logs">
+      <section className="mp-panel" aria-label="Activity logs" aria-busy={refreshing}>
         <div className="sp-card-title">
           <span className="sp-card-title__icon" aria-hidden="true"><FileText size={17} /></span>
           <h2 className="sp-card-title__text">Activity Logs</h2>
@@ -127,17 +142,21 @@ export default function LogsPage() {
         />
         <div style={{ height: 'var(--space-base)' }} aria-hidden="true" />
         <div className="mp-list-table-wrap">
-          <DataTable
-            columns={columns}
-            rows={table.rows}
-            rowKey="id"
-            sortKey={table.sortKey}
-            sortDir={table.sortDir}
-            onSort={table.onSort}
-            emptyTitle="No logs match"
-            emptyDescription="Try a different user, action, or search term."
-            emptyIcon={FileText}
-          />
+          {refreshing ? (
+            <SkeletonTable rows={table.pageSize} cols={columns.length} />
+          ) : (
+            <DataTable
+              columns={columns}
+              rows={table.rows}
+              rowKey="id"
+              sortKey={table.sortKey}
+              sortDir={table.sortDir}
+              onSort={table.onSort}
+              emptyTitle="No logs match"
+              emptyDescription="Try a different user, action, or search term."
+              emptyIcon={FileText}
+            />
+          )}
         </div>
         <Pagination page={table.page} pageSize={table.pageSize} total={table.total} onPageChange={table.setPage} />
       </section>

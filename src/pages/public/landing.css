@@ -13,7 +13,7 @@ html {
   min-height: 100vh;
   background: var(--canvas);
   color: var(--ink);
-  font-family: Inter, system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .landing section[id] {
@@ -244,6 +244,24 @@ html {
   font-weight: 500;
   color: var(--ink);
   background: #fff;
+}
+
+.landing-search__input-wrap {
+  position: relative;
+}
+
+.landing-search__input-wrap > svg {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  z-index: 1;
+  color: var(--muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.landing-search__input-wrap input {
+  padding-left: 38px;
 }
 
 .landing-search__field input:focus,

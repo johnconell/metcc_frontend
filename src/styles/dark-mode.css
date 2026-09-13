@@ -20,7 +20,7 @@ html[data-theme='dark'] {
   --color-semantic-error: #ff8aa5;
   --color-muted: #94a3b8;
   --color-muted-soft: #64748b;
-  --color-link: #38bdf8;
+  --color-link: #ff8a9a;
   --color-hairline: #232326;
   --color-hairline-soft: #1a1a1d;
   --color-hairline-strong: #333338;
@@ -66,6 +66,39 @@ html[data-theme='dark'] .dashboard-app {
   color: #ffffff;
   background: #121110;
   background: #0b0c0e;
+}
+
+html[data-theme='dark'] .landing,
+html[data-theme='dark'] .login-page {
+  color-scheme: light;
+}
+
+html[data-theme='dark'] .landing {
+  --ink: #2b1b1f;
+  --muted: #7a6468;
+  --surface: #ffffff;
+  --canvas: #faf6f5;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+html[data-theme='dark'] .login-page {
+  background-color: #fff1f2;
+  color: #26251e;
+}
+
+html[data-theme='dark'] .landing input,
+html[data-theme='dark'] .landing select,
+html[data-theme='dark'] .login-page input {
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #26251e;
+}
+
+html[data-theme='dark'] .landing input::placeholder,
+html[data-theme='dark'] .login-page input::placeholder {
+  color: #9ca3af;
+  opacity: 1;
 }
 
 /* Sidebar + header */
@@ -184,8 +217,6 @@ html[data-theme='dark'] .dashboard-header__profile-menu a:hover,
 html[data-theme='dark'] .dashboard-header__profile-menu button:hover,
 html[data-theme='dark'] .dashboard-header__profile-menu a:focus-visible,
 html[data-theme='dark'] .dashboard-header__profile-menu button:focus-visible {
-  background: #26364d;
-  color: #93c5fd;
   background: #202229 !important;
   color: #ffffff !important;
 }
@@ -343,7 +374,7 @@ html[data-theme='dark'] .students-table-wrap .mgmt-table tbody tr:hover td {
 }
 
 html[data-theme='dark'] .students-id {
-  color: #60a5fa !important;
+  color: #ff8a9a !important;
 }
 
 html[data-theme='dark'] .students-date-filter input,
@@ -367,17 +398,74 @@ html[data-theme='dark'] .students-action-menu__item:hover:not(:disabled) {
   background: #24252c !important;
 }
 
-html[data-theme='dark'] .students-action-btn:disabled {
+html[data-theme='dark'] .students-action-btn:disabled,
+html[data-theme='dark'] .mp-users-action-btn:disabled {
   opacity: 0.3 !important;
   background: rgba(255, 255, 255, 0.04) !important;
   border-color: transparent !important;
   color: #64748b !important;
 }
 
+html[data-theme='dark'] .mp-users-action-btn--edit {
+  background: rgba(34, 197, 94, 0.15) !important;
+  border-color: rgba(34, 197, 94, 0.35) !important;
+  color: #4ade80 !important;
+}
+
+html[data-theme='dark'] .mp-users-action-btn--edit:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.28) !important;
+}
+
+html[data-theme='dark'] .mp-users-action-btn--disable {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  color: #f87171 !important;
+}
+
+html[data-theme='dark'] .mp-users-action-btn--disable:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.28) !important;
+}
+
+html[data-theme='dark'] .mp-users-action-btn--enable {
+  background: rgba(123, 16, 32, 0.15) !important;
+  border-color: rgba(123, 16, 32, 0.35) !important;
+  color: #ff8a9a !important;
+}
+
+html[data-theme='dark'] .mp-users-action-btn--enable:hover:not(:disabled) {
+  background: rgba(123, 16, 32, 0.28) !important;
+}
+
 html[data-theme='dark'] .mgmt-btn,
 html[data-theme='dark'] .mgmt-badge,
 html[data-theme='dark'] .mgmt-pagination,
 html[data-theme='dark'] .mgmt-pagination button {
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .mgmt-btn--secondary,
+html[data-theme='dark'] .mgmt-btn--tertiary,
+html[data-theme='dark'] .mp-header__actions .mgmt-btn--secondary,
+html[data-theme='dark'] .mp-header__actions .mgmt-btn--tertiary,
+html[data-theme='dark'] .mp-users-topbar__actions .mgmt-btn--secondary,
+html[data-theme='dark'] .sp-page-header__actions .mgmt-btn--secondary,
+html[data-theme='dark'] .mp-modal .mp-modal__actions .mgmt-btn--secondary,
+html[data-theme='dark'] .passkeys-btn-action:not(.passkeys-btn-action--primary) {
+  background: #18191e !important;
+  border-color: #2b2c32 !important;
+  color: #f8fafc !important;
+}
+
+html[data-theme='dark'] .mgmt-btn--secondary:hover:not(:disabled),
+html[data-theme='dark'] .mgmt-btn--tertiary:hover:not(:disabled),
+html[data-theme='dark'] .mp-header__actions .mgmt-btn--secondary:hover:not(:disabled),
+html[data-theme='dark'] .mp-header__actions .mgmt-btn--tertiary:hover:not(:disabled),
+html[data-theme='dark'] .mp-users-topbar__actions .mgmt-btn--secondary:hover:not(:disabled),
+html[data-theme='dark'] .sp-page-header__actions .mgmt-btn--secondary:hover:not(:disabled),
+html[data-theme='dark'] .mp-modal .mp-modal__actions .mgmt-btn--secondary:hover:not(:disabled),
+html[data-theme='dark'] .passkeys-btn-action:not(.passkeys-btn-action--primary):hover:not(:disabled) {
+  background: #24252c !important;
+  border-color: #3b3d45 !important;
   color: #ffffff !important;
 }
 
@@ -396,7 +484,7 @@ html[data-theme='dark'] .mgmt-table th {
 
 html[data-theme='dark'] .mp-batch-link strong,
 html[data-theme='dark'] .mp-date-card__cta {
-  color: #38bdf8 !important;
+  color: #ff8a9a !important;
 }
 
 html[data-theme='dark'] .mp-date-card--keys-sent,
@@ -424,9 +512,13 @@ html[data-theme='dark'] .mp-field__textarea,
 html[data-theme='dark'] select.mp-field__input,
 html[data-theme='dark'] input.mp-field__input,
 html[data-theme='dark'] textarea.mp-field__input,
+html[data-theme='dark'] .mp-select,
+html[data-theme='dark'] .mp-users-panel .mp-select,
+html[data-theme='dark'] select.mp-select,
 html[data-theme='dark'] .profile-field__input,
 html[data-theme='dark'] .mgmt-search__input,
 html[data-theme='dark'] .mgmt-filter__select,
+html[data-theme='dark'] .mgmt-filter select,
 html[data-theme='dark'] .students-page--compact .mgmt-search__input,
 html[data-theme='dark'] .mp-students-search,
 html[data-theme='dark'] .passkeys-search-input,
@@ -441,7 +533,11 @@ html[data-theme='dark'] .rp-compose__textarea {
 
 html[data-theme='dark'] .mp-field__input option,
 html[data-theme='dark'] select.mp-field__input option,
+html[data-theme='dark'] .mp-select option,
+html[data-theme='dark'] .mp-users-panel .mp-select option,
+html[data-theme='dark'] select.mp-select option,
 html[data-theme='dark'] .mgmt-filter__select option,
+html[data-theme='dark'] .mgmt-filter select option,
 html[data-theme='dark'] .passkeys-select option {
   background: #16171b !important;
   color: #ffffff !important;
@@ -494,9 +590,9 @@ html[data-theme='dark'] .mp-detail-list__copy small {
 }
 
 html[data-theme='dark'] .mp-detail-list__icon {
-  background: rgba(56, 189, 248, 0.16) !important;
-  color: #38bdf8 !important;
-  border: 1px solid rgba(56, 189, 248, 0.28) !important;
+  background: rgba(123, 16, 32, 0.16) !important;
+  color: #ff8a9a !important;
+  border: 1px solid rgba(123, 16, 32, 0.28) !important;
 }
 
 html[data-theme='dark'] .mp-detail-list__avatar {
@@ -573,9 +669,9 @@ html[data-theme='dark'] .mgmt-badge--muted {
 }
 
 html[data-theme='dark'] .mgmt-badge--info {
-  background: rgba(56, 189, 248, 0.16) !important;
-  color: #38bdf8 !important;
-  border-color: rgba(56, 189, 248, 0.35) !important;
+  background: rgba(123, 16, 32, 0.16) !important;
+  color: #ff8a9a !important;
+  border-color: rgba(123, 16, 32, 0.35) !important;
 }
 
 html[data-theme='dark'] .mgmt-badge--warning {
@@ -712,7 +808,7 @@ html[data-theme='dark'] .sp-stat-card {
   background-color: #111215 !important;
   background-image: none !important;
   border-color: #26272e !important;
-  border-bottom: 2.5px solid var(--mp-stat-accent, var(--sp-stat-accent, var(--pk-stat-accent, #3b82f6))) !important;
+  border-bottom: 2.5px solid var(--mp-stat-accent, var(--sp-stat-accent, var(--pk-stat-accent, #e11d48))) !important;
   color: #f8fafc !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
 }
@@ -740,7 +836,7 @@ html[data-theme='dark'] .sp-stat-card__label {
 html[data-theme='dark'] .mp-stats__hint,
 html[data-theme='dark'] .passkeys-stat-card__hint,
 html[data-theme='dark'] .sp-stat-card__hint {
-  color: var(--mp-stat-accent, var(--sp-stat-accent, var(--pk-stat-accent, #3b82f6))) !important;
+  color: var(--mp-stat-accent, var(--sp-stat-accent, var(--pk-stat-accent, #e11d48))) !important;
 }
 
 html[data-theme='dark'] .mp-header__title,

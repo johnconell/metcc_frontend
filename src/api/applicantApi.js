@@ -6,11 +6,12 @@ export const applicantApi = {
   create: (data) => api.post('/students', data),
   update: (id, data) => api.patch(`/students/${id}`, data),
   submitGmail: (id, gmail) => api.post(`/applicants/${id}/gmail`, { gmail }),
-  importFile: (file) => {
+  importFile: (file, config = {}) => {
     const form = new FormData();
     form.append('file', file);
     return api.post('/students/import', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      ...config,
     });
   },
   /** @deprecated Use importFile */

@@ -12,6 +12,7 @@ import {
 import { userApi } from '../../api/userApi';
 import { roleApi } from '../../api/roleApi';
 import { ManagementToolbar, ManagementButton } from '../../components/management/ManagementToolbar';
+import { FilterDropdown } from '../../components/management/FilterDropdown';
 import { DataTable } from '../../components/management/DataTable';
 import { StatusBadge } from '../../components/management/StatusBadge';
 import { Pagination } from '../../components/management/Pagination';
@@ -451,14 +452,15 @@ export default function UsersPage() {
 
   return (
     <div className="mp-page mp-users-page">
-      <header className="mp-users-topbar">
+      <header className="mp-header mp-users-topbar">
         <div>
-          <h1 className="mp-users-topbar__title">User Management</h1>
-          <p className="mp-users-topbar__subtitle">
+          <p className="mp-header__eyebrow">Management</p>
+          <h1 className="mp-header__title mp-users-topbar__title">User Management</h1>
+          <p className="mp-header__lede mp-users-topbar__subtitle">
             Create accounts, assign roles, and manage access for administrators and proctors.
           </p>
         </div>
-        <div className="mp-users-topbar__actions">
+        <div className="mp-header__actions mp-users-topbar__actions">
           <ManagementButton
             variant="secondary"
             onClick={refreshUsers}
@@ -491,35 +493,33 @@ export default function UsersPage() {
           onSearchChange={table.setSearch}
           searchPlaceholder="Search name or email..."
           filters={[
-            <select
+            <FilterDropdown
               key="role-filter"
-              className="mp-select"
+              id="user-role-filter"
               value={roleFilter}
-              onChange={(event) => {
-                setRoleFilter(event.target.value);
+              onChange={(value) => {
+                setRoleFilter(value);
                 table.setPage(1);
               }}
-              aria-label="Filter by role"
-            >
-              <option value="">All roles</option>
-              {roles.map((role) => (
-                <option key={role.id} value={role.slug}>{role.name}</option>
-              ))}
-            </select>,
-            <select
+              options={[
+                { value: '', label: 'All roles' },
+                ...roles.map((role) => ({ value: role.slug, label: role.name })),
+              ]}
+            />,
+            <FilterDropdown
               key="status-filter"
-              className="mp-select"
+              id="user-status-filter"
               value={statusFilter}
-              onChange={(event) => {
-                setStatusFilter(event.target.value);
+              onChange={(value) => {
+                setStatusFilter(value);
                 table.setPage(1);
               }}
-              aria-label="Filter by status"
-            >
-              <option value="">All statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Disabled</option>
-            </select>,
+              options={[
+                { value: '', label: 'All statuses' },
+                { value: 'active', label: 'Active' },
+                { value: 'inactive', label: 'Disabled' },
+              ]}
+            />,
           ]}
         />
 

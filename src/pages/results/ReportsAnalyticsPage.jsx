@@ -4,6 +4,7 @@ import { ManagementToolbar, ManagementButton } from '../../components/management
 import api from '../../api/axios';
 import { DataTable } from '../../components/management/DataTable';
 import { FilterDropdown } from '../../components/management/FilterDropdown';
+import { SkeletonPageHeader, SkeletonPanel, SkeletonStats } from '../../components/ui/Skeleton';
 import { useTableState } from '../management/useTableState';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
@@ -114,6 +115,24 @@ export default function ReportsAnalyticsPage() {
       render: (row) => <span>{row.score}%</span>,
     },
   ];
+
+  if (loading) {
+    return (
+      <div className="mp-page rp-loading" aria-busy="true" aria-label="Loading reports and analytics">
+        <div className="rp-loading__status" role="status" aria-live="polite">
+          <span className="rp-loading__dot" aria-hidden="true" />
+          Preparing analytics...
+        </div>
+        <div className="rp-loading__stage rp-loading__stage--header"><SkeletonPageHeader /></div>
+        <div className="rp-loading__stage rp-loading__stage--stats"><SkeletonStats count={4} /></div>
+        <div className="mp-split rp-loading__stage rp-loading__stage--panels">
+          <SkeletonPanel rows={4} />
+          <SkeletonPanel rows={5} />
+        </div>
+        <div className="rp-loading__stage rp-loading__stage--table"><SkeletonPanel rows={5} /></div>
+      </div>
+    );
+  }
 
   return (
     <div className="mp-page">

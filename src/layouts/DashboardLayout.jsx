@@ -160,9 +160,11 @@ export function DashboardLayout() {
       if (notifyOpen && notifyWrapRef.current && !notifyWrapRef.current.contains(event.target)) {
         setNotifyOpen(false);
       }
+
       if (searchOpen && searchWrapRef.current && !searchWrapRef.current.contains(event.target)) {
         setSearchOpen(false);
       }
+
       if (profileOpen && profileWrapRef.current && !profileWrapRef.current.contains(event.target)) {
         setProfileOpen(false);
       }
@@ -443,9 +445,11 @@ export function DashboardLayout() {
           </button>
 
           <div className="dashboard-header__search" ref={searchWrapRef}>
+            <label className="dashboard-header__search-label" htmlFor="dashboard-global-search">Search</label>
             <form onSubmit={handleSearchSubmit}>
               <Search className="dashboard-header__search-icon" />
               <input
+                id="dashboard-global-search"
                 type="search"
                 className="dashboard-header__search-input"
                 placeholder={t('searchPlaceholder')}

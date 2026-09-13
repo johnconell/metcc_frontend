@@ -296,6 +296,7 @@ export default function DashboardPage() {
   return (
     <>
       <header className="dashboard-page-header">
+        <p className="dashboard-page-header__eyebrow">Overview</p>
         <h1>Dashboard</h1>
         <p>
           Welcome back, {firstName}. Monitor examinations, applicants, schedules, and key activity in one place.

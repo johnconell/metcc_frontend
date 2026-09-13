@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "./styles/design-tokens.css";
 
@@ -210,11 +211,18 @@ a:active,
   border-bottom: 1px solid #26272e;
 }
 
-[data-theme='dark'] .mgmt-btn,
 [data-theme='dark'] .mgmt-btn--secondary,
 [data-theme='dark'] .mgmt-btn--tertiary {
+  background: #18191e;
+  border-color: #2b2c32;
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .mgmt-btn--secondary:hover:not(:disabled),
+[data-theme='dark'] .mgmt-btn--tertiary:hover:not(:disabled) {
+  background: #24252c;
+  border-color: #3b3d45;
   color: #ffffff;
-  border-color: #3a3532;
 }
 
 [data-theme='dark'] .dashboard-page-header h1,

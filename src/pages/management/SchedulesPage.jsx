@@ -7,6 +7,7 @@ import {
   KeyRound,
   Loader2,
   Mail,
+  RefreshCw,
   Users,
 } from 'lucide-react';
 import { scheduleApi, SCHEDULES_CHANGED_EVENT } from '../../api/scheduleApi';
@@ -161,6 +162,11 @@ export default function SchedulesPage() {
             View exam dates, time slots, and examination key status.
           </p>
         </div>
+        <div className="mp-header__actions">
+          <ManagementButton type="button" variant="secondary" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw size={14} className={loading ? 'spin' : ''} aria-hidden="true" /> Refresh
+          </ManagementButton>
+        </div>
       </header>
 
       <div className="mp-stats">
@@ -222,9 +228,6 @@ export default function SchedulesPage() {
                 Click a date to see time slots. Send Examination Keys emails every student on that day.
               </p>
             </div>
-            <ManagementButton type="button" variant="tertiary" size="sm" onClick={load}>
-              Refresh
-            </ManagementButton>
           </div>
           <div className="mp-info-grid">
             {dateGroups.length === 0 ? (
