@@ -264,8 +264,10 @@ html[data-theme='dark'] .dashboard-breadcrumbs {
 }
 
 html[data-theme='dark'] .dashboard-card {
-  background: #111215 !important;
-  border-color: #26272e !important;
+  background: #18191c !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) !important;
   color: #ffffff !important;
 }
 
@@ -377,6 +379,12 @@ html[data-theme='dark'] .students-table-wrap .mgmt-table-wrap {
   background: #111215 !important;
   border-color: #26272e !important;
   color: #f8fafc !important;
+}
+
+html[data-theme='dark'] .dashboard-card,
+html[data-theme='dark'] .dashboard-stat-card {
+  border: none !important;
+  border-color: transparent !important;
 }
 
 html[data-theme='dark'] .students-table-wrap .mgmt-table thead th {

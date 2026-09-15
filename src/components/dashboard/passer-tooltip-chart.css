@@ -25,15 +25,18 @@ html[data-theme='dark'] {
   justify-content: space-between;
   padding: 18px 20px 16px;
   background: #ffffff;
+  border: none !important;
   border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
   transition: box-shadow 0.2s ease;
 }
 
 [data-theme='dark'] .passer-tooltip-card,
 html[data-theme='dark'] .passer-tooltip-card {
-  background: #18191c;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  background: #18191c !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) !important;
 }
 
 .passer-tooltip-card__header {

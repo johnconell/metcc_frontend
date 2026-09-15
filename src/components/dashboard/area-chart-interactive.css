@@ -308,3 +308,10 @@ html[data-theme='dark'] .shadcn-chart-legend {
   color: #94a3b8 !important;
 }
 
+html[data-theme='dark'] .shadcn-chart-card {
+  background: #18191c !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) !important;
+}
+

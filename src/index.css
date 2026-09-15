@@ -254,14 +254,18 @@ a:active,
   color: #d6d0c8;
 }
 
-[data-theme='dark'] .dashboard-stat-card,
-[data-theme='dark'] .dashboard-card,
 [data-theme='dark'] .dashboard-quick-action,
 [data-theme='dark'] .dashboard-pagination__btn,
 [data-theme='dark'] .dashboard-card__btn {
   background: #1c1a19;
   border-color: #3a3532;
   color: #ffffff;
+}
+
+[data-theme='dark'] .dashboard-stat-card,
+[data-theme='dark'] .dashboard-card {
+  border: none !important;
+  border-color: transparent !important;
 }
 
 [data-theme='dark'] .dashboard-table th {
