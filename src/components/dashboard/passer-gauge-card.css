@@ -1,0 +1,141 @@
+/* ==========================================================================
+   Passer Gauge Card (Semi-Circle Arc Gauge matching reference)
+   ========================================================================== */
+
+:root {
+  --gauge-track-color: #eee9e3;
+  --gauge-active-color: #7B1020;
+}
+
+[data-theme='dark'],
+html[data-theme='dark'] {
+  --gauge-track-color: #27292f;
+  --gauge-active-color: #ff8a9a;
+}
+
+.passer-gauge-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px 20px 16px;
+  background: #ffffff;
+  border: none !important;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme='dark'] .passer-gauge-card,
+html[data-theme='dark'] .passer-gauge-card {
+  background: #18191c !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+.passer-gauge-card__header {
+  margin-bottom: 6px;
+}
+
+.passer-gauge-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0 2px;
+}
+
+.passer-gauge-svg {
+  width: 100%;
+  max-width: 210px;
+  height: auto;
+  overflow: visible;
+}
+
+.passer-gauge-tick {
+  transition: stroke 0.3s ease;
+}
+
+.passer-gauge-center-val {
+  font-size: 22px;
+  font-weight: 800;
+  fill: #18181b;
+  font-family: inherit;
+  letter-spacing: -0.02em;
+}
+
+[data-theme='dark'] .passer-gauge-center-val,
+html[data-theme='dark'] .passer-gauge-center-val {
+  fill: #f4f4f5;
+}
+
+.passer-gauge-center-sub {
+  font-size: 9.5px;
+  font-weight: 600;
+  fill: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+[data-theme='dark'] .passer-gauge-center-sub,
+html[data-theme='dark'] .passer-gauge-center-sub {
+  fill: #a1a1aa;
+}
+
+/* Footer stats */
+.passer-gauge-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #f0ebe6;
+  margin-top: 4px;
+}
+
+[data-theme='dark'] .passer-gauge-footer,
+html[data-theme='dark'] .passer-gauge-footer {
+  border-color: #26282d;
+}
+
+.passer-gauge-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.passer-gauge-stat--right {
+  align-items: flex-end;
+}
+
+.passer-gauge-stat__label {
+  font-size: 11px;
+  color: #71717a;
+  font-weight: 500;
+}
+
+[data-theme='dark'] .passer-gauge-stat__label,
+html[data-theme='dark'] .passer-gauge-stat__label {
+  color: #a1a1aa;
+}
+
+.passer-gauge-stat__val {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.passer-gauge-stat__val--maroon {
+  color: #7b1020;
+}
+
+[data-theme='dark'] .passer-gauge-stat__val--maroon,
+html[data-theme='dark'] .passer-gauge-stat__val--maroon {
+  color: #ff8a9a;
+}
+
+.passer-gauge-stat__val--gold {
+  color: #c98a18;
+}
+
+[data-theme='dark'] .passer-gauge-stat__val--gold,
+html[data-theme='dark'] .passer-gauge-stat__val--gold {
+  color: #f0c674;
+}
+

@@ -156,7 +156,6 @@ export default function SchedulesPage() {
     <div className="mp-page">
       <header className="mp-header">
         <div>
-          <p className="mp-header__eyebrow">Management</p>
           <h1 className="mp-header__title">Examination / Schedules</h1>
           <p className="mp-header__lede">
             View exam dates, time slots, and examination key status.

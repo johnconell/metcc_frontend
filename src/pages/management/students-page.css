@@ -26,7 +26,7 @@
 
 .students-header-bar {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
   margin: 0;
@@ -39,6 +39,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+  align-self: flex-end;
 }
 
 .students-header-bar__actions .mgmt-btn {
@@ -111,7 +112,6 @@
   min-height: 0;
   padding: 16px;
   background: var(--color-surface-card, #fff);
-  border: 1px solid #ebe6e1;
   border-radius: 18px;
   box-shadow: 0 8px 28px rgba(34, 34, 34, 0.05);
 }
@@ -305,6 +305,40 @@
   white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.students-gmail-cell {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.students-name-link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: inherit;
+  display: inline;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.students-name-link:hover,
+.students-name-link:focus-visible {
+  color: #7b1020;
+  text-decoration: underline;
+  text-decoration-color: #7b1020;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
 }
 
 .students-name-cell__sub {

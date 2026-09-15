@@ -1,0 +1,137 @@
+/* ==========================================================================
+   Examinee Trend Card (Mini Spline Area Trend matching reference)
+   ========================================================================== */
+
+:root {
+  --trend-tick-color: #8e8883;
+}
+
+[data-theme='dark'],
+html[data-theme='dark'] {
+  --trend-tick-color: #9ca3af;
+}
+
+.examinee-trend-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px 20px 16px;
+  background: #ffffff;
+  border: none !important;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme='dark'] .examinee-trend-card,
+html[data-theme='dark'] .examinee-trend-card {
+  background: #18191c !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+.examinee-trend-card__header {
+  margin-bottom: 8px;
+}
+
+.examinee-trend-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.examinee-trend-summary__label {
+  font-size: 11px;
+  color: #71717a;
+  font-weight: 500;
+}
+
+[data-theme='dark'] .examinee-trend-summary__label,
+html[data-theme='dark'] .examinee-trend-summary__label {
+  color: #a1a1aa;
+}
+
+.examinee-trend-summary__num-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.examinee-trend-summary__val {
+  font-size: 20px;
+  font-weight: 800;
+  color: #18181b;
+  letter-spacing: -0.02em;
+}
+
+[data-theme='dark'] .examinee-trend-summary__val,
+html[data-theme='dark'] .examinee-trend-summary__val {
+  color: #f4f4f5;
+}
+
+.examinee-trend-summary__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+[data-theme='dark'] .examinee-trend-summary__badge,
+html[data-theme='dark'] .examinee-trend-summary__badge {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+}
+
+.examinee-trend-chart-wrap {
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* Tooltip */
+.mini-trend-tooltip {
+  background: #ffffff;
+  border: 1px solid #e5e0db;
+  border-radius: 7px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 6px 10px;
+  font-size: 11.5px;
+  pointer-events: none;
+}
+
+[data-theme='dark'] .mini-trend-tooltip,
+html[data-theme='dark'] .mini-trend-tooltip {
+  background: #18191c;
+  border-color: #2b2d31;
+  color: #f3f4f6;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.mini-trend-tooltip__label {
+  font-weight: 600;
+  color: #71717a;
+  font-size: 10.5px;
+  margin-bottom: 2px;
+}
+
+[data-theme='dark'] .mini-trend-tooltip__label,
+html[data-theme='dark'] .mini-trend-tooltip__label {
+  color: #a1a1aa;
+}
+
+.mini-trend-tooltip__val {
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.mini-trend-tooltip__sub {
+  font-weight: 400;
+  color: #71717a;
+  font-size: 10px;
+}
+

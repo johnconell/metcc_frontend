@@ -89,7 +89,6 @@ export default function ProctorDetailPage() {
       <Link to="/management/proctors" className="mp-link-back"><ArrowLeft size={16} /> Back to proctors</Link>
       <header className="mp-header">
         <div>
-          <p className="mp-header__eyebrow">Proctor assignment</p>
           <h1 className="mp-header__title">{proctor.name}</h1>
           <p className="mp-header__lede">{proctor.email} · PRC-{String(proctor.id).padStart(3, '0')}</p>
         </div>

@@ -1,0 +1,122 @@
+/* ==========================================================================
+   Top Programs Card (Ranked Progress Bars matching reference)
+   ========================================================================== */
+
+.top-programs-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px 20px 16px;
+  background: #ffffff;
+  border: none !important;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme='dark'] .top-programs-card,
+html[data-theme='dark'] .top-programs-card {
+  background: #18191c !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+.top-programs-card__header {
+  margin-bottom: 14px;
+}
+
+.top-programs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  justify-content: space-around;
+}
+
+.top-programs-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.top-programs-item__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.top-programs-item__name-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.top-programs-item__avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.top-programs-item__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #27272a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-theme='dark'] .top-programs-item__name,
+html[data-theme='dark'] .top-programs-item__name {
+  color: #f4f4f5;
+}
+
+.top-programs-item__metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12.5px;
+  color: #18181b;
+  flex-shrink: 0;
+}
+
+[data-theme='dark'] .top-programs-item__metric,
+html[data-theme='dark'] .top-programs-item__metric {
+  color: #e4e4e7;
+}
+
+.top-programs-item__pct {
+  font-size: 11px;
+  color: #71717a;
+  font-weight: 500;
+}
+
+[data-theme='dark'] .top-programs-item__pct,
+html[data-theme='dark'] .top-programs-item__pct {
+  color: #a1a1aa;
+}
+
+.top-programs-item__track {
+  width: 100%;
+  height: 6px;
+  background-color: #f1ede8;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+[data-theme='dark'] .top-programs-item__track,
+html[data-theme='dark'] .top-programs-item__track {
+  background-color: #26282d;
+}
+
+.top-programs-item__fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.4s ease;
+}
+

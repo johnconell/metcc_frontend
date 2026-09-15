@@ -408,7 +408,21 @@ export default function UsersPage() {
     (!editingUser && (!form.password.trim() || !form.confirmPassword.trim()));
 
   const columns = [
-    { key: 'user', label: 'Name', sortable: true },
+    {
+      key: 'user',
+      label: 'Name',
+      sortable: true,
+      render: (row) => (
+        <button
+          type="button"
+          className="students-name-link"
+          title={`Edit ${row.user}`}
+          onClick={() => openEditForm(row)}
+        >
+          {row.user}
+        </button>
+      ),
+    },
     { key: 'email', label: 'Email', sortable: true },
     { key: 'role', label: 'Role', sortable: true },
     {
@@ -454,7 +468,6 @@ export default function UsersPage() {
     <div className="mp-page mp-users-page">
       <header className="mp-header mp-users-topbar">
         <div>
-          <p className="mp-header__eyebrow">Management</p>
           <h1 className="mp-header__title mp-users-topbar__title">User Management</h1>
           <p className="mp-header__lede mp-users-topbar__subtitle">
             Create accounts, assign roles, and manage access for administrators and proctors.

@@ -207,7 +207,6 @@ export default function ExamResultsPage() {
     <div className="mp-page">
       <header className="mp-header">
         <div>
-          <p className="mp-header__eyebrow">Results</p>
           <h1 className="mp-header__title">Examination Results</h1>
           <p className="mp-header__lede">
             Review exam scores by date, batch, and student.

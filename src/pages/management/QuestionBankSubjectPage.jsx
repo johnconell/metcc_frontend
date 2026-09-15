@@ -325,15 +325,6 @@ export default function QuestionBankSubjectPage() {
 
       <header className="mp-header">
         <div>
-          <p className="mp-header__eyebrow">
-            School Year · {bank.school_year}
-            {bank.is_active && (
-              <span className="mp-active-badge" style={{ marginLeft: 8 }}>
-                <CheckCircle2 size={14} aria-hidden="true" />
-                Active
-              </span>
-            )}
-          </p>
           <h1 className="mp-header__title">{bank.title}</h1>
           <p className="mp-header__lede">
             Manage exam categories for this bank. Open a category to add or import questions.

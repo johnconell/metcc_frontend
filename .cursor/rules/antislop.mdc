@@ -1,0 +1,18 @@
+---
+description: Anti-slop filter — must acknowledge and choose During/After before any UI work
+alwaysApply: true
+---
+
+# antislop (always on)
+
+Before **any** UI / visual / layout / styling / frontend design work in this repo:
+
+1. **Acknowledge** that antislop applies (say so briefly in your reply).
+2. **Ask** (do not start UI work until they answer):
+   - **1. DURING** — apply antislop while building
+   - **2. AFTER** — audit existing UI first, then fix only approved items
+3. **Read** and follow [`../antislop.md`](../antislop.md) (workspace sibling of this repo). Core only unless skills are installed later under the workspace `skills/` folder.
+
+Do **not** generate, edit, or restyle UI until the user picks 1 or 2.
+
+Non-UI work (API, bugs with no visual change, pure logic) may proceed without the mode question, but still avoid inventing decorative UI “improvements” unless asked.

@@ -82,9 +82,19 @@ html[data-theme='dark'] .landing {
   color: var(--ink);
 }
 
+html[data-theme='dark'] body:has(.landing) {
+  background-color: #faf6f5 !important;
+  color: #2b1b1f !important;
+}
+
+html[data-theme='dark'] body:has(.login-page) {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+}
+
 html[data-theme='dark'] .login-page {
-  background-color: #fff1f2;
-  color: #26251e;
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
 }
 
 html[data-theme='dark'] .landing input,
@@ -322,8 +332,21 @@ html[data-theme='dark'] .mp-date-card__label,
 html[data-theme='dark'] .mp-moved-away__title,
 html[data-theme='dark'] .mgmt-page__title,
 html[data-theme='dark'] .mgmt-empty__title,
-html[data-theme='dark'] .students-name-cell__name {
+html[data-theme='dark'] .students-name-cell__name,
+html[data-theme='dark'] .students-name-link,
+html[data-theme='dark'] .mp-name-link {
   color: #ffffff !important;
+}
+
+html[data-theme='dark'] .students-name-link:hover,
+html[data-theme='dark'] .students-name-link:focus-visible,
+html[data-theme='dark'] .mp-name-link:hover,
+html[data-theme='dark'] .mp-name-link:focus-visible {
+  color: #ff8a9a !important;
+  text-decoration: underline !important;
+  text-decoration-color: #ff8a9a !important;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
 }
 
 /* Master card and panel dark styling — true black with crisp dark-slate hairline */
@@ -807,10 +830,8 @@ html[data-theme='dark'] .passkeys-stat-card,
 html[data-theme='dark'] .sp-stat-card {
   background-color: #111215 !important;
   background-image: none !important;
-  border-color: #26272e !important;
-  border-bottom: 2.5px solid var(--mp-stat-accent, var(--sp-stat-accent, var(--pk-stat-accent, #e11d48))) !important;
   color: #f8fafc !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
 }
 
 html[data-theme='dark'] .mp-stats__icon,

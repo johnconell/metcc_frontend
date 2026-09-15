@@ -432,7 +432,8 @@ export function DashboardLayout() {
       />
 
       <div className="dashboard-main">
-        <header className="dashboard-header">
+        <div className="dashboard-chrome">
+          <header className="dashboard-header">
           <button
             type="button"
             className="dashboard-header__menu"
@@ -580,10 +581,11 @@ export function DashboardLayout() {
             </div>
 
           </div>
-        </header>
+          </header>
+          <AppBreadcrumbs pathname={location.pathname} />
+        </div>
 
         <div className="dashboard-content">
-          <AppBreadcrumbs pathname={location.pathname} />
           <Outlet />
         </div>
       </div>

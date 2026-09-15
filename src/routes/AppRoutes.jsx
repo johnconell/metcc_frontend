@@ -1,7 +1,7 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from '../auth/AuthContext';
-import { PreferencesProvider } from '../preferences/PreferencesContext';
+import { PreferencesProvider, usePreferences, applyTheme, isAlwaysLightPath } from '../preferences/PreferencesContext';
 import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRoute } from './RoleRoute';
 import { DashboardLayout } from '../layouts/DashboardLayout';
@@ -53,10 +53,27 @@ function PageFallback() {
   );
 }
 
+function ThemeRouteSync() {
+  const location = useLocation();
+  const { theme } = usePreferences();
+
+  useEffect(() => {
+    if (isAlwaysLightPath(location.pathname)) {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.documentElement.style.colorScheme = 'light';
+    } else {
+      applyTheme(theme);
+    }
+  }, [location.pathname, theme]);
+
+  return null;
+}
+
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <PreferencesProvider>
+        <ThemeRouteSync />
         <AuthProvider>
           <Suspense fallback={<PageFallback />}>
             <Routes>

@@ -97,7 +97,6 @@ export default function ExamPreviewPage() {
     <div className="mp-page">
       <header className="mp-header">
         <div>
-          <p className="mp-header__eyebrow">Question Bank</p>
           <h1 className="mp-header__title">Review Exam</h1>
           <p className="mp-header__lede">
             Review every selected question before the examination goes live.

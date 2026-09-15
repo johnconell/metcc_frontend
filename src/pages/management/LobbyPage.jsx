@@ -236,7 +236,6 @@ export default function LobbyPage() {
     <div className="mp-page">
       <header className="mp-header">
         <div>
-          <p className="mp-header__eyebrow">Management</p>
           <h1 className="mp-header__title">Examination Lobby</h1>
           <p className="mp-header__lede">
             Prepare examination rooms and proctor access for each time slot.

@@ -10,7 +10,7 @@ export function Input({ label, error, className = '', ...props }) {
       <div className={isSearch ? 'ui-input-search' : undefined}>
         {isSearch && <Search className="ui-input-search__icon" size={16} aria-hidden="true" />}
         <input
-          className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 ${error ? 'border-red-500' : 'border-gray-300'}${isSearch ? ' ui-input-search__field' : ''}`}
+          className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-[#7B1020] focus:ring-1 focus:ring-[#7B1020] ${error ? 'border-red-500' : 'border-gray-300'}${isSearch ? ' ui-input-search__field' : ''}`}
           {...props}
         />
       </div>

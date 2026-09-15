@@ -15,12 +15,21 @@ const LOCALE_LANG = {
   war: 'war',
 };
 
+export function isAlwaysLightPath(path = (typeof window !== 'undefined' ? window.location.pathname : '')) {
+  return path === '/' || path === '/login' || path === '/forgot-password' || path === '/reset-password' || path === '/register';
+}
+
 function resolveTheme(theme) {
   if (theme !== 'system') return theme;
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-function applyTheme(theme) {
+export function applyTheme(theme) {
+  if (isAlwaysLightPath()) {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.documentElement.style.colorScheme = 'light';
+    return;
+  }
   const resolved = resolveTheme(theme);
   document.documentElement.setAttribute('data-theme', resolved);
   document.documentElement.style.colorScheme = resolved;

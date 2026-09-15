@@ -1,6 +1,6 @@
 export function Button({ children, variant = 'primary', className = '', disabled, ...props }) {
   const variants = {
-    primary: 'bg-indigo-600 text-white hover:bg-indigo-700',
+    primary: 'bg-[#7B1020] text-white hover:bg-[#5C0C18]',
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
     danger: 'bg-red-600 text-white hover:bg-red-700',
     outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50',

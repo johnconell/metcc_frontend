@@ -52,11 +52,41 @@
   gap: 22px;
 }
 
+/* Clickable table names with maroon underline hover effect */
+.mp-name-link,
+.students-name-link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: inherit;
+  display: inline;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.mp-name-link:hover,
+.mp-name-link:focus-visible,
+.students-name-link:hover,
+.students-name-link:focus-visible {
+  color: #7b1020 !important;
+  text-decoration: underline !important;
+  text-decoration-color: #7b1020 !important;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
+
 /* Page header — clean unboxed style */
 .mp-page > .mp-header {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
   padding: 0;
@@ -102,8 +132,10 @@
 .mp-header__actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
   flex-shrink: 0;
+  align-self: flex-end;
 }
 
 .mp-header__actions .mgmt-btn {
@@ -153,13 +185,11 @@
   background-size: cover;
   background-position: right bottom;
   background-repeat: no-repeat;
-  border: 1px solid #e9e3de;
-  border-bottom: 2.5px solid var(--mp-stat-accent, #16a34a);
   border-radius: 20px;
-  box-shadow: 0 1px 3px rgba(34, 34, 34, 0.06);
+  box-shadow: 0 1px 2px rgba(34, 34, 34, 0.08);
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 @media (max-width: 1100px) {
@@ -179,7 +209,6 @@
 .mp-stats__item:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(34, 34, 34, 0.1);
-  border-color: #d5cdc6;
 }
 
 .mp-stats__item:nth-child(4n + 1) { --mp-stat-accent: #16a34a; --mp-stat-icon-bg: rgba(22, 163, 74, 0.12); --mp-stat-icon-color: #16a34a; }
@@ -193,32 +222,26 @@
   align-items: flex-start;
   gap: 0;
   padding: 16px 18px 14px;
-  border: 1px solid #e9e3de;
-  border-bottom: 2.5px solid var(--mp-stat-accent, #16a34a);
   border-radius: 20px;
   background-color: #ffffff;
   background-image: url('../../assets/image.png');
   background-size: cover;
   background-position: right bottom;
   background-repeat: no-repeat;
-  box-shadow: 0 1px 3px rgba(34, 34, 34, 0.06);
+  box-shadow: 0 1px 2px rgba(34, 34, 34, 0.08);
 }
 
 .mp-stats__item:last-child {
-  border-right: 1px solid #e9e3de;
-  border-bottom: 2.5px solid var(--mp-stat-accent, #16a34a);
 }
 
 .mp-stats--cards .mp-stats__item:last-child {
-  border-right: 1px solid #e9e3de;
 }
 
 [data-theme='dark'] .mp-stats__item,
 [data-theme='dark'] .mp-stats--cards .mp-stats__item {
   background-color: #111215;
   background-image: none;
-  border-color: #26272e;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   color: #f8fafc;
 }
 
@@ -389,7 +412,6 @@
 
 .mp-cat-card {
   background: #fff;
-  border: 1px solid var(--mp-border, #e9e3de);
   border-radius: 18px;
   padding: 16px;
   box-shadow: 0 8px 24px rgba(34, 34, 34, 0.05);
@@ -404,23 +426,19 @@
 }
 
 .mp-cat-card--link:hover {
-  border-color: var(--color-link);
   box-shadow: 0 2px 10px rgba(123, 16, 32, 0.08);
 }
 
 .mp-cat-card:focus-within {
-  border-color: var(--color-link);
   box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.12);
 }
 
 .mp-cat-card--active {
-  border-color: #16a34a;
   background: linear-gradient(180deg, rgba(22, 163, 74, 0.08), transparent 48%);
   box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.25);
 }
 
 .mp-cat-card--active:hover {
-  border-color: #15803d;
   box-shadow: 0 2px 12px rgba(22, 163, 74, 0.18);
 }
 
@@ -518,7 +536,6 @@
   display: flex;
   gap: 14px;
   padding: 18px;
-  border: 1px solid #e9e3de;
   border-radius: 18px;
   background: var(--color-surface-card);
   box-shadow: 0 8px 24px rgba(34, 34, 34, 0.05);
@@ -533,7 +550,6 @@
 }
 
 .mp-bank-card:hover {
-  border-color: #d5cdc6;
   box-shadow: 0 12px 28px rgba(34, 34, 34, 0.09);
   transform: translateY(-2px);
 }
@@ -683,7 +699,6 @@
 /* Panel = dashboard card */
 .mp-panel {
   background: #fff;
-  border: 1px solid var(--mp-border, #e9e3de);
   border-radius: var(--mp-radius, 16px);
   box-shadow: var(--mp-shadow, 0 8px 28px rgba(34, 34, 34, 0.05));
   padding: 18px 18px 16px;
@@ -1396,7 +1411,6 @@ html[data-theme='dark'] .mp-users-chip--proctor strong {
   gap: 12px;
   padding: 16px;
   background: var(--color-surface-card, #fff);
-  border: 1px solid #ebe6e1;
   border-radius: 18px;
   box-shadow: 0 8px 28px rgba(34, 34, 34, 0.05);
 }
@@ -2390,7 +2404,6 @@ html[data-theme='dark'] .mp-users-table-wrap .mgmt-table tbody tr:hover td {
   gap: 6px;
   text-align: left;
   padding: 14px 16px;
-  border: 1px solid var(--color-hairline);
   border-radius: 10px;
   background: var(--color-surface, #fff);
   color: inherit;
@@ -2400,17 +2413,14 @@ html[data-theme='dark'] .mp-users-table-wrap .mgmt-table tbody tr:hover td {
 }
 
 .mp-date-card:hover {
-  border-color: var(--color-ink);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .mp-date-card--keys-sent {
-  border-color: rgba(31, 138, 101, 0.45);
   background: rgba(31, 138, 101, 0.1);
 }
 
 .mp-date-card--keys-sent:hover {
-  border-color: var(--color-semantic-success);
   box-shadow: 0 2px 8px rgba(31, 138, 101, 0.18);
 }
 
@@ -2547,10 +2557,9 @@ html[data-theme='dark'] .mp-date-card--keys-sent {
   gap: 0.45rem;
   padding: 0.95rem 0.65rem;
   border-radius: 12px;
-  border: 2px solid transparent;
   background: #faf8f6;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   font-family: var(--font-sans);
   text-align: center;
 }
@@ -2716,7 +2725,6 @@ html[data-theme='dark'] .mp-date-card--keys-sent {
   min-width: 0;
   padding: 0;
   background: #ffffff;
-  border: 1px solid #e9e3de;
   border-radius: 18px;
   box-shadow: 0 8px 24px rgba(34, 34, 34, 0.05);
   overflow: hidden;
@@ -2727,18 +2735,15 @@ html[data-theme='dark'] .mp-date-card--keys-sent {
 }
 
 .mp-info-card:hover {
-  border-color: #d5cdc6;
   box-shadow: 0 12px 28px rgba(34, 34, 34, 0.09);
   transform: translateY(-2px);
 }
 
 .mp-info-card--success {
-  border-color: rgba(31, 138, 101, 0.35);
   background: #f7fdf9;
 }
 
 .mp-info-card--active {
-  border-color: rgba(123, 16, 32, 0.4);
   box-shadow:
     0 0 0 3px rgba(123, 16, 32, 0.08),
     0 8px 24px rgba(34, 34, 34, 0.05);

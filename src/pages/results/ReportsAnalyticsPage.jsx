@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BarChart3, Download, FileSpreadsheet, FileText, Trophy, Users } from 'lucide-react';
 import { ManagementToolbar, ManagementButton } from '../../components/management/ManagementToolbar';
-import api from '../../api/axios';
+import { downloadExamResultsExport, examResultApi } from '../../api/examResultApi';
 import { DataTable } from '../../components/management/DataTable';
 import { FilterDropdown } from '../../components/management/FilterDropdown';
 import { SkeletonPageHeader, SkeletonPanel, SkeletonStats } from '../../components/ui/Skeleton';
@@ -9,6 +9,7 @@ import { useTableState } from '../management/useTableState';
 import '../../components/management/management.css';
 import '../management/management-pages.css';
 import './results-pages.css';
+
 function PerformanceBarChart({ data }) {
   const max = Math.max(1, ...data.map((item) => item.value));
   return (
@@ -31,21 +32,51 @@ function PerformanceBarChart({ data }) {
   );
 }
 
+function formatDateLabel(date) {
+  if (!date) return 'Unknown date';
+  const parsed = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return String(date);
+  return parsed.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function flattenResultRows(payload) {
+  const flat = Array.isArray(payload?.data) ? payload.data : [];
+  if (flat.length > 0) return flat;
+
+  const batches = Array.isArray(payload?.batches) ? payload.batches : [];
+  return batches.flatMap((batch) =>
+    (batch.students || []).map((student) => ({
+      ...student,
+      exam_date: student.exam_date || batch.exam_date,
+      date_label: student.date_label || batch.date_label,
+      batch_code: student.batch_code || batch.batch_code,
+      batch_label: student.batch_label || batch.batch_label,
+    })),
+  );
+}
+
 export default function ReportsAnalyticsPage() {
   const [dateFilter, setDateFilter] = useState('all');
   const [rows, setRows] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: json } = await api.get('/exam-results');
-      setRows(json.data || []);
+      const { data: payload } = await examResultApi.list();
+      setRows(flattenResultRows(payload));
+      setSummary(payload.meta?.summary || null);
       setError('');
     } catch (err) {
-      setError(err.message || 'Unable to load examination results.');
+      setError(err.response?.data?.message || err.message || 'Unable to load examination results.');
       setRows([]);
+      setSummary(null);
     } finally {
       setLoading(false);
     }
@@ -53,53 +84,90 @@ export default function ReportsAnalyticsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const reportRows = useMemo(() => rows.map((row) => ({
-    id: row.registration_id || row.id,
-    studentName: row.student_name || row.name || '—',
-    studentId: row.applicant_code || '—',
-    exam: row.batch_label || row.batch_code || 'Examination',
-    score: Number(row.score || 0),
-    date: row.exam_date || '',
-    outcome: row.outcome || row.result_status,
-  })), [rows]);
+  const reportRows = useMemo(() => rows.map((row) => {
+    const examDate = row.exam_date || row.examination_date || '';
+    const outcome = String(row.outcome || row.result_status || row.status || '').toLowerCase();
+    return {
+      id: row.registration_id || row.id,
+      studentName: row.student_name || row.name || '—',
+      studentId: row.applicant_code || '—',
+      exam: row.batch_label || row.batch_code || row.exam_title || 'Examination',
+      score: Number(row.score || 0),
+      date: examDate,
+      dateLabel: row.date_label || formatDateLabel(examDate),
+      outcome,
+    };
+  }), [rows]);
 
-  const chartData = useMemo(() => Object.values(reportRows.reduce((groups, row) => {
-    const label = row.date || 'Unknown date';
-    const item = groups[label] || { label, value: 0, passed: 0 };
-    item.value += 1;
-    if (row.outcome === 'passed') item.passed += 1;
-    groups[label] = item;
-    return groups;
-  }, {})).map((item) => ({ ...item, passRate: item.value ? Math.round((item.passed / item.value) * 100) : 0 })).slice(-8), [reportRows]);
+  const chartData = useMemo(() => {
+    const filtered = dateFilter === 'all'
+      ? reportRows
+      : reportRows.filter((row) => row.date === dateFilter || row.dateLabel === dateFilter);
 
-  const topPerformers = useMemo(() => [...reportRows].sort((a, b) => b.score - a.score).slice(0, 5).map((row, index) => ({ ...row, rank: index + 1 })), [reportRows]);
-  const reportDates = useMemo(() => [...new Set(chartData.map((item) => item.label))], [chartData]);
+    const grouped = Object.values(filtered.reduce((groups, row) => {
+      const key = row.date || row.dateLabel || 'Unknown date';
+      const label = row.dateLabel || formatDateLabel(row.date);
+      const item = groups[key] || { key, label, value: 0, passed: 0, sortDate: row.date || '' };
+      item.value += 1;
+      if (row.outcome === 'passed' || row.outcome === 'pass') {
+        item.passed += 1;
+      }
+      groups[key] = item;
+      return groups;
+    }, {}));
 
-  const table = useTableState(topPerformers.filter((row) => dateFilter === 'all' || row.date === dateFilter), {
+    return grouped
+      .map((item) => ({
+        ...item,
+        passRate: item.value ? Math.round((item.passed / item.value) * 100) : 0,
+      }))
+      .sort((a, b) => String(a.sortDate).localeCompare(String(b.sortDate)))
+      .slice(-8);
+  }, [reportRows, dateFilter]);
+
+  const topPerformers = useMemo(() => {
+    const filtered = dateFilter === 'all'
+      ? reportRows
+      : reportRows.filter((row) => row.date === dateFilter || row.dateLabel === dateFilter);
+
+    return [...filtered]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map((row, index) => ({ ...row, rank: index + 1 }));
+  }, [reportRows, dateFilter]);
+
+  const reportDates = useMemo(() => {
+    const map = new Map();
+    reportRows.forEach((row) => {
+      if (!row.date && !row.dateLabel) return;
+      const value = row.date || row.dateLabel;
+      if (!map.has(value)) map.set(value, row.dateLabel || formatDateLabel(row.date));
+    });
+    return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
+  }, [reportRows]);
+
+  const table = useTableState(topPerformers, {
     searchKeys: ['studentName', 'studentId', 'exam'],
     pageSize: 5,
-    filterFn: dateFilter === 'all' ? undefined : () => true,
   });
 
-  const totalExaminees = reportRows.length;
-  const completedExams = reportRows.length;
-  const passRate = completedExams ? Math.round((reportRows.filter((row) => row.outcome === 'passed').length / completedExams) * 100) : 0;
-  const averageScore = completedExams ? Math.round(reportRows.reduce((sum, row) => sum + row.score, 0) / completedExams) : 0;
+  const totalExaminees = summary?.total ?? reportRows.length;
+  const completedExams = summary?.total ?? reportRows.length;
+  const passedCount = summary?.passed ?? reportRows.filter((row) => row.outcome === 'passed' || row.outcome === 'pass').length;
+  const passRate = completedExams
+    ? Math.round((passedCount / completedExams) * 100)
+    : 0;
+  const averageScore = summary?.average_score != null
+    ? Math.round(Number(summary.average_score))
+    : (completedExams
+      ? Math.round(reportRows.reduce((sum, row) => sum + row.score, 0) / Math.max(reportRows.length, 1))
+      : 0);
 
   const exportResults = async (scope) => {
     try {
-      const response = await api.get('/exam-results/export', {
-        params: { scope },
-        responseType: 'blob',
-      });
-      const url = URL.createObjectURL(response.data);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `exam-results-${scope}.csv`;
-      link.click();
-      URL.revokeObjectURL(url);
+      await downloadExamResultsExport({ scope });
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to export examination results.');
+      setError(err.response?.data?.message || err.message || 'Unable to export examination results.');
     }
   };
 
@@ -138,7 +206,6 @@ export default function ReportsAnalyticsPage() {
     <div className="mp-page">
       <header className="mp-header">
         <div>
-          <p className="mp-header__eyebrow">Results &amp; Reports</p>
           <h1 className="mp-header__title">Reports &amp; Analytics</h1>
           <p className="mp-header__lede">
             Track performance trends and export examination reports.
@@ -162,12 +229,12 @@ export default function ReportsAnalyticsPage() {
       <div className="mp-stats" aria-label="Analytics summary">
         <div className="mp-stats__item">
           <span className="mp-stats__icon" aria-hidden="true"><Users size={18} /></span>
-          <div className="mp-stats__value">{totalExaminees.toLocaleString()}</div>
+          <div className="mp-stats__value">{Number(totalExaminees).toLocaleString()}</div>
           <div className="mp-stats__label">Total examinees</div>
         </div>
         <div className="mp-stats__item">
           <span className="mp-stats__icon" aria-hidden="true"><FileText size={18} /></span>
-          <div className="mp-stats__value">{completedExams.toLocaleString()}</div>
+          <div className="mp-stats__value">{Number(completedExams).toLocaleString()}</div>
           <div className="mp-stats__label">Completed exams</div>
         </div>
         <div className="mp-stats__item">
@@ -192,7 +259,7 @@ export default function ReportsAnalyticsPage() {
               onChange={setDateFilter}
               options={[
                 { value: 'all', label: 'All dates' },
-                ...reportDates.map((date) => ({ value: date, label: date })),
+                ...reportDates.map((date) => ({ value: date.value, label: date.label })),
               ]}
             />
           </div>
@@ -248,15 +315,20 @@ export default function ReportsAnalyticsPage() {
               }}
               options={[
                 { value: 'all', label: 'All dates' },
-                ...reportDates.map((date) => ({ value: date, label: date })),
+                ...reportDates.map((date) => ({ value: date.value, label: date.label })),
               ]}
             />,
           ]}
         />
         <div style={{ height: 'var(--space-base)' }} aria-hidden="true" />
         <div className="mp-kv">
-          {chartData.map((item) => (
-            <div key={item.label} className="mp-kv__row">
+          {chartData.length === 0 ? (
+            <div className="mp-kv__row">
+              <span className="mp-kv__key">No completed exams yet</span>
+              <span className="mp-kv__val">—</span>
+            </div>
+          ) : chartData.map((item) => (
+            <div key={item.key || item.label} className="mp-kv__row">
               <span className="mp-kv__key">{item.label}</span>
               <span className="mp-kv__val">
                 {item.value} completed · {item.passRate}% pass rate

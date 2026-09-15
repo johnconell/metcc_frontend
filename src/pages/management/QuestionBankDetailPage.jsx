@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   BookOpen,
   CheckSquare,
+  FileCheck,
   FileUp,
   Pencil,
   Plus,
@@ -566,14 +567,6 @@ export default function QuestionBankDetailPage() {
 
       <header className="mp-header">
         <div>
-          <p className="mp-header__eyebrow">
-            {subject.question_bank?.school_year || 'Question Bank'} · {subject.code || 'Subject'}
-            {subject.question_bank?.is_active && (
-              <span className="mp-active-badge" style={{ marginLeft: 8 }}>
-                Active bank
-              </span>
-            )}
-          </p>
           <h1 className="mp-header__title">{subject.name}</h1>
           <p className="mp-header__lede">
             {subject.description || 'Add questions manually or import from Excel, Word, or PDF.'}

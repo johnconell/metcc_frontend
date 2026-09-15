@@ -8,6 +8,13 @@
     <script>
       (function () {
         try {
+          var path = window.location.pathname;
+          var isPublicOrAuth = path === '/' || path === '/login' || path === '/forgot-password' || path === '/reset-password' || path === '/register';
+          if (isPublicOrAuth) {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.style.colorScheme = 'light';
+            return;
+          }
           var saved = localStorage.getItem('app_theme');
           var theme = saved || 'system';
           var resolved = theme;

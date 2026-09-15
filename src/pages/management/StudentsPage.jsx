@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarPlus,
   Download,
@@ -7,6 +7,7 @@ import {
   Loader2,
   MoreHorizontal,
   Pencil,
+  UserPlus,
   Users,
   X,
 } from 'lucide-react';
@@ -383,6 +384,16 @@ export default function StudentsPage() {
         key: 'name',
         label: 'Name',
         sortable: true,
+        render: (row) => (
+          <button
+            type="button"
+            className="students-name-link"
+            title={`View ${row.name}`}
+            onClick={() => navigate(`/management/students?view=${row.id}`)}
+          >
+            {row.name}
+          </button>
+        ),
       },
       {
         key: 'desired_program',
@@ -404,7 +415,7 @@ export default function StudentsPage() {
       {
         key: 'gmail',
         label: 'Gmail',
-        render: (row) => row.gmail || '-',
+        render: (row) => <span className="students-gmail-cell" title={row.gmail || '-'}>{row.gmail || '-'}</span>,
       },
       {
         key: 'status',
@@ -424,14 +435,13 @@ export default function StudentsPage() {
         render: (row) => <RowActionsMenu row={row} />,
       },
     ],
-    []
+    [navigate]
   );
 
   return (
     <div className="mp-page students-page students-page--compact">
       <header className="mp-header students-header-bar">
         <div>
-          <p className="mp-header__eyebrow">Management</p>
           <h1 className="mp-header__title students-header-bar__title">Student List</h1>
           <p className="mp-header__lede students-header-bar__meta">Review applicants, import records, and manage examination assignments. {total} applicants.</p>
         </div>
@@ -449,7 +459,7 @@ export default function StudentsPage() {
             {importing ? (
               <Loader2 size={14} className="spin" />
             ) : (
-              <FileTypeIcon type="excel" size={16} />
+              <UserPlus size={16} aria-hidden="true" />
             )}
             {importing ? 'Importing...' : 'Import Students'}
           </ManagementButton>

@@ -196,7 +196,6 @@ export default function ScheduleDetailPage() {
 
       <header className="mp-header">
         <div>
-          <p className="mp-header__eyebrow">Examination Batch</p>
           <h1 className="mp-header__title">{data.batch_label || `${data.date_label}, ${data.batch_code}`}</h1>
           <p className="mp-header__lede">
             {data.title} · {data.time_slot} · General entrance examination (not course-specific).
@@ -339,7 +338,15 @@ export default function ScheduleDetailPage() {
                 ) : pagedStudents.map((student) => (
                   <tr key={student.registration_id}>
                     <td>{student.applicant_code}</td>
-                    <td>{student.name}</td>
+                    <td>
+                      <Link
+                        to={`/management/students?view=${student.student_id || student.applicant_id || student.id || student.registration_id}`}
+                        className="students-name-link"
+                        title={`View ${student.name}`}
+                      >
+                        {student.name}
+                      </Link>
+                    </td>
                     <td>{student.email}</td>
                     <td>{student.course_preference || '—'}</td>
                     <td>
@@ -412,7 +419,15 @@ export default function ScheduleDetailPage() {
                     {movedAway.map((row) => (
                       <tr key={`moved-${row.registration_id}`}>
                         <td>{row.applicant_code}</td>
-                        <td>{row.name}</td>
+                        <td>
+                          <Link
+                            to={`/management/students?view=${row.student_id || row.applicant_id || row.id || row.registration_id}`}
+                            className="students-name-link"
+                            title={`View ${row.name}`}
+                          >
+                            {row.name}
+                          </Link>
+                        </td>
                         <td>
                           <Link
                             to={`/management/schedules/${row.moved_to_schedule_id}`}

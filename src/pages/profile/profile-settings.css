@@ -68,7 +68,6 @@
 
 .profile-section {
   background: #fff;
-  border: 1px solid #e9e3de;
   border-radius: 7px;
   box-shadow: 0 1px 3px rgba(34, 34, 34, 0.06);
   padding: 18px 18px 16px;
@@ -228,7 +227,6 @@
   gap: 8px;
   width: 100%;
   padding: 14px;
-  border: 1px solid var(--profile-border);
   border-radius: var(--rounded-md);
   background: #fff;
   cursor: pointer;
@@ -238,11 +236,10 @@
 }
 
 .profile-choice:hover {
-  border-color: #d5cdc6;
+  box-shadow: 0 1px 2px rgba(34, 34, 34, 0.08);
 }
 
 .profile-choice--active {
-  border-color: var(--profile-maroon);
   box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.1);
   background: rgba(123, 16, 32, 0.03);
 }
