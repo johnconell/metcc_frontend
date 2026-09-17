@@ -9,25 +9,15 @@ import {
 import { ChevronDown, PieChart as PieIcon } from 'lucide-react';
 import './program-distribution-card.css';
 
-const DEFAULT_COURSES = [
-  { program: 'Agriculture', count: 470, percent: 16 },
-  { program: 'BSIT', count: 449, percent: 15 },
-  { program: 'Criminology', count: 423, percent: 14 },
-  { program: 'BSEd', count: 421, percent: 14 },
-  { program: 'BSBA', count: 419, percent: 14 },
-  { program: 'HM', count: 414, percent: 14 },
-  { program: 'Engineering', count: 411, percent: 13 },
-];
-
 const PALETTE = [
-  '#7B1020', // College Maroon
-  '#D8901F', // Amber / Gold
-  '#0d9488', // Teal
-  '#6366f1', // Indigo
-  '#e11d48', // Crimson Rose
-  '#8b5cf6', // Violet
-  '#3b82f6', // Cobalt
-  '#10b981', // Emerald
+  '#7B1020',
+  '#D8901F',
+  '#0d9488',
+  '#6366f1',
+  '#e11d48',
+  '#8b5cf6',
+  '#3b82f6',
+  '#10b981',
 ];
 
 function CustomPieTooltip({ active, payload }) {
@@ -51,14 +41,14 @@ function CustomPieTooltip({ active, payload }) {
 }
 
 export function ProgramDistributionCard({ preferredCourses = [] }) {
-  const [filterRange, setFilterRange] = useState('30d');
+  const [filterRange, setFilterRange] = useState('all');
 
   const items = useMemo(() => {
-    const raw = Array.isArray(preferredCourses) && preferredCourses.length > 0
-      ? preferredCourses
-      : DEFAULT_COURSES;
+    if (!Array.isArray(preferredCourses) || preferredCourses.length === 0) {
+      return [];
+    }
 
-    return raw.slice(0, 5).map((course, idx) => ({
+    return preferredCourses.slice(0, 5).map((course, idx) => ({
       ...course,
       color: PALETTE[idx % PALETTE.length],
     }));
@@ -66,7 +56,6 @@ export function ProgramDistributionCard({ preferredCourses = [] }) {
 
   return (
     <div className="dashboard-card program-dist-card">
-      {/* Header */}
       <div className="dashboard-card__header program-dist-card__header">
         <div className="dashboard-card__title-group">
           <div className="dashboard-card__title-icon">
@@ -88,60 +77,65 @@ export function ProgramDistributionCard({ preferredCourses = [] }) {
             value={filterRange}
             onChange={(e) => setFilterRange(e.target.value)}
             aria-label="Filter category timeframe"
+            disabled
+            title="Shows all recorded applicant preferences"
           >
-            <option value="30d">Last 30 days</option>
             <option value="all">All cycles</option>
           </select>
           <ChevronDown size={14} className="passer-chart-select-icon" aria-hidden="true" />
         </div>
       </div>
 
-      {/* Content: Left Donut + Right Legend */}
-      <div className="program-dist-content">
-        <div className="program-dist-chart">
-          <ResponsiveContainer width="100%" height={190}>
-            <PieChart>
-              <Pie
-                data={items}
-                cx="50%"
-                cy="50%"
-                innerRadius={44}
-                outerRadius={68}
-                paddingAngle={3}
-                dataKey="count"
-                nameKey="program"
-                animationDuration={600}
-              >
-                {items.map((entry) => (
-                  <Cell key={entry.program} fill={entry.color} stroke="none" />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomPieTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
+      {items.length === 0 ? (
+        <div className="dashboard-empty-cell" style={{ padding: '2rem 0' }}>
+          No program distribution data yet.
         </div>
+      ) : (
+        <div className="program-dist-content">
+          <div className="program-dist-chart">
+            <ResponsiveContainer width="100%" height={190}>
+              <PieChart>
+                <Pie
+                  data={items}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={44}
+                  outerRadius={68}
+                  paddingAngle={3}
+                  dataKey="count"
+                  nameKey="program"
+                  animationDuration={600}
+                >
+                  {items.map((entry) => (
+                    <Cell key={entry.program} fill={entry.color} stroke="none" />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomPieTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
 
-        <div className="program-dist-legend" role="list">
-          {items.map((item) => (
-            <div key={item.program} className="program-dist-legend__row" role="listitem">
-              <div className="program-dist-legend__info">
-                <span
-                  className="program-dist-legend__dot"
-                  style={{ backgroundColor: item.color }}
-                  aria-hidden="true"
-                />
-                <span className="program-dist-legend__name" title={item.program}>
-                  {item.program}
+          <div className="program-dist-legend" role="list">
+            {items.map((item) => (
+              <div key={item.program} className="program-dist-legend__row" role="listitem">
+                <div className="program-dist-legend__info">
+                  <span
+                    className="program-dist-legend__dot"
+                    style={{ backgroundColor: item.color }}
+                    aria-hidden="true"
+                  />
+                  <span className="program-dist-legend__name" title={item.program}>
+                    {item.program}
+                  </span>
+                </div>
+                <span className="program-dist-legend__percent">
+                  {item.percent}%
                 </span>
               </div>
-              <span className="program-dist-legend__percent">
-                {item.percent}%
-              </span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
-

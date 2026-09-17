@@ -65,6 +65,33 @@ export function toastSuccess(message = 'Completed successfully.', detail = '') {
   });
 }
 
+/** Error toast — non-blocking, auto-dismiss. */
+export function toastFail(message = 'Something went wrong.') {
+  return Swal.fire({
+    ...base,
+    toast: true,
+    position: 'top-end',
+    icon: 'error',
+    title: message,
+    timer: 4500,
+    timerProgressBar: true,
+    showConfirmButton: false,
+    allowOutsideClick: true,
+    allowEscapeKey: true,
+    showClass: {
+      popup: 'metcc-swal-toast-in',
+    },
+    hideClass: {
+      popup: 'metcc-swal-toast-out',
+    },
+    customClass: {
+      ...base.customClass,
+      popup: 'metcc-swal-popup metcc-swal-toast',
+      title: 'metcc-swal-toast-title',
+    },
+  });
+}
+
 export function toastError(title = 'Error', text = '') {
   return Swal.fire({
     ...base,

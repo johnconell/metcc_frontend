@@ -35,7 +35,7 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, [fetchUser]);
 
-  const login = async (credentials) => {
+  const login = useCallback(async (credentials) => {
     const { data } = await authApi.login(credentials);
 
     if (!ADMIN_ROLES.includes(data.data.user.role?.slug)) {
@@ -45,10 +45,11 @@ export function AuthProvider({ children }) {
     tokenStorage.set(data.data.token);
     setUser(data.data.user);
     syncFromUser(data.data.user);
+    setLoading(false);
     return data;
-  };
+  }, [syncFromUser]);
 
-  const register = async (payload) => {
+  const register = useCallback(async (payload) => {
     const { data } = await authApi.register(payload);
 
     if (!ADMIN_ROLES.includes(data.data.user.role?.slug)) {
@@ -58,22 +59,32 @@ export function AuthProvider({ children }) {
     tokenStorage.set(data.data.token);
     setUser(data.data.user);
     syncFromUser(data.data.user);
+    setLoading(false);
     return data;
-  };
+  }, [syncFromUser]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await authApi.logout();
     } finally {
       tokenStorage.remove();
       setUser(null);
+      setLoading(false);
     }
-  };
+  }, []);
 
-  const setToken = async (token) => {
+  const setToken = useCallback(async (token, bootstrapUser = null) => {
     tokenStorage.set(token);
+
+    if (bootstrapUser?.role?.slug && ADMIN_ROLES.includes(bootstrapUser.role.slug)) {
+      setUser(bootstrapUser);
+      syncFromUser(bootstrapUser);
+      setLoading(false);
+      return bootstrapUser;
+    }
+
     return fetchUser();
-  };
+  }, [fetchUser, syncFromUser]);
 
   const isAdmin = user?.role?.slug && ADMIN_ROLES.includes(user.role.slug);
 

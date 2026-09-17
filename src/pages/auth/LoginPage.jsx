@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../auth/useAuth';
 import { authApi } from '../../api/authApi';
 import { Input } from '../../components/ui/Input';
@@ -7,13 +9,16 @@ import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
 import { Spinner } from '../../components/ui/Spinner';
 import tccLogo from '../../assets/tcc_logo.png';
-import authBackground from '../../assets/222e5081-d3b9-446c-9c68-9341734ec816.png';
+import authBackground from '../../assets/landing/2.png';
 
 const FEATURES = [
   'Secure student access',
   'Easy examination monitoring',
   'Fast and reliable results',
 ];
+
+const GOOGLE_UNAUTHORIZED =
+  'This Google account is not authorized to access the METCC Admin Portal.';
 
 function EmailIcon() {
   return (
@@ -73,9 +78,31 @@ export default function LoginPage() {
   const location = useLocation();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(location.state?.message || '');
+  const [success, setSuccess] = useState(() => location.state?.success || '');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const incomingError = params.get('error') || location.state?.error || '';
+    if (!incomingError) return;
+
+    const message = decodeURIComponent(incomingError);
+    if (
+      message === GOOGLE_UNAUTHORIZED
+      || /not authorized to access the METCC Admin Portal/i.test(message)
+    ) {
+      toast.error(GOOGLE_UNAUTHORIZED);
+      setError('');
+    } else {
+      setError(message);
+    }
+
+    // Clear query/state so refresh does not re-toast.
+    if (params.get('error') || location.state?.error) {
+      navigate('/login', { replace: true, state: location.state?.success ? { success: location.state.success } : {} });
+    }
+  }, [location.search, location.state, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -99,34 +126,28 @@ export default function LoginPage() {
     '[&_input]:focus:border-[#7B1020] [&_input]:focus:ring-2 [&_input]:focus:ring-[#7B1020]/20';
 
   return (
-    <div className="login-page flex h-screen overflow-y-auto lg:overflow-hidden bg-white">
-      {/* Left branding panel */}
+    <div className="login-page relative flex h-screen overflow-y-auto lg:overflow-hidden bg-white">
+      {/* Page corner back — left side, outside the login form column */}
+      <Link
+        to="/"
+        className="absolute left-4 top-4 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-[#7B1020] shadow-sm ring-1 ring-black/5 transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7B1020] focus-visible:ring-offset-2 lg:left-5 lg:top-5 lg:bg-white/15 lg:text-white lg:ring-white/25 lg:hover:bg-white/25"
+        aria-label="Back to Landing Page"
+        title="Back to Landing Page"
+      >
+        <ArrowLeft size={20} strokeWidth={2.25} aria-hidden="true" />
+      </Link>
+
+      {/* Left branding panel — campus photo from 2.png */}
       <aside
         className="relative hidden w-1/2 overflow-hidden lg:flex lg:flex-col lg:justify-center lg:px-14 lg:py-12 xl:px-20"
         aria-label="Tagoloan Community College branding"
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(113, 11, 27, 0.88) 0%, rgba(62, 4, 12, 0.82) 100%), url(${authBackground})`,
+          backgroundImage: `linear-gradient(135deg, rgba(113, 11, 27, 0.72) 0%, rgba(62, 4, 12, 0.78) 100%), url(${authBackground})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
         }}
       >
-        {/* Abstract background shapes */}
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <div className="absolute -left-16 -top-16 h-72 w-72 rounded-full bg-white/5" />
-          <div className="absolute -bottom-24 -right-12 h-96 w-96 rounded-full bg-[#D8901F]/10" />
-          <div className="absolute right-1/4 top-1/3 h-48 w-48 rounded-full bg-white/5" />
-          <div className="absolute bottom-1/4 left-1/3 h-32 w-32 rotate-45 rounded-2xl bg-[#D8901F]/5" />
-          <svg className="absolute inset-0 h-full w-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
-
         <div className="relative z-10 max-w-lg">
           <div className="mb-6 flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-[#D8901F]/40 bg-white p-1 shadow-lg">
@@ -160,19 +181,7 @@ export default function LoginPage() {
 
       {/* Right login panel */}
       <main className="flex h-full w-full flex-col justify-between items-center px-6 py-6 sm:px-8 lg:w-1/2 lg:px-12 bg-white">
-        {/* Top bar */}
-        <div className="w-full max-w-sm flex items-center justify-between">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7B1020] transition hover:text-[#5C0C18] hover:underline"
-          >
-            &larr; Back to Landing Page
-          </Link>
-        </div>
-
-        {/* Center content - No Card */}
         <div className="w-full max-w-sm my-auto py-2">
-          {/* Logo */}
           <div className="mb-3 flex justify-center">
             <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-[#7B1020]/20 bg-rose-50/40 p-1 shadow-sm">
               <img
@@ -194,7 +203,6 @@ export default function LoginPage() {
           {error && <div className="mb-3"><Alert type="error" message={error} onClose={() => setError('')} /></div>}
 
           <form onSubmit={handleSubmit} className="space-y-3" noValidate>
-            {/* Email */}
             <div className="relative">
               <span className="pointer-events-none absolute left-3 top-[34px] text-gray-400">
                 <EmailIcon />
@@ -212,7 +220,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
                 Password
@@ -267,7 +274,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Divider */}
           <div className="relative my-3">
             <div className="absolute inset-0 flex items-center" aria-hidden="true">
               <div className="w-full border-t border-gray-200" />
@@ -277,7 +283,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Google sign-in */}
           <a
             href={authApi.googleRedirect()}
             className="inline-flex w-full items-center justify-center gap-2.5 rounded-lg border border-gray-300 bg-white py-2 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7B1020] focus-visible:ring-offset-2"
@@ -287,7 +292,6 @@ export default function LoginPage() {
           </a>
         </div>
 
-        {/* Footer */}
         <div className="w-full max-w-sm text-center pt-2">
           <p className="text-xs text-gray-500">
             Looking for your exam schedule?{' '}

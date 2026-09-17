@@ -515,6 +515,12 @@
   min-width: 0;
 }
 
+.dashboard-card--full,
+.dashboard-schedule-section,
+.dashboard-activities-section {
+  margin-bottom: 24px;
+}
+
 .dashboard-card__header {
   display: flex;
   align-items: center;
@@ -585,14 +591,15 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  line-height: 1.45;
 }
 
 .dashboard-table th,
 .dashboard-table td {
-  padding: 11px 10px;
+  padding: 12px 14px;
   border-bottom: 1px solid #efeae5;
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .dashboard-table th {
@@ -602,6 +609,101 @@
   color: #8b8580;
   font-weight: 700;
   background: #fbfaf8;
+  white-space: nowrap;
+}
+
+/* Specific Schedule Table Tweaks */
+.dashboard-schedule-table td {
+  vertical-align: middle;
+}
+
+.dashboard-schedule-td--date,
+.dashboard-schedule-td--time,
+.dashboard-schedule-td--examinees {
+  white-space: nowrap;
+}
+
+/* Recent Activities Table Fixes (Prevent Text Overlaps) */
+.dashboard-activities-table {
+  table-layout: auto;
+}
+
+.dashboard-activities-th--user,
+.dashboard-activities-td--user {
+  width: 135px;
+  min-width: 120px;
+  white-space: nowrap !important;
+  vertical-align: middle;
+}
+
+.dashboard-activity-user {
+  display: inline-block;
+  font-weight: 600;
+  color: #27272a;
+  white-space: nowrap;
+}
+
+[data-theme='dark'] .dashboard-activity-user {
+  color: #f4f4f5;
+}
+
+.dashboard-activities-th--activity,
+.dashboard-activities-td--activity {
+  min-width: 320px;
+  vertical-align: middle;
+}
+
+.dashboard-activity-title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #18181b;
+  line-height: 1.35;
+  margin: 0 0 3px;
+}
+
+[data-theme='dark'] .dashboard-activity-title {
+  color: #f4f4f5;
+}
+
+.dashboard-activity-desc {
+  font-size: 12.5px;
+  color: #71717a;
+  line-height: 1.45;
+  margin: 0;
+  word-break: break-word;
+}
+
+[data-theme='dark'] .dashboard-activity-desc {
+  color: #a1a1aa;
+}
+
+.dashboard-activities-th--date,
+.dashboard-activities-td--date {
+  width: 125px;
+  min-width: 115px;
+  white-space: nowrap !important;
+  color: #71717a;
+  font-variant-numeric: tabular-nums;
+  vertical-align: middle;
+}
+
+[data-theme='dark'] .dashboard-activities-td--date {
+  color: #a1a1aa;
+}
+
+.dashboard-activities-th--time,
+.dashboard-activities-td--time {
+  width: 105px;
+  min-width: 95px;
+  white-space: nowrap !important;
+  color: #71717a;
+  font-variant-numeric: tabular-nums;
+  vertical-align: middle;
+}
+
+[data-theme='dark'] .dashboard-activities-td--time {
+  color: #a1a1aa;
 }
 
 .dashboard-batch-link {

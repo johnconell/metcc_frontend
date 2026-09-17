@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   BookOpen,
   CheckCircle2,
+  Copy,
   FolderOpen,
   Layers3,
   Pencil,
@@ -28,6 +29,7 @@ function formatNumber(value) {
 }
 
 const EMPTY_FORM = { school_year: '', title: '' };
+const CURRENT_SCHOOL_YEAR = String(new Date().getFullYear());
 
 export default function QuestionBankPage() {
   const [banks, setBanks] = useState([]);
@@ -120,6 +122,38 @@ export default function QuestionBankPage() {
       await load();
     } catch (err) {
       await alertFromApiError(err, 'Unable to delete question bank.');
+    }
+  };
+
+  const handleDuplicate = async (bank, event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (String(bank.school_year) === CURRENT_SCHOOL_YEAR) {
+      await toastError(
+        'Already current year',
+        `This bank is already for school year ${CURRENT_SCHOOL_YEAR}.`,
+      );
+      return;
+    }
+
+    const ok = await confirmAction({
+      title: 'Duplicate question bank?',
+      text: `Copy categories and questions from "${bank.title}" into a new bank for school year ${CURRENT_SCHOOL_YEAR}. The new bank will not be set active.`,
+      confirmText: 'Duplicate',
+      icon: 'question',
+    });
+    if (!ok) return;
+
+    setBusyId(bank.id);
+    try {
+      const { data } = await questionBankApi.duplicateBank(bank.id);
+      await toastSuccess(data.message || `Duplicated for school year ${CURRENT_SCHOOL_YEAR}.`);
+      await load();
+    } catch (err) {
+      await alertFromApiError(err, 'Unable to duplicate question bank.');
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -284,6 +318,20 @@ export default function QuestionBankPage() {
                       >
                         <CheckCircle2 size={14} aria-hidden="true" />
                         {bank.is_active ? 'Active' : busyId === bank.id ? 'Activating...' : 'Set Active'}
+                      </ManagementButton>
+                      <ManagementButton
+                        type="button"
+                        variant="tertiary"
+                        size="sm"
+                        disabled={busyId === bank.id || String(bank.school_year) === CURRENT_SCHOOL_YEAR}
+                        title={
+                          String(bank.school_year) === CURRENT_SCHOOL_YEAR
+                            ? `Already school year ${CURRENT_SCHOOL_YEAR}`
+                            : `Duplicate into school year ${CURRENT_SCHOOL_YEAR}`
+                        }
+                        onClick={(e) => handleDuplicate(bank, e)}
+                      >
+                        <Copy size={14} aria-hidden="true" /> Duplicate
                       </ManagementButton>
                       <ManagementButton type="button" variant="tertiary" size="sm" onClick={(e) => openEdit(bank, e)}>
                         <Pencil size={14} aria-hidden="true" /> Edit

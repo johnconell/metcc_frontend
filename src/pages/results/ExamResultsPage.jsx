@@ -323,32 +323,34 @@ export default function ExamResultsPage() {
               <p className="mp-panel__hint">Click a date to see batches with completed examinations.</p>
             </div>
           </div>
-          <div className="mp-date-grid">
-            {dateGroups.length === 0 ? (
-              <div className="mp-empty">
-                <ScrollText size={28} />
-                <h2>No completed examinations</h2>
-                <p>Students appear here only after they submit an exam with a score.</p>
-              </div>
-            ) : dateGroups.map((group) => (
-              <button
-                key={group.date}
-                type="button"
-                className="mp-date-card"
-                onClick={() => setSelectedDate(group.date)}
-              >
-                <span className="mp-date-card__label">{group.label}</span>
-                <span className="mp-date-card__meta">
-                  {group.slots.length} batch{group.slots.length === 1 ? '' : 'es'}
-                  {' · '}
-                  {formatNumber(group.examinees)} examinees
-                  {' · '}
-                  {formatNumber(group.passed)} passed / {formatNumber(group.failed)} failed
-                </span>
-                <span className="mp-date-card__cta">View batches</span>
-              </button>
-            ))}
-          </div>
+          {dateGroups.length === 0 ? (
+            <div className="mp-empty">
+              <ScrollText size={28} />
+              <h2>No completed examinations</h2>
+              <p>Students appear here only after they submit an exam with a score.</p>
+            </div>
+          ) : (
+            <div className="mp-date-grid">
+              {dateGroups.map((group) => (
+                <button
+                  key={group.date}
+                  type="button"
+                  className="mp-date-card"
+                  onClick={() => setSelectedDate(group.date)}
+                >
+                  <span className="mp-date-card__label">{group.label}</span>
+                  <span className="mp-date-card__meta">
+                    {group.slots.length} batch{group.slots.length === 1 ? '' : 'es'}
+                    {' · '}
+                    {formatNumber(group.examinees)} examinees
+                    {' · '}
+                    {formatNumber(group.passed)} passed / {formatNumber(group.failed)} failed
+                  </span>
+                  <span className="mp-date-card__cta">View batches</span>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
       ) : level === 'batches' ? (
         <section className="mp-panel">

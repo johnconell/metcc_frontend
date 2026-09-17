@@ -4,31 +4,28 @@ import './passer-gauge-card.css';
 
 export function PasserGaugeCard({
   totalPassers = 0,
-  totalExaminees = 0,
+  totalTested = 0,
   thisYearPassers = 0,
-  thisYearLabel = '2026',
+  thisYearTested = 0,
+  thisYearLabel = String(new Date().getFullYear()),
 }) {
   const [filterRange, setFilterRange] = useState('cycle');
 
-  // Baseline calibration when test environment has 0 records
-  const qualified = totalPassers > 0
-    ? totalPassers
-    : (thisYearPassers > 0 ? thisYearPassers : 412);
+  const qualified = filterRange === 'cycle'
+    ? Number(thisYearPassers || 0)
+    : Number(totalPassers || 0);
 
-  const tested = totalExaminees > 0
-    ? totalExaminees
-    : Math.round(qualified * 1.34);
+  const tested = filterRange === 'cycle'
+    ? Number(thisYearTested || 0)
+    : Number(totalTested || 0);
 
-  const passRate = tested > 0 ? Math.round((qualified / tested) * 100) : 74;
+  const passRate = tested > 0 ? Math.round((qualified / tested) * 100) : 0;
 
-  // Arc math: semi-circle from 180deg (left) to 0deg (right)
-  // We can render SVG ticks or clean smooth SVG arc
   const totalTicks = 45;
   const activeTicks = Math.round((passRate / 100) * totalTicks);
 
   return (
     <div className="dashboard-card passer-gauge-card">
-      {/* Header */}
       <div className="dashboard-card__header passer-gauge-card__header">
         <div>
           <h3 className="dashboard-card__title" style={{ fontSize: '1.05rem' }}>
@@ -53,7 +50,6 @@ export function PasserGaugeCard({
         </div>
       </div>
 
-      {/* Semi-Circle Gauge Body */}
       <div className="passer-gauge-body">
         <svg
           viewBox="0 0 240 135"
@@ -61,7 +57,6 @@ export function PasserGaugeCard({
           role="img"
           aria-label={`Qualification rate: ${passRate}%`}
         >
-          {/* Ticks forming the 180 degree semi-circle arc */}
           {Array.from({ length: totalTicks }).map((_, i) => {
             const angle = Math.PI - (i / (totalTicks - 1)) * Math.PI;
             const rInner = 80;
@@ -91,7 +86,6 @@ export function PasserGaugeCard({
             );
           })}
 
-          {/* Central Percentage */}
           <text
             x="120"
             y="94"
@@ -111,23 +105,21 @@ export function PasserGaugeCard({
         </svg>
       </div>
 
-      {/* Footer Totals */}
       <div className="passer-gauge-footer">
         <div className="passer-gauge-stat passer-gauge-stat--left">
           <span className="passer-gauge-stat__label">Qualified Passers</span>
           <strong className="passer-gauge-stat__val passer-gauge-stat__val--maroon">
-            {Number(qualified).toLocaleString()}
+            {qualified.toLocaleString()}
           </strong>
         </div>
 
         <div className="passer-gauge-stat passer-gauge-stat--right">
           <span className="passer-gauge-stat__label">Total Tested</span>
           <strong className="passer-gauge-stat__val passer-gauge-stat__val--gold">
-            {Number(tested).toLocaleString()}
+            {tested.toLocaleString()}
           </strong>
         </div>
       </div>
     </div>
   );
 }
-

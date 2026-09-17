@@ -11,7 +11,6 @@ import {
   Mail,
   MoreHorizontal,
   Shield,
-  TrendingUp,
   UserCheck,
   Users,
 } from 'lucide-react';
@@ -33,7 +32,7 @@ const ACTIVITY_STYLE = {
   result_recorded: { icon: FileCheck, iconBg: '#e8f5ee', iconColor: '#16a34a', dotColor: '#16a34a' },
   proctor_assigned: { icon: Shield, iconBg: '#f3e8fd', iconColor: '#9333ea', dotColor: '#9333ea' },
   user_login: { icon: UserCheck, iconBg: '#f3e8fd', iconColor: '#9333ea', dotColor: '#9333ea' },
-  default: { icon: Mail, iconBg: '#fce8ec', iconColor: '#c4455a', dotColor: '#c4455a' },
+  default: { icon: Mail, iconBg: '#fce8ec', xiconColor: '#c4455a', dotColor: '#c4455a' },
 };
 
 function formatNumber(value) {
@@ -78,46 +77,48 @@ export default function DashboardPage() {
   }, [page, totalPages]);
 
   const stats = data?.stats || {};
+  const analytics = data?.analytics || {};
   const firstName = user?.name?.split(' ')[0] || 'Administrator';
 
   const statCards = [
     {
       label: 'Total Applicants',
-      sublabel: 'Vs last 30 days',
-      value: formatNumber(stats.total_applicants ?? stats.total_examinees ?? 3008),
-      pctBadge: '+4.21%',
+      sublabel: 'Registered applicants',
+      value: formatNumber(stats.total_applicants ?? stats.total_examinees ?? 0),
       icon: Users,
       theme: 'green',
     },
     {
       label: 'Scheduled Examinees',
-      sublabel: stats.examinees_today ? `${formatNumber(stats.examinees_today)} today` : 'Active cycle',
-      value: formatNumber(stats.scheduled_examinees ?? stats.active_sessions ?? 520),
-      pctBadge: '+2.89%',
+      sublabel: stats.examinees_today
+        ? `${formatNumber(stats.examinees_today)} today`
+        : 'Upcoming / ongoing',
+      value: formatNumber(stats.scheduled_examinees ?? 0),
       icon: Calendar,
       theme: 'maroon',
     },
     {
       label: 'Completed Exams',
-      sublabel: stats.total_present ? `${formatNumber(stats.total_present)} present` : 'Vs last 30 days',
-      value: formatNumber(stats.completed_examinations ?? stats.completed_exams ?? 1284),
-      pctBadge: '+3.78%',
+      sublabel: stats.total_present
+        ? `${formatNumber(stats.total_present)} present`
+        : 'Completed schedules',
+      value: formatNumber(stats.completed_examinations ?? stats.completed_exams ?? 0),
       icon: FileCheck,
       theme: 'amber',
     },
     {
       label: 'Qualified Passers',
-      sublabel: stats.results_sent ? `${formatNumber(stats.results_sent)} emailed` : 'Vs last 30 days',
-      value: formatNumber(stats.passed_applicants ?? stats.total_passed ?? 892),
-      pctBadge: '+5.10%',
+      sublabel: stats.results_sent
+        ? `${formatNumber(stats.results_sent)} emailed`
+        : 'Passed results',
+      value: formatNumber(stats.passed_applicants ?? stats.total_passed ?? 0),
       icon: Award,
       theme: 'purple',
     },
     {
       label: 'Proctors On Duty',
       sublabel: 'Assigned today',
-      value: formatNumber(stats.proctors_on_duty ?? 18),
-      pctBadge: '+1.94%',
+      value: formatNumber(stats.proctors_on_duty ?? 0),
       icon: Shield,
       theme: 'blue',
     },
@@ -200,10 +201,6 @@ export default function DashboardPage() {
 
               <div className="dashboard-stat-card__bottom-row">
                 <strong className="dashboard-stat-card__value">{card.value}</strong>
-                <span className="dashboard-stat-card__pct-badge">
-                  <span className="dashboard-stat-card__pct-dot" />
-                  {card.pctBadge}
-                </span>
               </div>
             </article>
           );
@@ -213,39 +210,40 @@ export default function DashboardPage() {
       {/* Row 2: Middle Split Row (~63% Interactive Area Chart, ~37% Program Donut Distribution) */}
       <section className="dashboard-middle-row" aria-label="Examination and Course Distribution">
         <AreaChartInteractive
-          data={data.analytics?.daily_trends || []}
-          totalApplicants={stats.total_applicants ?? stats.registered_examinees ?? 3008}
-          totalExaminees={stats.total_scheduled ?? stats.total_examinees ?? 520}
-          totalPassers={data.analytics?.passers?.total ?? stats.passed_applicants ?? stats.total_passed ?? 0}
+          data={analytics.daily_trends || data?.performance?.daily_trends || []}
           title="Examination & Applicant Volume"
         />
 
         <ProgramDistributionCard
-          preferredCourses={data.analytics?.preferred_courses || []}
+          preferredCourses={analytics.preferred_courses || []}
         />
       </section>
 
       {/* Row 3: Bottom 3-Column Analytics Grid (Top Programs, Qualification Gauge, Volume Trend) */}
       <section className="dashboard-bottom-grid" aria-label="Detailed performance analytics">
         <TopProgramsCard
-          preferredCourses={data.analytics?.preferred_courses || []}
+          preferredCourses={analytics.preferred_courses || []}
         />
 
         <PasserGaugeCard
-          totalPassers={data.analytics?.passers?.total ?? stats.passed_applicants ?? stats.total_passed ?? 0}
-          totalExaminees={stats.total_scheduled ?? stats.total_examinees ?? 0}
-          thisYearPassers={data.analytics?.passers?.this_year ?? 0}
-          thisYearLabel={data.analytics?.passers?.this_year_label || String(new Date().getFullYear())}
+          totalPassers={analytics.passers?.total ?? stats.passed_applicants ?? stats.total_passed ?? 0}
+          totalTested={
+            analytics.passers?.tested_total
+            ?? ((stats.passed_applicants ?? stats.total_passed ?? 0) + (stats.failed_applicants ?? stats.total_failed ?? 0))
+          }
+          thisYearPassers={analytics.passers?.this_year ?? 0}
+          thisYearTested={analytics.passers?.tested_this_year ?? 0}
+          thisYearLabel={analytics.passers?.this_year_label || String(new Date().getFullYear())}
         />
 
         <ExamineeTrendCard
-          points={data.performance?.points || []}
-          totalVolume={stats.total_applicants ?? stats.registered_examinees ?? 3008}
+          points={data?.performance?.points || []}
+          dailyTrends={analytics.daily_trends || data?.performance?.daily_trends || []}
         />
       </section>
 
       {/* Upcoming Examination Schedule Table */}
-      <section className="dashboard-card dashboard-card--full" aria-label="Upcoming Examination Schedule">
+      <section className="dashboard-card dashboard-card--full dashboard-schedule-section" aria-label="Upcoming Examination Schedule">
         <div className="dashboard-card__header">
           <div className="dashboard-card__title-group">
             <div className="dashboard-card__title-icon"><Calendar size={17} /></div>
@@ -255,15 +253,15 @@ export default function DashboardPage() {
         </div>
 
         <div className="dashboard-table-wrap">
-          <table className="dashboard-table dashboard-table--compact">
+          <table className="dashboard-table dashboard-table--compact dashboard-schedule-table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Room</th>
-                <th>Program</th>
-                <th>Examinees</th>
-                <th>Status</th>
+                <th style={{ minWidth: '130px' }}>Date</th>
+                <th style={{ minWidth: '110px' }}>Time</th>
+                <th style={{ minWidth: '120px' }}>Room</th>
+                <th style={{ minWidth: '130px' }}>Program</th>
+                <th style={{ minWidth: '90px' }}>Examinees</th>
+                <th style={{ minWidth: '100px' }}>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -273,15 +271,15 @@ export default function DashboardPage() {
                 </tr>
               ) : pageRows.map((row) => (
                 <tr key={row.id}>
-                  <td>
+                  <td className="dashboard-schedule-td--date">
                     <Link to={`/management/schedules/${row.id}`} className="dashboard-batch-link">
                       <strong>{row.date_label || row.exam_date}</strong>
                     </Link>
                   </td>
-                  <td>{row.time_slot || row.start_time || '—'}</td>
+                  <td className="dashboard-schedule-td--time">{row.time_slot || row.start_time || '—'}</td>
                   <td title={row.rooms_label}>{row.rooms_label || `${row.room_count || 0} rooms`}</td>
                   <td>{row.course || 'General'}</td>
-                  <td>{formatNumber(row.registered_count || row.expected_examinees)}</td>
+                  <td className="dashboard-schedule-td--examinees">{formatNumber(row.registered_count || row.expected_examinees)}</td>
                   <td>
                     <span className={`dashboard-badge dashboard-badge--${String(row.status).toLowerCase()}`}>
                       {row.status}
@@ -315,7 +313,7 @@ export default function DashboardPage() {
       </section>
 
       {/* Recent Activities */}
-      <section className="dashboard-card dashboard-card--full" aria-label="Recent Activities">
+      <section className="dashboard-card dashboard-card--full dashboard-activities-section" aria-label="Recent Activities">
         <div className="dashboard-card__header">
           <div className="dashboard-card__title-group">
             <div className="dashboard-card__title-icon"><Activity size={17} /></div>
@@ -324,13 +322,13 @@ export default function DashboardPage() {
         </div>
 
         <div className="dashboard-table-wrap">
-          <table className="dashboard-table dashboard-table--compact">
+          <table className="dashboard-table dashboard-table--compact dashboard-activities-table">
             <thead>
               <tr>
-                <th>User</th>
-                <th>Activity</th>
-                <th>Date</th>
-                <th>Time</th>
+                <th className="dashboard-activities-th--user">User</th>
+                <th className="dashboard-activities-th--activity">Activity</th>
+                <th className="dashboard-activities-th--date">Date</th>
+                <th className="dashboard-activities-th--time">Time</th>
               </tr>
             </thead>
             <tbody>
@@ -338,13 +336,17 @@ export default function DashboardPage() {
                 <tr><td colSpan={4} className="dashboard-empty-cell">No recent activities.</td></tr>
               ) : data.recent_activities.map((activity) => (
                 <tr key={activity.id}>
-                  <td>{activity.user_name || 'System'}</td>
-                  <td>
-                    <strong>{activity.title}</strong>
-                    <div className="dashboard-table__sub">{activity.description}</div>
+                  <td className="dashboard-activities-td--user">
+                    <span className="dashboard-activity-user">{activity.user_name || 'System'}</span>
                   </td>
-                  <td>{activity.date_label || '—'}</td>
-                  <td>{activity.time_label || '—'}</td>
+                  <td className="dashboard-activities-td--activity">
+                    <strong className="dashboard-activity-title">{activity.title}</strong>
+                    {activity.description && (
+                      <p className="dashboard-activity-desc">{activity.description}</p>
+                    )}
+                  </td>
+                  <td className="dashboard-activities-td--date">{activity.date_label || '—'}</td>
+                  <td className="dashboard-activities-td--time">{activity.time_label || '—'}</td>
                 </tr>
               ))}
             </tbody>

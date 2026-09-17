@@ -6,6 +6,7 @@ export const questionBankApi = {
   getBank: (id) => api.get(`/question-banks/${id}`),
   updateBank: (id, payload) => api.patch(`/question-banks/${id}`, payload),
   activateBank: (id) => api.post(`/question-banks/${id}/activate`),
+  duplicateBank: (id) => api.post(`/question-banks/${id}/duplicate`),
   importQuestions: (id, formData, config = {}) =>
     api.post(`/question-banks/${id}/import-questions`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },

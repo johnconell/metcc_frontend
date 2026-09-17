@@ -35,7 +35,7 @@ export function ProtectedRoute() {
       <Navigate
         to="/login"
         replace
-        state={{ message: ADMIN_ONLY_MESSAGE }}
+        state={{ error: ADMIN_ONLY_MESSAGE }}
       />
     );
   }
